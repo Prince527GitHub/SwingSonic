@@ -381,7 +381,7 @@ app.get("/rest/getRandomSongs.view", async(req, res) => {
             "album": track.album,
             "artist": track.artists[0].name,
             "track": 0,
-            "year": new Date(album.info.created_date * 1000).getFullYear(),
+            "year": new Date(track.info.created_date * 1000).getFullYear(),
             "genre": "",
             "coverArt": track.image,
             "size": 0,
