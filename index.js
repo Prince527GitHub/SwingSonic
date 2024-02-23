@@ -308,7 +308,19 @@ app.get("/rest/search3.view", async(req, res) => {
 app.get("/rest/getLyrics.view", async(req, res) => {
     let { title } = req.query;
 
-    let track = (await (await fetch(`${config.music}/search/tracks?q=${title}`)).json()).tracks[0];
+    if (!title) return res.json({
+        "subsonic-response": {
+            "lyrics": {
+                artist: "Unknown artist",
+                title: "Unknown title",
+                value: "No lyrics",
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+
+    const track = (await (await fetch(`${config.music}/search/tracks?q=${title}`)).json()).tracks[0];
 
     const lyrics = {
         artist: track.artists[0].name || "",
@@ -319,6 +331,9 @@ app.get("/rest/getLyrics.view", async(req, res) => {
     if (track) {
         const getLyrics = await (await fetch(`${config.music}/lyrics`, {
             method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
                 filepath: track.filepath,
                 trackhash: track.trackhash
@@ -329,6 +344,9 @@ app.get("/rest/getLyrics.view", async(req, res) => {
         else {
             const getLyrics = await (await fetch(`${config.music}/plugins/lyrics/search`, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     trackhash: track.trackhash,
                     title: track.title,
@@ -338,7 +356,7 @@ app.get("/rest/getLyrics.view", async(req, res) => {
                 })
             })).json();
 
-            lyrics.lyrics = getLyrics.lyrics;
+            lyrics.value = getLyrics.lyrics;
         }
     }
 
