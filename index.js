@@ -305,7 +305,7 @@ app.get("/rest/search3.view", async(req, res) => {
     });
 });
 
-app.get("/rest/getLyrics.view", async (req, res) => {
+app.get("/rest/getLyrics.view", async(req, res) => {
     let { title } = req.query;
 
     let track = await (await fetch(`${config.music}/search/tracks?q=${title || ""}`)).json();
