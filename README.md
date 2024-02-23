@@ -15,6 +15,7 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 - getArtists
 - getArtist
 - getLyrics
+- getRandomSongs
 - search3
 - ping
 
