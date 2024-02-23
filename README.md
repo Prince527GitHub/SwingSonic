@@ -6,10 +6,12 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 
 - getPlaylists*
 - getAlbumList2
+- getAlbumList
 - getCoverArt
 - stream
 - download
 - getArtists
 - getArtist
+- getLyrics
 - search3
 - ping

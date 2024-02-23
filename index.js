@@ -21,13 +21,8 @@ app.get("/rest/getPlaylists.view", (req, res) => {
             "playlists": {
                 "playlist": []
             },
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
         }
     });
 });
@@ -55,13 +50,37 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
             "albumList2": {
                 "album": output
             },
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/getAlbumList.view", async(req, res) => {
+    let { type, size, offset } = req.query;
+
+    const albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
+
+    let output = albums.items.map(item => ({
+        id: item.item?.albumhash || item.albumhash,
+        parent: item.item?.albumhash || item.albumhash,
+        title: item.item?.title || item.title,
+        artist: item.item?.albumartists[0].name || item.albumartists[0].name,
+        isDir: true,
+        coverArt: item.item?.image || item.image,
+        userRating: 0,
+        averageRating: 0
+    }));
+
+    if (type === "random") output = shuffleArray(output);
+
+    res.json({
+        "subsonic-response": {
+            "albumList": {
+                "album": output
+            },
+            "status": "ok",
+            "version": "1.16.1"
         }
     });
 });
@@ -123,13 +142,8 @@ app.get("/rest/getAlbum.view", async(req, res) => {
     res.json({
         "subsonic-response": {
             ...output,
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
         }
     });
 });
@@ -175,13 +189,8 @@ app.get("/rest/getArtists.view", async(req, res) => {
             "artists": {
                 "index": organizedArtists
             },
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
         }
     });
 });
@@ -215,13 +224,8 @@ app.get("/rest/getArtist.view", async(req, res) => {
                 "artistId": id,
                 "album": albums
             },
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
         }
     });
 });
@@ -295,13 +299,54 @@ app.get("/rest/search3.view", async(req, res) => {
                 "album": albums,
                 "song": tracks
             },
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/getLyrics.view", async(req, res) => {
+    let { title } = req.query;
+
+    let track = (await (await fetch(`${config.music}/search/tracks?q=${title}`)).json()).tracks[0];
+
+    const lyrics = {
+        artist: track.artists[0].name || "",
+        title: track.title || "",
+        value: "",
+    }
+
+    if (track) {
+        const getLyrics = await (await fetch(`${config.music}/lyrics`, {
+            method: "POST",
+            body: JSON.stringify({
+                filepath: track.filepath,
+                trackhash: track.trackhash
+            })
+        })).json();
+
+        if (!getLyrics.error) lyrics.value = getLyrics.lyrics;
+        else {
+            const getLyrics = await (await fetch(`${config.music}/plugins/lyrics/search`, {
+                method: "POST",
+                body: JSON.stringify({
+                    trackhash: track.trackhash,
+                    title: track.title,
+                    artist: track.albumartists[0].name,
+                    filepath: track.filepath,
+                    album: track.album
+                })
+            })).json();
+
+            lyrics.lyrics = getLyrics.lyrics;
+        }
+    }
+
+    res.json({
+        "subsonic-response": {
+            "lyrics": lyrics,
+            "status": "ok",
+            "version": "1.16.1"
         }
     });
 });
@@ -309,13 +354,8 @@ app.get("/rest/search3.view", async(req, res) => {
 app.use((req, res, next) => {
     res.status(200).json({
         "subsonic-response": {
-            "xmlns": "http://subsonic.org/restapi",
             "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
+            "version": "1.16.1"
         }
     });
 });
