@@ -4,6 +4,8 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 
 ## Endpoints
 
+### Implemented
+
 - getPlaylists*
 - getAlbumList2
 - getAlbumList
@@ -15,3 +17,33 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 - getLyrics
 - search3
 - ping
+
+### Wont
+
+- getLicense
+- getVideos
+- getVideoInfo
+- hls
+- getShares
+- createShare
+- updateShare
+- deleteShare
+- getPodcasts
+- getNewestPodcasts
+- refreshPodcasts
+- createPodcastChannel
+- deletePodcastChannel
+- deletePodcastEpisode
+- downloadPodcastEpisode
+- getInternetRadioStations
+- createInternetRadioStation
+- updateInternetRadioStation
+- deleteInternetRadioStation
+- getChatMessages
+- addChatMessage
+- getBookmarks
+- createBookmark
+- deleteBookmark
+- getPlayQueue
+- savePlayQueue
+- getNowPlaying
