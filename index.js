@@ -320,20 +320,6 @@ app.use((req, res, next) => {
     });
 });
 
-app.use((req, res, next) => {
-    res.status(200).json({
-        "subsonic-response": {
-            "xmlns": "http://subsonic.org/restapi",
-            "status": "ok",
-            "version": "1.16.1",
-            "script": {
-                "xmlns": "",
-                "id": "bw-fido2-page-script"
-            }
-        }
-    });
-});
-
 app.listen(config.port, () => {
     console.log("Swing Music to Subsonic");
 });
