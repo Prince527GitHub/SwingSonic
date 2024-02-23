@@ -4,7 +4,7 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 
 ## Endpoints
 
-- getPlaylists
+- getPlaylists*
 - getAlbumList2
 - getCoverArt
 - stream
