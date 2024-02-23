@@ -321,7 +321,7 @@ app.get("/rest/getLyrics.view", async(req, res) => {
         const body = {
             trackhash: track.trackhash,
             title: track.title,
-            artist: track.albumartists[0]?.name || "",
+            artist: track.albumartists[0]?.name || track.artists[0]?.name || "",
             filepath: track.filepath,
             album: track.album
         };
