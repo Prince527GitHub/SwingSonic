@@ -6,12 +6,6 @@ RUN apk add tini
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
-RUN apk add openjdk11
-RUN apk add python3
-RUN apk add ffmpeg
-
-RUN apk update
-
 RUN mkdir /app && chown -R node:node /app
 
 WORKDIR /app
