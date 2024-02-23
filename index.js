@@ -392,6 +392,8 @@ app.get("/rest/getRandomSongs.view", async(req, res) => {
         })));
     }
 
+    output = shuffleArray(output);
+
     output = output.slice(0, size || 10);
 
     res.json({
