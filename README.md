@@ -11,4 +11,5 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 - download
 - getArtists
 - getArtist
+- search3
 - ping
