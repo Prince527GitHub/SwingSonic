@@ -305,59 +305,45 @@ app.get("/rest/search3.view", async(req, res) => {
     });
 });
 
-app.get("/rest/getLyrics.view", async(req, res) => {
+app.get("/rest/getLyrics.view", async (req, res) => {
     let { title } = req.query;
 
-    if (!title) return res.json({
-        "subsonic-response": {
-            "lyrics": {
-                artist: "Unknown artist",
-                title: "Unknown title",
-                value: "No lyrics",
-            },
-            "status": "ok",
-            "version": "1.16.1"
-        }
-    });
-
-    const track = (await (await fetch(`${config.music}/search/tracks?q=${title}`)).json()).tracks[0];
+    let track = await (await fetch(`${config.music}/search/tracks?q=${title || ""}`)).json();
+    if (!track.error || track.tracks.length) track = track.tracks[0];
 
     const lyrics = {
-        artist: track.artists[0].name || "",
-        title: track.title || "",
-        value: "",
-    }
+        artist: track?.artists[0]?.name || "Undefined",
+        title: track?.title || "Undefined",
+        value: "Undefined",
+    };
 
     if (track) {
-        const getLyrics = await (await fetch(`${config.music}/lyrics`, {
+        const body = {
+            trackhash: track.trackhash,
+            title: track.title,
+            artist: track.albumartists[0]?.name || "",
+            filepath: track.filepath,
+            album: track.album
+        };
+
+        let getLyrics = await fetch(`${config.music}/lyrics`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                filepath: track.filepath,
-                trackhash: track.trackhash
-            })
+            body: JSON.stringify(body)
+        });
+
+        if (!getLyrics.ok) getLyrics = await (await fetch(`${config.music}/plugins/lyrics/search`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
         })).json();
+        else getLyrics = await getLyrics.json();
 
-        if (!getLyrics.error) lyrics.value = getLyrics.lyrics;
-        else {
-            const getLyrics = await (await fetch(`${config.music}/plugins/lyrics/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    trackhash: track.trackhash,
-                    title: track.title,
-                    artist: track.albumartists[0].name,
-                    filepath: track.filepath,
-                    album: track.album
-                })
-            })).json();
-
-            lyrics.value = getLyrics.lyrics;
-        }
+        lyrics.value = getLyrics.lyrics || "Lyrics not found";
     }
 
     res.json({
