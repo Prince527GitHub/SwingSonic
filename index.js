@@ -407,6 +407,43 @@ app.get("/rest/getRandomSongs.view", async(req, res) => {
     });
 });
 
+app.get("/rest/startScan", async(req, res) => {
+    const scan = await (await fetch(`${config.music}/settings/trigger-scan`)).json();
+    const tracks = await (await fetch(`${config.music}/folder`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ folder: "$home", tracks_only: false })
+    })).json();
+
+    const status = scan?.msg === "Scan triggered!" ? true : false;
+
+    res.json({
+        "subsonic-response": {
+            "scanStatus": {
+                "scanning": status,
+                "count": tracks?.folders[0]?.count || 0
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/getScanStatus", async(req, res) => {
+    res.json({
+        "subsonic-response": {
+            "scanStatus": {
+                "scanning": false,
+                "count": 0
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+});
+
 app.use((req, res, next) => {
     res.status(200).json({
         "subsonic-response": {

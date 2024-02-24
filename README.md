@@ -17,6 +17,8 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 - getLyrics
 - getRandomSongs
 - search3
+- startScan
+- getScanStatus*
 - ping
 
 ### Wont
