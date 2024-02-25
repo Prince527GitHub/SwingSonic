@@ -135,3 +135,7 @@ devbox.lock
 
 # config
 config.json
+api.json
+
+# vscode
+.vscode

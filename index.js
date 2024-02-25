@@ -15,12 +15,153 @@ function shuffleArray(array) {
 app.use(cors({ origin: "*" }));
 app.use(require("./logs"));
 
-app.get("/rest/getPlaylists.view", (req, res) => {
+app.get("/rest/getPlaylists.view", async(req, res) => {
+    const playlists = await (await fetch(`${config.music}/playlists`)).json();
+
+    const output = playlists.data.map(playlist => ({
+        id: playlist.id,
+        name: playlist.name,
+        comment: "No comment",
+        owner: "admin",
+        public: true,
+        songCount: playlist.count,
+        duration: playlist.duration,
+        created: playlist.last_updated,
+        coverArt: playlist.image
+    }));
+
     res.json({
         "subsonic-response": {
             "playlists": {
-                "playlist": []
+                "playlist": output
             },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/getPlaylist.view", async(req, res) => {
+    const id = req.query.id;
+
+    const playlist = await (await fetch(`${config.music}/playlist/${id}?no_tracks=false`)).json();
+
+    const output = playlist.tracks.map(track => ({
+        "id": track.trackhash,
+        "parent": "655",
+        "title": track.title,
+        "album": track.album,
+        "artist": track.artists[0].name,
+        "isDir": "false",
+        "coverArt": track.image,
+        "created": new Date(track.created_date * 1000).toISOString(),
+        "duration": track.duration,
+        "bitRate": track.bitrate,
+        "track": track.track,
+        "year": new Date(track.created_date * 1000).getFullYear(),
+        "size": 0,
+        "suffix": "mp3",
+        "contentType": "audio/mpeg",
+        "isVideo": "false",
+        "path": track.filepath,
+        "albumId": track.albumhash,
+        "artistId": track.artists[0].artisthash,
+        "type": "music"
+    }));
+
+    res.json({
+        "subsonic-response": {
+            "playlist": {
+                "id": playlist.info.id,
+                "name": playlist.info.name,
+                "comment": "No comment",
+                "owner": "admin",
+                "public": true,
+                "songCount": playlist.info.count,
+                "duration": playlist.info.duration,
+                "created": 0, // 16 hours ago
+                "coverArt": playlist.info.image,
+                "entry": output
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/createPlaylist.view", async(req, res) => {
+    let { playlistId, name } = req.query;
+
+    if (playlistId || !name) return res.json({
+        "subsonic-response": {
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+
+    const playlist = await (await fetch(`${config.music}/playlist/new`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: name })
+    })).json();
+
+    res.json({
+        "subsonic-response": {
+            "playlists": {
+                id: playlist.playlist.id,
+                name: playlist.playlist.name,
+                comment: "No comment",
+                owner: "admin",
+                public: true,
+                songCount: playlist.playlist.count,
+                duration: playlist.playlist.duration,
+                created: playlist.playlist.last_updated,
+                coverArt: playlist.playlist.image
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    });
+});
+
+app.get("/rest/updatePlaylist.view", async(req, res) => {
+    let { playlistId, name, songIdToAdd, songIdToRemove } = req.query;
+
+    if (playlistId) {
+        if (songIdToAdd) await fetch(`${config.music}/playlist/${playlistId}/add`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ itemtype: "track", itemhash: songIdToAdd })
+        });
+
+        if (songIdToRemove) await fetch(`${config.music}/playlist/${playlistId}/remove-tracks`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ tracks: [{ trackhash: songIdToRemove, index: 0 }] })
+        });
+
+        if (name) {
+            const formData = new FormData();
+            formData.append("name", name);
+
+            await fetch(`${config.music}/playlist/${playlistId}/remove-tracks`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'multipart/form-data; boundary=---------------------------33867228569274464331197929572'
+                },
+                body: formData
+            });
+        }
+    }
+
+    res.json({
+        "subsonic-response": {
             "status": "ok",
             "version": "1.16.1"
         }

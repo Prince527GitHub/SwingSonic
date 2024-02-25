@@ -6,7 +6,10 @@ A translation API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clie
 
 ### Implemented
 
-- getPlaylists*
+- getPlaylists
+- getPlaylist
+- createPlaylist
+- updatePlaylist*
 - getAlbumList2
 - getAlbumList
 - getCoverArt
