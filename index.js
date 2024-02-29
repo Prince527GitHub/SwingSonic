@@ -72,8 +72,6 @@ function decodeString(string, salt) {
     } else {
         console.log(string, salt)
 
-        console.log(string && salt)
-
         if (string && salt) {
             try {
                 const key = crypto.scryptSync(salt, 'salt', 24);
@@ -84,7 +82,7 @@ function decodeString(string, salt) {
                 let decrypted = decipher.update(encryptedToken, 'hex', 'utf-8');
                 decrypted += decipher.final('utf-8');
 
-                console.log(decrypted)
+                console.log("Decrypted: ", decrypted)
 
                 return decrypted;
             } catch (error) {
