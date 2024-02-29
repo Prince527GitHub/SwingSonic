@@ -14,7 +14,7 @@ function convertToXml(jsonObj) {
         for (const key in obj) {
             if (Array.isArray(obj[key])) {
                 obj[key].forEach((item, index) => {
-                    const validKey = convertToValidXmlName(`${key}_${index}`);
+                    const validKey = convertToValidXmlName(key);
                     const child = parent.ele(validKey);
                     if (typeof item === 'object') {
                         convertToXmlObj(item, child);
