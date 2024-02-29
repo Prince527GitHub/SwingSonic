@@ -16,11 +16,8 @@ function convertToXml(jsonObj) {
                 obj[key].forEach((item, index) => {
                     const validKey = convertToValidXmlName(key);
                     const child = parent.ele(validKey);
-                    if (typeof item === 'object') {
-                        convertToXmlObj(item, child);
-                    } else {
-                        child.text(item);
-                    }
+                    if (typeof item === 'object') convertToXmlObj(item, child);
+                    else child.text(item);
                 });
             } else if (typeof obj[key] === 'object') {
                 const validKey = convertToValidXmlName(key);
@@ -412,9 +409,10 @@ app.get("/rest/getArtist.view", async(req, res) => {
 
     let { f } = req.query;
 
-    const artist = await (await fetch(`${config.music}/artist/${id}/albums?limit=7&all=false`)).json();
+    const getAlbums = await (await fetch(`${config.music}/artist/${id}/albums?limit=7&all=false`)).json();
+    const artist = await (await fetch(`${config.music}/artist/${id}`)).json();
 
-    const albums = artist.appearances.map(album => ({
+    const albums = getAlbums.appearances.map(album => ({
         id: album.albumhash,
         name: album.title,
         coverArt: album.image,
@@ -429,14 +427,68 @@ app.get("/rest/getArtist.view", async(req, res) => {
         "subsonic-response": {
             "artist": {
                 "id": id,
-                "name": artist.artistname,
-                "coverArt": `${id}.webp`,
-                "songCount": "",
-                "created": "",
-                "duration": "",
-                "artist": artist.artistname,
+                "name": artist.artist.name,
+                "coverArt": artist.artist.image,
+                "songCount": artist.artist.trackcount,
+                "created": new Date(artist.artist.created_date * 1000).toISOString(),
+                "duration": artist.artist.duration,
+                "artist": artist.artist.name,
                 "artistId": id,
                 "album": albums
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
+});
+
+app.get("/rest/getArtistInfo2.view", async(req, res) => {
+    const id = req.query.id;
+
+    let { f } = req.query;
+
+    const artist = await (await fetch(`${config.music}/artist/${id}`)).json();
+
+    const json = {
+        "subsonic-response": {
+            "artistInfo2": {
+                "biography": "Unknown",
+                "musicBrainzId": id,
+                "lastFmUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "smallImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "mediumImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "largeImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "similarArtist": []
+            },
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
+});
+
+app.get("/rest/getArtistInfo.view", async(req, res) => {
+    const id = req.query.id;
+
+    let { f } = req.query;
+
+    const artist = await (await fetch(`${config.music}/artist/${id}`)).json();
+
+    const json = {
+        "subsonic-response": {
+            "artistInfo": {
+                "biography": "Unknown",
+                "musicBrainzId": id,
+                "lastFmUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "smallImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "mediumImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "largeImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "similarArtist": []
             },
             "status": "ok",
             "version": "1.16.1"
