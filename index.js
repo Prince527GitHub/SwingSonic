@@ -79,8 +79,6 @@ function checkPassword(string, salt, password) {
         if (string && salt && password) {
             try {
                 const hashed = hashPassword(password, salt);
-                console.log(hashed === string)
-
                 return hashed === string;
             } catch (error) {
                 return false;
@@ -113,7 +111,7 @@ function checkAuth(req, res, next) {
 
         if (!p) p = t;
 
-        if (checkPassword(p, s, user.password)) {
+        if (!checkPassword(p, s, user.password)) {
             if (f === "json") return res.json(json);
             else return res.send(convertToXml(json));
         }
