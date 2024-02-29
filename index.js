@@ -70,7 +70,8 @@ function decodeString(string, salt) {
             return null;
         }
     } else {
-        console.log(string, salt)
+        console.log("String:", string);
+        console.log("Salt:", salt);
 
         if (string && salt) {
             try {
@@ -86,6 +87,7 @@ function decodeString(string, salt) {
 
                 return decrypted;
             } catch (error) {
+                console.log(error)
                 return null;
             }
         } else return string;
