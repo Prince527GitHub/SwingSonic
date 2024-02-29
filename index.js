@@ -72,6 +72,8 @@ function decodeString(string, salt) {
     } else {
         console.log(string, salt)
 
+        console.log(string && salt)
+
         if (string && salt) {
             try {
                 const key = crypto.scryptSync(salt, 'salt', 24);
