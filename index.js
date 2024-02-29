@@ -58,7 +58,15 @@ function shuffleArray(array) {
     return array;
 }
 
-function decodeString(string, salt) {
+function hashPassword(password, salt) {
+    const hash = crypto.createHash('md5');
+
+    hash.update(password + salt);
+
+    return hash.digest('hex');
+}
+
+function decodeString(string, salt, password) {
     if (string.startsWith("enc:")) {
         try {
             const encodedData = string.substring(4);
@@ -72,17 +80,10 @@ function decodeString(string, salt) {
     } else {
         if (string && salt) {
             try {
-                const key = crypto.scryptSync(salt, 'salt', 24);
-                const iv = Buffer.alloc(16, 0);
+                const hashed = hashPassword(password, salt);
 
-                const decipher = crypto.createDecipheriv('aes-192-cbc', key, iv);
-
-                let decrypted = decipher.update(string, 'hex', 'utf-8');
-                decrypted += decipher.final('utf-8');
-
-                console.log("Decrypted: ", decrypted)
-
-                return decrypted;
+                if (hashed === string) return password;
+                else return string;
             } catch (error) {
                 console.log(error)
                 return null;
@@ -115,7 +116,7 @@ function checkAuth(req, res, next) {
 
         if (!p) p = t;
 
-        if (user.password !== decodeString(p, s)) {
+        if (user.password !== decodeString(p, s, user.password)) {
             if (f === "json") return res.json(json);
             else return res.send(convertToXml(json));
         }
