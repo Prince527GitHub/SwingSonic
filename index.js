@@ -82,6 +82,8 @@ function decodeString(string, salt, password) {
             try {
                 const hashed = hashPassword(password, salt);
 
+                console.log(hashed, string)
+
                 if (hashed === string) return password;
                 else return string;
             } catch (error) {
