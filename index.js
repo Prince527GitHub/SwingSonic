@@ -70,9 +70,6 @@ function decodeString(string, salt) {
             return null;
         }
     } else {
-        console.log("String:", string);
-        console.log("Salt:", salt);
-
         if (string && salt) {
             try {
                 const key = crypto.scryptSync(salt, 'salt', 24);
@@ -80,7 +77,7 @@ function decodeString(string, salt) {
 
                 const decipher = crypto.createDecipheriv('aes-192-cbc', key, iv);
 
-                let decrypted = decipher.update(encryptedToken, 'hex', 'utf-8');
+                let decrypted = decipher.update(string, 'hex', 'utf-8');
                 decrypted += decipher.final('utf-8');
 
                 console.log("Decrypted: ", decrypted)
