@@ -4,6 +4,25 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+const xmlbuilder = require('xmlbuilder');
+
+function convertToXml(jsonObj) {
+    const xml = xmlbuilder.create(Object.keys(jsonObj)[0]);
+
+    function convertToXmlObj(obj, parent) {
+        for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+                const child = parent.ele(key);
+                convertToXmlObj(obj[key], child);
+            } else parent.att(key, obj[key]);
+        }
+    };
+
+    convertToXmlObj(jsonObj[Object.keys(jsonObj)[0]], xml);
+
+    return xml.end({ pretty: true });
+};
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -16,6 +35,8 @@ app.use(cors({ origin: "*" }));
 app.use(require("./logs"));
 
 app.get("/rest/getPlaylists.view", async(req, res) => {
+    let { f } = req.query;
+
     const playlists = await (await fetch(`${config.music}/playlists`)).json();
 
     const output = playlists.data.map(playlist => ({
@@ -30,7 +51,7 @@ app.get("/rest/getPlaylists.view", async(req, res) => {
         coverArt: playlist.image
     }));
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "playlists": {
                 "playlist": output
@@ -38,11 +59,16 @@ app.get("/rest/getPlaylists.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    };
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getPlaylist.view", async(req, res) => {
     const id = req.query.id;
+
+    let { f } = req.query;
 
     const playlist = await (await fetch(`${config.music}/playlist/${id}?no_tracks=false`)).json();
 
@@ -69,7 +95,7 @@ app.get("/rest/getPlaylist.view", async(req, res) => {
         "type": "music"
     }));
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "playlist": {
                 "id": playlist.info.id,
@@ -86,11 +112,14 @@ app.get("/rest/getPlaylist.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/createPlaylist.view", async(req, res) => {
-    let { playlistId, name } = req.query;
+    let { playlistId, name, f } = req.query;
 
     if (playlistId || !name) return res.json({
         "subsonic-response": {
@@ -107,7 +136,7 @@ app.get("/rest/createPlaylist.view", async(req, res) => {
         body: JSON.stringify({ name: name })
     })).json();
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "playlists": {
                 id: playlist.playlist.id,
@@ -123,11 +152,14 @@ app.get("/rest/createPlaylist.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/updatePlaylist.view", async(req, res) => {
-    let { playlistId, name, songIdToAdd, songIdToRemove } = req.query;
+    let { playlistId, name, songIdToAdd, songIdToRemove, f } = req.query;
 
     if (playlistId) {
         if (songIdToAdd) await fetch(`${config.music}/playlist/${playlistId}/add`, {
@@ -160,16 +192,19 @@ app.get("/rest/updatePlaylist.view", async(req, res) => {
         }
     }
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getAlbumList2.view", async(req, res) => {
-    let { type, size, offset } = req.query;
+    let { type, size, offset, f } = req.query;
 
     const albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
 
@@ -186,7 +221,7 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
 
     if (type === "random") output = shuffleArray(output);
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "albumList2": {
                 "album": output
@@ -194,11 +229,14 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getAlbumList.view", async(req, res) => {
-    let { type, size, offset } = req.query;
+    let { type, size, offset, f } = req.query;
 
     const albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
 
@@ -215,7 +253,7 @@ app.get("/rest/getAlbumList.view", async(req, res) => {
 
     if (type === "random") output = shuffleArray(output);
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "albumList": {
                 "album": output
@@ -223,7 +261,10 @@ app.get("/rest/getAlbumList.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getCoverArt.view", async(req, res) => {
@@ -238,6 +279,8 @@ app.get("/rest/getCoverArt.view", async(req, res) => {
 
 app.get("/rest/getAlbum.view", async(req, res) => {
     const id = req.query.id;
+
+    let { f } = req.query;
 
     const album = await (await fetch(`${config.music}/album`, {
         method: "POST",
@@ -280,13 +323,16 @@ app.get("/rest/getAlbum.view", async(req, res) => {
         }
     };
 
-    res.json({
+    const json = {
         "subsonic-response": {
             ...output,
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/stream.view", (req, res) => {
@@ -302,6 +348,8 @@ app.get("/rest/download.view", (req, res) => {
 });
 
 app.get("/rest/getArtists.view", async(req, res) => {
+    let { f } = req.query;
+
     const size = (await (await fetch(`${config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`)).json()).total;
 
     const artists = await (await fetch(`${config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`)).json();
@@ -325,7 +373,7 @@ app.get("/rest/getArtists.view", async(req, res) => {
         artist: groupedByLetter[letter]
     }));
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "artists": {
                 "index": organizedArtists
@@ -333,11 +381,16 @@ app.get("/rest/getArtists.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getArtist.view", async(req, res) => {
     const id = req.query.id;
+
+    let { f } = req.query;
 
     const artist = await (await fetch(`${config.music}/artist/${id}/albums?limit=7&all=false`)).json();
 
@@ -352,7 +405,7 @@ app.get("/rest/getArtist.view", async(req, res) => {
         artistId: album.albumartists[0].artisthash
     }));
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "artist": {
                 "id": id,
@@ -368,13 +421,16 @@ app.get("/rest/getArtist.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/search3.view", async(req, res) => {
     const query = req.query.query;
 
-    let { artistCount, albumCount, songCount } = req.query;
+    let { artistCount, albumCount, songCount, f } = req.query;
 
     let artists = [];
 
@@ -433,7 +489,7 @@ app.get("/rest/search3.view", async(req, res) => {
         }));
     }
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "searchResult3": {
                 "artist": artists,
@@ -443,11 +499,14 @@ app.get("/rest/search3.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getLyrics.view", async(req, res) => {
-    let { title } = req.query;
+    let { title, f } = req.query;
 
     let track = await (await fetch(`${config.music}/search/tracks?q=${title || ""}`)).json();
     if (!track.error || track.tracks.length) track = track.tracks[0];
@@ -487,17 +546,20 @@ app.get("/rest/getLyrics.view", async(req, res) => {
         lyrics.value = getLyrics.lyrics || "Lyrics not found";
     }
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "lyrics": lyrics,
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getRandomSongs.view", async(req, res) => {
-    let { size } = req.query;
+    let { size, f } = req.query;
 
     const albumsSize = (await (await fetch(`${config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`)).json()).total;
     const albums = await (await fetch(`${config.music}/getall/albums?start=0&limit=${albumsSize}&sortby=created_date&reverse=1`)).json();
@@ -537,7 +599,7 @@ app.get("/rest/getRandomSongs.view", async(req, res) => {
 
     output = output.slice(0, size || 10);
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "randomSongs": {
                 "song": output
@@ -545,10 +607,15 @@ app.get("/rest/getRandomSongs.view", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/startScan", async(req, res) => {
+    let { f } = req.query;
+
     const scan = await (await fetch(`${config.music}/settings/trigger-scan`)).json();
     const tracks = await (await fetch(`${config.music}/folder`, {
         method: "POST",
@@ -560,7 +627,7 @@ app.get("/rest/startScan", async(req, res) => {
 
     const status = scan?.msg === "Scan triggered!" ? true : false;
 
-    res.json({
+    const json = {
         "subsonic-response": {
             "scanStatus": {
                 "scanning": status,
@@ -569,11 +636,16 @@ app.get("/rest/startScan", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.get("/rest/getScanStatus", async(req, res) => {
-    res.json({
+    let { f } = req.query;
+
+    const json = {
         "subsonic-response": {
             "scanStatus": {
                 "scanning": false,
@@ -582,16 +654,24 @@ app.get("/rest/getScanStatus", async(req, res) => {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
 });
 
 app.use((req, res, next) => {
-    res.status(200).json({
+    let { f } = req.query;
+
+    const json = {
         "subsonic-response": {
             "status": "ok",
             "version": "1.16.1"
         }
-    });
+    }
+
+    if (f === "json") res.status(200).json(json);
+    else res.status(200).send(convertToXml(json));
 });
 
 app.listen(config.port, () => {
