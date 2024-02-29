@@ -79,6 +79,8 @@ function checkPassword(string, salt, password) {
         if (string && salt && password) {
             try {
                 const hashed = hashPassword(password, salt);
+                console.log(hashed === string)
+
                 return hashed === string;
             } catch (error) {
                 return false;
