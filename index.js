@@ -70,7 +70,7 @@ function decodeString(string, salt) {
             return null;
         }
     } else {
-        console.log(string && salt)
+        console.log(string, salt)
 
         if (string && salt) {
             try {
