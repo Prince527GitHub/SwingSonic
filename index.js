@@ -80,6 +80,8 @@ function decodeString(string, salt) {
                 let decrypted = decipher.update(encryptedToken, 'hex', 'utf-8');
                 decrypted += decipher.final('utf-8');
 
+                console.log(decrypted)
+
                 return decrypted;
             } catch (error) {
                 return null;
