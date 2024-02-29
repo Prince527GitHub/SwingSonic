@@ -66,31 +66,24 @@ function hashPassword(password, salt) {
     return hash.digest('hex');
 }
 
-function decodeString(string, salt, password) {
+function checkPassword(string, salt, password) {
     if (string.startsWith("enc:")) {
         try {
             const encodedData = string.substring(4);
-
             const decodedString = Buffer.from(encodedData, 'hex').toString('utf-8');
-
             return decodedString;
         } catch (error) {
-            return null;
+            return false;
         }
     } else {
-        if (string && salt) {
+        if (string && salt && password) {
             try {
                 const hashed = hashPassword(password, salt);
-
-                console.log(hashed, string)
-
-                if (hashed === string) return password;
-                else return string;
+                return hashed === string;
             } catch (error) {
-                console.log(error)
-                return null;
+                return false;
             }
-        } else return string;
+        } else return false;
     }
 }
 
@@ -118,7 +111,7 @@ function checkAuth(req, res, next) {
 
         if (!p) p = t;
 
-        if (user.password !== decodeString(p, s, user.password)) {
+        if (checkPassword(p, s, user.password)) {
             if (f === "json") return res.json(json);
             else return res.send(convertToXml(json));
         }
