@@ -1,4 +1,14 @@
 {
-    "port": 3000,
-    "music": "http://ip:port"
+    "server": {
+        "port": 3000, // the port to listen on
+        "url": "http://ip:port", // url of this api
+        "users": [ // list of users, if the array is empty then authentication is disabled
+            {
+                "username": "test",
+                "password": "test"
+            }
+        ],
+        "proxy": true // proxy the content
+    },
+    "music": "http://ip:port" // url of the swing music server
 }

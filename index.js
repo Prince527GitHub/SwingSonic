@@ -1,10 +1,12 @@
 const config = require("./config.json");
 
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const app = express();
 
-const xmlbuilder = require('xmlbuilder');
+const xmlbuilder = require("xmlbuilder");
+const crypto = require("crypto");
+const axios = require("axios");
 
 function convertToXml(jsonObj) {
     const rootKey = Object.keys(jsonObj)[0];
@@ -40,6 +42,14 @@ function convertToValidXmlName(name) {
     return name.replace(/[^a-zA-Z0-9_]/g, '_');
 }
 
+async function proxy(res, url) {
+    const response = await axios.get(url, { responseType: 'stream' });
+
+    res.set('Content-Type', response.headers['content-type']);
+
+    response.data.pipe(res);
+} 
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -48,8 +58,73 @@ function shuffleArray(array) {
     return array;
 }
 
+function decodeString(string, salt) {
+    if (string.startsWith("enc:")) {
+        try {
+            const encodedData = string.substring(4);
+
+            const decodedString = Buffer.from(encodedData, 'hex').toString('utf-8');
+
+            return decodedString;
+        } catch (error) {
+            return null;
+        }
+    } else {
+        if (string && salt) {
+            try {
+                const key = crypto.scryptSync(salt, 'salt', 24);
+                const iv = Buffer.alloc(16, 0);
+
+                const decipher = crypto.createDecipheriv('aes-192-cbc', key, iv);
+
+                let decrypted = decipher.update(encryptedToken, 'hex', 'utf-8');
+                decrypted += decipher.final('utf-8');
+
+                return decrypted;
+            } catch (error) {
+                return null;
+            }
+        } else return string;
+    }
+}
+
+function checkAuth(req, res, next) {
+    let { u, p, t, s, f } = req.query;
+
+    const json = {
+        "subsonic-response": {
+            "status": "unauthorized",
+            "version": "1.16.1"
+        }
+    }
+
+    if (config.server.users.length) {
+        if (!u || (!p && (!t || !s))) {
+            if (f === "json") return res.json(json);
+            else return res.send(convertToXml(json));
+        }
+
+        const user = config.server.users.find(user => user.username === u);
+        if (!user) {
+            if (f === "json") return res.json(json);
+            else return res.send(convertToXml(json));
+        }
+
+        if (!p) p = t;
+
+        if (user.password !== decodeString(p, s)) {
+            if (f === "json") return res.json(json);
+            else return res.send(convertToXml(json));
+        }
+    }
+
+    next();
+};
+
 app.use(cors({ origin: "*" }));
 app.use(require("./logs"));
+
+app.use((req, res, next) => checkAuth(req, res, next));
 
 app.get("/rest/getPlaylists.view", async(req, res) => {
     let { f } = req.query;
@@ -355,13 +430,19 @@ app.get("/rest/getAlbum.view", async(req, res) => {
 app.get("/rest/stream.view", (req, res) => {
     const id = req.query.id;
 
-    res.redirect(`${config.music}/file/${id}`);
+    const url = `${config.music}/file/${id}`;
+
+    if (config.server.proxy) proxy(res, url);
+    else res.redirect(url);
 });
 
 app.get("/rest/download.view", (req, res) => {
     const id = req.query.id;
 
-    res.redirect(`${config.music}/file/${id}`);
+    const url = `${config.music}/file/${id}`;
+
+    if (config.server.proxy) proxy(res, url);
+    else res.redirect(url);
 });
 
 app.get("/rest/getArtists.view", async(req, res) => {
@@ -457,10 +538,10 @@ app.get("/rest/getArtistInfo2.view", async(req, res) => {
             "artistInfo2": {
                 "biography": "Unknown",
                 "musicBrainzId": id,
-                "lastFmUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "smallImageUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "mediumImageUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "largeImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "lastFmUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "smallImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "mediumImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "largeImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
                 "similarArtist": []
             },
             "status": "ok",
@@ -484,10 +565,10 @@ app.get("/rest/getArtistInfo.view", async(req, res) => {
             "artistInfo": {
                 "biography": "Unknown",
                 "musicBrainzId": id,
-                "lastFmUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "smallImageUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "mediumImageUrl": `${config.music}/img/a/${artist.artist.image}`,
-                "largeImageUrl": `${config.music}/img/a/${artist.artist.image}`,
+                "lastFmUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "smallImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "mediumImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                "largeImageUrl": `${config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
                 "similarArtist": []
             },
             "status": "ok",
@@ -813,6 +894,6 @@ app.use((req, res, next) => {
     else res.status(200).send(convertToXml(json));
 });
 
-app.listen(config.port, () => {
-    console.log("Swing Music to Subsonic");
+app.listen(config.server.port, () => {
+    console.log("SwingSonic!");
 });
