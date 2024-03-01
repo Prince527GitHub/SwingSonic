@@ -365,7 +365,8 @@ app.get("/rest/getCoverArt.view", async(req, res) => {
 
     const cover = `${config.music}/img/${artist.ok ? 'a': 't'}/${id}`;
 
-    res.redirect(cover);
+    if (config.server.proxy) proxy(res, cover);
+    else res.redirect(cover);
 });
 
 app.get("/rest/getAlbum.view", async(req, res) => {
