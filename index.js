@@ -297,7 +297,9 @@ app.get("/rest/updatePlaylist.view", async(req, res) => {
 app.get("/rest/getAlbumList2.view", async(req, res) => {
     let { type, size, offset, f } = req.query;
 
-    const albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
+    let albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
+
+    if (type === "started") albums = await (await fetch(`${config.music}/albums/favorite?limit=0`)).json();
 
     let output = albums.items.map(item => ({
         id: item.item?.albumhash || item.albumhash,
