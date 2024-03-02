@@ -405,28 +405,34 @@ app.get("/rest/getAlbum.view", async(req, res) => {
             "duration": album.info.duration,
             "artist": album.info.albumartists[0].name,
             "artistId": album.info.albumartists[0].artisthash,
-            "song": album.tracks.map(track => ({
-                "id": track.trackhash,
-                "parent": track.albumhash,
-                "title": track.title,
-                "album": track.album,
-                "artist": track.artists[0].name,
-                "isDir": "false",
-                "coverArt": track.image,
-                "created": new Date(album.info.created_date * 1000).toISOString(),
-                "duration": track.duration,
-                "bitRate": track.bitrate,
-                "size": 0,
-                "suffix": "mp3",
-                "contentType": "audio/mpeg",
-                "isVideo": "false",
-                "path": track.filepath,
-                "albumId": track.albumhash,
-                "artistId": track.artists[0].artisthash,
-                "type": "music"
-            }))
+            "song": album.tracks.map(track => {
+                const song = {
+                    "id": track.trackhash,
+                    "parent": track.albumhash,
+                    "title": track.title,
+                    "album": track.album,
+                    "artist": track.artists[0].name,
+                    "isDir": "false",
+                    "coverArt": track.image,
+                    "created": new Date(album.info.created_date * 1000).toISOString(),
+                    "duration": track.duration,
+                    "bitRate": track.bitrate,
+                    "size": 0,
+                    "suffix": "mp3",
+                    "contentType": "audio/mpeg",
+                    "isVideo": "false",
+                    "path": track.filepath,
+                    "albumId": track.albumhash,
+                    "artistId": track.artists[0].artisthash,
+                    "type": "music"
+                };
+
+                if (track.is_favorite) song.starred = true;
+
+                return song;
+            })
         }
-    };
+    }
 
     const json = {
         "subsonic-response": {
@@ -1020,6 +1026,58 @@ app.get("/rest/getStarred.view", async(req, res) => {
 
     if (f === "json") res.json(json);
     else res.send(convertToXml(json));
+});
+
+app.get("/rest/star.view", async(req, res) => {
+    let { f, id, albumId, artistId } = req.query;
+
+    const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
+    if (type) await fetch(`${config.music}/favorite/add`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "type": type,
+            "hash": id || albumId || artistId
+        })
+    });
+
+    const json = {
+        "subsonic-response": {
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    }
+
+    if (f === "json") res.status(200).json(json);
+    else res.status(200).send(convertToXml(json));
+});
+
+app.get("/rest/unstar.view", async(req, res) => {
+    let { f, id, albumId, artistId } = req.query;
+
+    const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
+    if (type) await fetch(`${config.music}/favorite/remove`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "type": type,
+            "hash": id || albumId || artistId
+        })
+    });
+
+    const json = {
+        "subsonic-response": {
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    }
+
+    if (f === "json") res.status(200).json(json);
+    else res.status(200).send(convertToXml(json));
 });
 
 app.use((req, res, next) => {

@@ -23,6 +23,8 @@ A conversion API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clien
 - getRandomSongs
 - getStarred2
 - getStarred
+- star
+- unstar
 - search3
 - search2
 - startScan
