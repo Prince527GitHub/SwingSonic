@@ -21,6 +21,8 @@ A conversion API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clien
 - getArtistInfo2
 - getLyrics
 - getRandomSongs
+- getStarred2
+- getStarred
 - search3
 - search2
 - startScan
