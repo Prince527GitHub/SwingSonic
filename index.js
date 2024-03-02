@@ -314,7 +314,7 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
         name: item.item?.title || item.title,
         coverArt: item.item?.image || item.image,
         songCount: 0,
-        created: new Date(item.item?.created_date || item.created_date * 1000).toISOString(),
+        created: new Date((item.item?.created_date || item.created_date) * 1000).toISOString(),
         duration: 0,
         artist: item.item?.albumartists[0].name || item.albumartists[0].name,
         artistId: item.item?.albumartists[0].artisthash || item.albumartists[0].artisthash
