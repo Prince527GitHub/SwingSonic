@@ -122,8 +122,7 @@ function checkAuth(req, res, next) {
 
 function createArray(array, size, offset) {
     if (offset < 0 || offset >= array.length) return [];
-    if (size <= 0 || size > array.length - offset) return [];
-
+    
     const newArray = array.slice(offset, offset + size);
     return newArray;
 }
