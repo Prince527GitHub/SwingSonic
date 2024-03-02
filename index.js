@@ -299,7 +299,10 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
 
     let albums = await (await fetch(`${config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
 
-    if (type === "starred") albums.items = await (await fetch(`${config.music}/albums/favorite?limit=0`)).json();
+    if (type === "starred") {
+        albums = await (await fetch(`${config.music}/albums/favorite?limit=0`)).json();
+        albums = { items: albums }
+    }
 
     let output = albums.items.map(item => ({
         id: item.item?.albumhash || item.albumhash,
