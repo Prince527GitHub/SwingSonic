@@ -301,7 +301,7 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
 
     if (type === "starred") {
         albums = await (await fetch(`${config.music}/albums/favorite?limit=0`)).json();
-        albums = { items: albums }
+        albums = { items: albums.albums }
     }
 
     let output = albums.items.map(item => ({
