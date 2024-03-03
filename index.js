@@ -280,10 +280,10 @@ app.get("/rest/updatePlaylist.view", async(req, res) => {
             const formData = new FormData();
             formData.append("name", name);
 
-            await fetch(`${config.music}/playlist/${playlistId}/remove-tracks`, {
+            await fetch(`${config.music}/playlist/${playlistId}/update`, {
                 method: "PUT",
                 headers: {
-                    'Content-Type': 'multipart/form-data; boundary=---------------------------33867228569274464331197929572'
+                    "Content-Type": "multipart/form-data"
                 },
                 body: formData
             });
@@ -312,15 +312,24 @@ app.get("/rest/getAlbumList2.view", async(req, res) => {
         albums.items = albums.items.filter(item => item.type === "album");
     }
 
-    let output = albums.items.map(item => ({
-        id: item.item?.albumhash || item.albumhash,
-        name: item.item?.title || item.title,
-        coverArt: item.item?.image || item.image,
-        songCount: 0,
-        created: new Date(item.item?.created_date || item.created_date * 1000).toISOString(),
-        duration: 0,
-        artist: item.item?.albumartists[0].name || item.albumartists[0].name,
-        artistId: item.item?.albumartists[0].artisthash || item.albumartists[0].artisthash
+    let output = await Promise.all(await albums.items.map(async(item) => {
+        const id = item.item?.albumhash || item.albumhash;
+
+        const album = {
+            id: id,
+            name: item.item?.title || item.title,
+            coverArt: item.item?.image || item.image,
+            songCount: 0,
+            created: new Date(item.item?.created_date || item.created_date * 1000).toISOString(),
+            duration: 0,
+            artist: item.item?.albumartists[0].name || item.albumartists[0].name,
+            artistId: item.item?.albumartists[0].artisthash || item.albumartists[0].artisthash
+        }
+
+        const favorite = await (await fetch(`${config.music}/favorites/check?hash=${id}&type=album`)).json();
+        if (favorite.is_favorite) album.starred = true;
+
+        return album;
     }));
 
     if (type === "random") output = shuffleArray(output);
@@ -433,6 +442,8 @@ app.get("/rest/getAlbum.view", async(req, res) => {
             })
         }
     }
+
+    if (album.info.is_favorite) output.album.starred = true;
 
     const json = {
         "subsonic-response": {
@@ -1071,6 +1082,39 @@ app.get("/rest/unstar.view", async(req, res) => {
 
     const json = {
         "subsonic-response": {
+            "status": "ok",
+            "version": "1.16.1"
+        }
+    }
+
+    if (f === "json") res.status(200).json(json);
+    else res.status(200).send(convertToXml(json));
+});
+
+app.get("/rest/getMusicFolders.view", async(req, res) => {
+    let { f } = req.query;
+
+    const folders = await (await fetch(`${config.music}/folder`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "folder": "$home",
+            "tracks_only": false
+        })
+    })).json();
+
+    const output = folders.folders.map(folder => ({
+        "id": folder.path,
+        "name": folder.name
+    }));
+
+    const json = {
+        "subsonic-response": {
+            "musicFolders": {
+                "musicFolder": output
+            },
             "status": "ok",
             "version": "1.16.1"
         }

@@ -25,6 +25,7 @@ A conversion API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clien
 - getStarred
 - star
 - unstar
+- getMusicFolders
 - search3
 - search2
 - startScan
