@@ -1,12 +1,12 @@
 {
-  "packages": ["nodejs@latest"],
+  "packages": [
+    "nodejs@latest"
+  ],
   "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
-    ],
+    "init_hook": [],
     "scripts": {
-      "test": [
-        "echo \"Error: no test specified\" && exit 1"
+      "start": [
+        "node index.js"
       ]
     }
   }

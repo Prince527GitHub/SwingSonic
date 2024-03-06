@@ -139,3 +139,6 @@ api.json
 
 # vscode
 .vscode
+
+# disabled files
+*.d

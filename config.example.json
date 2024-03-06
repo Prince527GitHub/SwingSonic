@@ -2,6 +2,11 @@
     "server": {
         "port": 3000, // the port to listen on
         "url": "http://ip:port", // url of this api
+        "api": { // enable of disable api implementation
+            "subsonic": true,
+            "jellyfin": false, // I would disable jellyfin for now, its a work in progress
+            "euterpe": true
+        },
         "users": [ // list of users, if the array is empty then authentication is disabled
             {
                 "username": "test",

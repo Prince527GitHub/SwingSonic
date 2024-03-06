@@ -5,11 +5,11 @@ module.exports = (req, res, next) => {
     const startTime = Date.now();
 
     res.on('finish', () => {
-        const reqTx = req.method + ' '.repeat(4 - req.method.length) + '\x1b[0m';
+        const reqTx = req.method + ' '.repeat(Math.max(0, 4 - req.method.length)) + '\x1b[0m';
 
         const time = Date.now() - startTime;
         const timeStr = time < 1000 ? time.toString() : (time / 1000).toFixed(1) + 's';
-        const timeTx = ' '.repeat(5 - timeStr.length) + timeStr;
+        const timeTx = ' '.repeat(Math.max(0, 5 - timeStr.length)) + timeStr;
 
         const size = parseInt((req.method === 'POST' ? req : res).get('Content-Length') || '0');
         const sizeStr = size < KL ? size.toString() : size < MB ? (size / KL).toFixed(1) + 'K' : (size / MB).toFixed(1) + 'M';

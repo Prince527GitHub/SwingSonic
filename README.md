@@ -1,63 +1,13 @@
-# Swingsonic
+<h1 align="center">Swingsonic</h1>
 
-A conversion API to allow [Subsonic](https://subsonic.org/pages/index.jsp) clients to work with [Swing Music](https://github.com/swing-opensource/swingmusic).
+<p align="center"><small>Might have to find a new name...</small></p>
 
-## Endpoints
+<p align="center">A translation layer allowing clients from <a href="#supported">other music servers</a> to work with <a href="[#supported](https://github.com/swing-opensource/swingmusic)">Swing Music</a>.</p>
 
-### Implemented
+## Supported
 
-- getPlaylists
-- getPlaylist
-- createPlaylist
-- updatePlaylist*
-- getAlbumList2
-- getAlbumList
-- getCoverArt
-- stream
-- download
-- getArtists
-- getArtist
-- getArtistInfo
-- getArtistInfo2
-- getLyrics
-- getRandomSongs
-- getStarred2
-- getStarred
-- star
-- unstar
-- getMusicFolders
-- search3
-- search2
-- startScan
-- getScanStatus*
-- ping
+- [Subsonic](https://www.subsonic.org/pages/index.jsp)
+- [Jellyfin](https://jellyfin.org/)*
+- [Euterpe](https://listen-to-euterpe.eu/)
 
-### Wont
-
-- getLicense
-- getVideos
-- getVideoInfo
-- hls
-- getShares
-- createShare
-- updateShare
-- deleteShare
-- getPodcasts
-- getNewestPodcasts
-- refreshPodcasts
-- createPodcastChannel
-- deletePodcastChannel
-- deletePodcastEpisode
-- downloadPodcastEpisode
-- getInternetRadioStations
-- createInternetRadioStation
-- updateInternetRadioStation
-- deleteInternetRadioStation
-- getChatMessages
-- addChatMessage
-- getBookmarks
-- createBookmark
-- deleteBookmark
-- getPlayQueue
-- savePlayQueue
-- getNowPlaying
+> <small>*Jellyfin support is under heavy development and should not be used at the current moment.</small>
