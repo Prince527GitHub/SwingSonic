@@ -6,11 +6,11 @@
 
 ## Supported
 
-- [Subsonic](https://www.subsonic.org/pages/index.jsp) *(75%)*
+- [Subsonic](https://www.subsonic.org/pages/index.jsp) <sub><sup>*(75%)*</sub></sup>
 - [Jellyfin](https://jellyfin.org/)*
-- [Euterpe](https://listen-to-euterpe.eu/) *(100%)*
+- [Euterpe](https://listen-to-euterpe.eu/) <sub><sup>*(100%)*</sub></sup>
 
-> <small>*Jellyfin support is under heavy development and should not be used at the current moment.</small>
+> *Jellyfin support is under heavy development and should not be used at the current moment.
 
 ## Docker
 
