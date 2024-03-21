@@ -14,7 +14,8 @@
 
 ## Docker
 
-To use this with docker, just use this docker-compose but make sure your `config.json` is already setup in your volume.
+To use this with docker, simply employ the following docker-compose.
+Ensure that your config.json file is properly configured within your volume beforehand.
 
 ```yml
 version: '3'
