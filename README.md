@@ -11,3 +11,20 @@
 - [Euterpe](https://listen-to-euterpe.eu/)
 
 > <small>*Jellyfin support is under heavy development and should not be used at the current moment.</small>
+
+## Docker
+
+To use this with docker, just use this docker-compose but make sure your `config.json` is already setup in your volume.
+
+```yml
+version: '3'
+
+services:
+  app:
+    image: ghcr.io/prince527github/swingsonic:main
+    container_name: swingsonic
+    ports:
+      - 3000:3000
+    volumes:
+      - /PATH/config.json:/app/config.json
+```
