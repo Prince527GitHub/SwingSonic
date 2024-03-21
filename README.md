@@ -14,7 +14,7 @@
 
 ## Docker
 
-To use this with docker, simply employ the following docker-compose.
+To use this with docker, simply deploy the following docker-compose.
 
 Ensure that your config.json file is properly configured within your volume beforehand.
 
