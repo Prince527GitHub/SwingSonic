@@ -7,7 +7,7 @@
 ## Supported
 
 - [Subsonic](https://www.subsonic.org/pages/index.jsp) <sub><sup>*(75%)*</sub></sup>
-- [Jellyfin](https://jellyfin.org/)[^see]
+- [Jellyfin](https://jellyfin.org/)[^jellyfin]
 - [Euterpe](https://listen-to-euterpe.eu/) <sub><sup>*(100%)*</sub></sup>
 
 [^jellyfin]: Jellyfin support is under heavy development and should not be used at the current moment.
