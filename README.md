@@ -1,6 +1,6 @@
 <h1 align="center">Swingsonic</h1>
 
-<p align="center"><small>Might have to find a new name...</small></p>
+<p align="center"><sub><sup>Might have to find a new name...</sub></sup></p>
 
 <p align="center">A translation layer allowing clients from <a href="#supported">other music servers</a> to work with <a href="[#supported](https://github.com/swing-opensource/swingmusic)">Swing Music</a>.</p>
 
