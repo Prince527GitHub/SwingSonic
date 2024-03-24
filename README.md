@@ -14,7 +14,7 @@
 
 ## Images
 
-| [!Euterpe](https://api.serversmp.xyz/upload/66002233195e65d6b608bc1e.webp) | [!Subtracks](https://api.serversmp.xyz/upload/66002232195e65d6b608bc1c.webp) | [!Ultrasonic](https://api.serversmp.xyz/upload/6600222d195e65d6b608bc1a.webp) |
+| ![Euterpe](https://api.serversmp.xyz/upload/66002233195e65d6b608bc1e.webp) | ![Subtracks](https://api.serversmp.xyz/upload/66002232195e65d6b608bc1c.webp) | ![Ultrasonic](https://api.serversmp.xyz/upload/6600222d195e65d6b608bc1a.webp) |
 |----------------------------------------------------------------------------|------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
 
 ## Docker
