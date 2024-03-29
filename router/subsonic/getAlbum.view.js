@@ -12,35 +12,35 @@ module.exports = async(req, res, proxy, xml) => {
     })).json();
 
     const output = {
-        "album": {
-            "id": album.info.albumhash,
-            "name": album.info.title,
-            "coverArt": album.info.image,
-            "songCount": album.info.count,
-            "created": new Date(album.info.created_date * 1000).toISOString(),
-            "duration": album.info.duration,
-            "artist": album.info.albumartists[0].name,
-            "artistId": album.info.albumartists[0].artisthash,
-            "song": album.tracks.map(track => {
+        album: {
+            id: album.info.albumhash,
+            name: album.info.title,
+            coverArt: album.info.image,
+            songCount: album.info.count,
+            created: new Date(album.info.created_date * 1000).toISOString(),
+            duration: album.info.duration,
+            artist: album.info.albumartists[0].name,
+            artistId: album.info.albumartists[0].artisthash,
+            song: album.tracks.map(track => {
                 const song = {
-                    "id": track.trackhash,
-                    "parent": track.albumhash,
-                    "title": track.title,
-                    "album": track.album,
-                    "artist": track.artists[0].name,
-                    "isDir": "false",
-                    "coverArt": track.image,
-                    "created": new Date(album.info.created_date * 1000).toISOString(),
-                    "duration": track.duration,
-                    "bitRate": track.bitrate,
-                    "size": 0,
-                    "suffix": "mp3",
-                    "contentType": "audio/mpeg",
-                    "isVideo": "false",
-                    "path": track.filepath,
-                    "albumId": track.albumhash,
-                    "artistId": track.artists[0].artisthash,
-                    "type": "music"
+                    id: track.trackhash,
+                    parent: track.albumhash,
+                    title: track.title,
+                    album: track.album,
+                    artist: track.artists[0].name,
+                    isDir: "false",
+                    coverArt: track.image,
+                    created: new Date(album.info.created_date * 1000).toISOString(),
+                    duration: track.duration,
+                    bitRate: track.bitrate,
+                    size: 0,
+                    suffix: "mp3",
+                    contentType: "audio/mpeg",
+                    isVideo: "false",
+                    path: track.filepath,
+                    albumId: track.albumhash,
+                    artistId: track.artists[0].artisthash,
+                    type: "music"
                 };
 
                 if (track.is_favorite) song.starred = new Date(album.info.created_date * 1000).toISOString();
@@ -55,8 +55,8 @@ module.exports = async(req, res, proxy, xml) => {
     const json = {
         "subsonic-response": {
             ...output,
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

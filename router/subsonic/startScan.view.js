@@ -14,12 +14,12 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "scanStatus": {
-                "scanning": status,
-                "count": tracks?.folders[0]?.count || 0
+            scanStatus: {
+                scanning: status,
+                count: tracks?.folders[0]?.count || 0
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

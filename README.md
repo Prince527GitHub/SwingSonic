@@ -7,15 +7,15 @@
 ## Supported
 
 - [Subsonic](https://www.subsonic.org/pages/index.jsp) <sub><sup>*(75%)*</sub></sup>
-- [Jellyfin](https://jellyfin.org/)*
+- [Jellyfin](https://jellyfin.org/) <sub><sup>*(40%)*</sub></sup>
 - [Euterpe](https://listen-to-euterpe.eu/) <sub><sup>*(100%)*</sub></sup>
 
-> *Jellyfin support is under heavy development and should not be used at the current moment.
+> Note: Client compatibility varies; the percentages reflect my experience with client compatibility, not the entire API.
 
 ## Images
 
-| ![Euterpe](https://api.serversmp.xyz/upload/66002233195e65d6b608bc1e.webp) <a href="https://github.com/ironsmile/euterpe-mobile" align="center">Euterpe</a> | ![Subtracks](https://api.serversmp.xyz/upload/66002232195e65d6b608bc1c.webp) <a href="https://github.com/austinried/subtracks" align="center">Subtracks</a> | ![Ultrasonic](https://api.serversmp.xyz/upload/6600222d195e65d6b608bc1a.webp) <a href="https://gitlab.com/ultrasonic/ultrasonic" align="center">Ultrasonic</a> |
-|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| ![Euterpe](https://api.serversmp.xyz/upload/66002233195e65d6b608bc1e.webp) <a href="https://github.com/ironsmile/euterpe-mobile" align="center">Euterpe</a> | ![Subtracks](https://api.serversmp.xyz/upload/66002232195e65d6b608bc1c.webp) <a href="https://github.com/austinried/subtracks" align="center">Subtracks</a> | ![Ultrasonic](https://api.serversmp.xyz/upload/6600222d195e65d6b608bc1a.webp) <a href="https://gitlab.com/ultrasonic/ultrasonic" align="center">Ultrasonic</a> | ![Finamp](https://api.serversmp.xyz/upload/6606fcd5195e65d6b608c1e6.webp) <a href="https://github.com/jmshrv/finamp" align="center">Finamp</a> |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 
 ## Docker
 

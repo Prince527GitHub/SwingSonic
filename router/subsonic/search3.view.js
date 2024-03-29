@@ -8,10 +8,10 @@ module.exports = async(req, res, proxy, xml) => {
     if (artistCount >= 1) {
         artists = await (await fetch(`${global.config.music}/search/artists?q=${query}`)).json();
         artists = artists.artists.map(artist => ({
-            "id": artist.artisthash,
-            "name": artist.name,
-            "coverArt": artist.image,
-            "albumCount": artist.albumcount
+            id: artist.artisthash,
+            name: artist.name,
+            coverArt: artist.image,
+            albumCount: artist.albumcount
         }));
     }
 
@@ -20,14 +20,14 @@ module.exports = async(req, res, proxy, xml) => {
     if (albumCount >= 1) {
         albums = await (await fetch(`${global.config.music}/search/albums?q=${query}`)).json();
         albums = albums.albums.map(album => ({
-            "id": album.albumhash,
-            "name": album.title,
-            "coverArt": album.image,
-            "songCount": 0,
-            "created": new Date(album.created_date * 1000).toISOString(),
-            "duration": 0,
-            "artist": album.albumartists[0].name,
-            "artistId": album.albumartists[0].artisthash
+            id: album.albumhash,
+            name: album.title,
+            coverArt: album.image,
+            songCount: 0,
+            created: new Date(album.created_date * 1000).toISOString(),
+            duration: 0,
+            artist: album.albumartists[0].name,
+            artistId: album.albumartists[0].artisthash
         }));
     }
 
@@ -36,39 +36,39 @@ module.exports = async(req, res, proxy, xml) => {
     if (songCount >= 1) {
         tracks = await (await fetch(`${global.config.music}/search/tracks?q=${query}`)).json();
         tracks = tracks.tracks.map(track => ({
-            "id": track.trackhash,
-            "parent": track.albumhash,
-            "title": track.title,
-            "album": track.album,
-            "artist": track.albumartists[0].name,
-            "isDir": "false",
-            "coverArt": track.image,
-            "created": "2007-03-15T06:46:06",
-            "duration": track.duration,
-            "bitRate": track.bitrate,
-            "track": 0,
-            "year": 2024,
-            "genre": "Unknown",
-            "size": 0,
-            "suffix": "mp3",
-            "contentType": "audio/mpeg",
-            "isVideo": "false",
-            "path": track.filepath,
-            "albumId": track.albumhash,
-            "artistId": track.albumartists[0].artisthash,
-            "type": "music"
+            id: track.trackhash,
+            parent: track.albumhash,
+            title: track.title,
+            album: track.album,
+            artist: track.albumartists[0].name,
+            isDir: "false",
+            coverArt: track.image,
+            created: "2007-03-15T06:46:06",
+            duration: track.duration,
+            bitRate: track.bitrate,
+            track: 0,
+            year: 2024,
+            genre: "Unknown",
+            size: 0,
+            suffix: "mp3",
+            contentType: "audio/mpeg",
+            isVideo: "false",
+            path: track.filepath,
+            albumId: track.albumhash,
+            artistId: track.albumartists[0].artisthash,
+            type: "music"
         }));
     }
 
     const json = {
         "subsonic-response": {
-            "searchResult3": {
-                "artist": artists,
-                "album": albums,
-                "song": tracks
+            searchResult3: {
+                artist: artists,
+                album: albums,
+                song: tracks
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

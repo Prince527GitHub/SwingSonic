@@ -19,19 +19,19 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "artist": {
-                "id": id,
-                "name": artist.artist.name,
-                "coverArt": artist.artist.image,
-                "songCount": artist.artist.trackcount,
-                "created": new Date(artist.artist.created_date * 1000).toISOString(),
-                "duration": artist.artist.duration,
-                "artist": artist.artist.name,
-                "artistId": id,
-                "album": albums
+            artist: {
+                id: id,
+                name: artist.artist.name,
+                coverArt: artist.artist.image,
+                songCount: artist.artist.trackcount,
+                created: new Date(artist.artist.created_date * 1000).toISOString(),
+                duration: artist.artist.duration,
+                artist: artist.artist.name,
+                artistId: id,
+                album: albums
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

@@ -19,21 +19,21 @@ module.exports = async(req, res, proxy, xml) => {
         })).json();
 
         output.push(...tracks.tracks.map(track => ({
-            "id": track.trackhash,
-            "parent": track.albumhash,
-            "title": track.title,
-            "isDir": "false",
-            "album": track.album,
-            "artist": track.artists[0].name,
-            "track": 0,
-            "year": 2024,
-            "genre": "Unknown",
-            "coverArt": track.image,
-            "size": 0,
-            "contentType": "audio/mpeg",
-            "suffix": "mp3",
-            "duration": track.duration,
-            "bitRate": track.bitrate
+            id: track.trackhash,
+            parent: track.albumhash,
+            title: track.title,
+            isDir: "false",
+            album: track.album,
+            artist: track.artists[0].name,
+            track: 0,
+            year: 2024,
+            genre: "Unknown",
+            coverArt: track.image,
+            size: 0,
+            contentType: "audio/mpeg",
+            suffix: "mp3",
+            duration: track.duration,
+            bitRate: track.bitrate
         })));
     }
 
@@ -43,11 +43,11 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "randomSongs": {
-                "song": output
+            randomSongs: {
+                song: output
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

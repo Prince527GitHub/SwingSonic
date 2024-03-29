@@ -41,9 +41,9 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "lyrics": lyrics,
-            "status": "ok",
-            "version": "1.16.1"
+            lyrics: lyrics,
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

@@ -2,32 +2,23 @@ const express = require("express");
 const router = express.Router();
 
 router.get("/albumartists", async(req, res) => {
-    let { StartIndex, Limit } = req.query;
+    const { StartIndex = "0", Limit = "50" } = req.query;
 
-    const artists = await (await fetch(`${global.config.music}/getall/artists?start=${StartIndex || '0'}&limit=${Limit || '50'}&sortby=created_date&reverse=1`)).json();
+    const artists = await (await fetch(`${global.config.music}/getall/artists?start=${StartIndex}&limit=${Limit}&sortby=created_date&reverse=1`)).json();
 
-    const output = artists.items.map(artist => ({
-        "Name": artist.name,
-        "ServerId": "server",
-        "Id": artist.artisthash,
-        "SortName": artist.name,
-        "ChannelId": null,
-        "RunTimeTicks": 0,
-        "Type": "MusicArtist",
-        "UserData": {
-            "PlaybackPositionTicks": 0,
-            "PlayCount": 0,
-            "IsFavorite": false,
-            "Played": false
-        },
-        "PrimaryImageAspectRatio": 1,
-        "LocationType": "FileSystem"
+    const items = artists.items.map(artist => ({
+        Name: artist.name,
+        Id: artist.artisthash,
+        Type: "MusicArtist",
+        UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false },
+        PrimaryImageAspectRatio: 1,
+        LocationType: "FileSystem"
     }));
 
     res.json({
-        "Items": output,
-        "TotalRecordCount": artists.total,
-        "StartIndex": 0
+        Items: items,
+        TotalRecordCount: artists.total,
+        StartIndex: Number(StartIndex)
     });
 });
 

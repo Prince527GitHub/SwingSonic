@@ -18,7 +18,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "playlists": {
+            playlists: {
                 id: playlist.playlist.id,
                 name: playlist.playlist.name,
                 comment: "No comment",
@@ -29,8 +29,8 @@ module.exports = async(req, res, proxy, xml) => {
                 created: playlist.playlist.last_updated,
                 coverArt: playlist.playlist.image
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

@@ -32,8 +32,8 @@ function checkAuth(req, res, next) {
 
     const json = {
         "subsonic-response": {
-            "status": "unauthorized",
-            "version": "1.16.1"
+            status: "unauthorized",
+            version: "1.16.1"
         }
     }
 
@@ -80,8 +80,8 @@ module.exports = async(app) => {
 
         const json = {
             "subsonic-response": {
-                "status": "ok",
-                "version": "1.16.1"
+                status: "ok",
+                version: "1.16.1"
             }
         }
 

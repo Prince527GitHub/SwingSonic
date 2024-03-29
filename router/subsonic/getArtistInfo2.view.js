@@ -7,17 +7,17 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            "artistInfo2": {
-                "biography": "Unknown",
-                "musicBrainzId": id,
-                "lastFmUrl": `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                "smallImageUrl": `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                "mediumImageUrl": `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                "largeImageUrl": `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                "similarArtist": []
+            artistInfo2: {
+                biography: "Unknown",
+                musicBrainzId: id,
+                lastFmUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                smallImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                mediumImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                largeImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                similarArtist: []
             },
-            "status": "ok",
-            "version": "1.16.1"
+            status: "ok",
+            version: "1.16.1"
         }
     }
 

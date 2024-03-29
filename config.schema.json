@@ -4,7 +4,7 @@
         "url": "http://ip:port",
         "api": {
             "subsonic": true,
-            "jellyfin": false,
+            "jellyfin": true,
             "euterpe": true
         },
         "users": [
