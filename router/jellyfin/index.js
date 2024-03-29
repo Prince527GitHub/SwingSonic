@@ -26,7 +26,7 @@ module.exports = async(app) => {
         if (!value.includes("index.js")) {
             const { name, router } = require(value);
 
-            const exclude = ["audio", "items"];
+            const exclude = ["items"];
 
             if (!exclude.includes(name)) app.use(`/${name}`, checkAuth, router);
             else app.use(`/${name}`, router);
