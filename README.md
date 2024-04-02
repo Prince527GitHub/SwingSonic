@@ -21,8 +21,6 @@
 
 To use this with docker, simply deploy the following docker-compose.
 
-Ensure that your config.json file is properly configured within your volume beforehand.
-
 ```yml
 version: '3'
 
@@ -34,4 +32,14 @@ services:
       - 3000:3000
     volumes:
       - /PATH/config.json:/app/config.json
+    environment:
+      - SERVER_PORT=3000 # The port to listen on
+      - SERVER_URL=http://ip:port # The public URL of this API
+      - SERVER_API_SUBSONIC=true # Enable of disable Subsonic API implementation
+      - SERVER_API_JELLYFIN=true # Enable of disable Jellyfin API implementation
+      - SERVER_API_EUTERPE=true # Enable of disable Enterpe API implementation
+      - SERVER_USERS_0_USERNAME=test # First user's username
+      - SERVER_USERS_0_PASSWORD=test # First user's password
+      - SERVER_PROXY=true # Whether to proxy the content
+      - MUSIC_URL=http://ip:port # The URL of your Swing Music server
 ```

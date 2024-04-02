@@ -1,4 +1,8 @@
-global.config = require("./config.json");
+const { envString, envJSON } = require("./packages/env");
+const fs = require("fs");
+
+if (fs.existsSync("./config.json")) global.config = require("./config.json");
+else global.config = envJSON(envString(require('dotenv').config()));
 
 const express = require("express");
 const cors = require("cors");
