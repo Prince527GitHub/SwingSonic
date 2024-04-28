@@ -6,6 +6,8 @@ try {
     global.config = envJSON(envString(require('dotenv').config()));
 }
 
+console.log(global.config);
+
 if (!global.config) {
     console.log("\x1b[31m[ERROR] No config.json file found\x1b[0m");
     process.exit();
