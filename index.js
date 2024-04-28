@@ -1,10 +1,15 @@
 const { envString, envJSON } = require("./packages/env");
-const fs = require("fs");
 
-console.log(`Why "${fs.existsSync("./config.json")}"`)
+try {
+    global.config = require("./config.json");
+} catch (e) {
+    global.config = envJSON(envString(require('dotenv').config()));
+}
 
-if (fs.existsSync("./config.json")) global.config = require("./config.json");
-else global.config = envJSON(envString(require('dotenv').config()));
+if (!global.config) {
+    console.log("\x1b[31m[ERROR] No config.json file found\x1b[0m");
+    process.exit();
+}
 
 const express = require("express");
 const cors = require("cors");
