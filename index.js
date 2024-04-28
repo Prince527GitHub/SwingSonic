@@ -1,7 +1,7 @@
 const { envString, envJSON } = require("./packages/env");
 const fs = require("fs");
 
-console.log(fs.existsSync("./config.json"))
+console.log(`Why "${fs.existsSync("./config.json")}"`)
 
 if (fs.existsSync("./config.json")) global.config = require("./config.json");
 else global.config = envJSON(envString(require('dotenv').config()));
