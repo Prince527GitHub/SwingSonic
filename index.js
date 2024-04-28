@@ -1,12 +1,15 @@
 const { envString, envJSON } = require("./packages/env");
+const env = require("dotenv");
 
 try {
     global.config = require("./config.json");
 } catch (e) {
-    global.config = envJSON(envString(require('dotenv').config()));
-}
+    try {
+        env.config();
+    } catch (e) {}
 
-console.log(`Why is docker so goofed: ${global.config}`, global.config);
+    global.config = envJSON(envString(process.env));
+}
 
 if (!global.config) {
     console.log("\x1b[31m[ERROR] No config.json file found\x1b[0m");
