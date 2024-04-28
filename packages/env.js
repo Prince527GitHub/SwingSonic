@@ -54,7 +54,9 @@ function envString() {
     let envString = '';
 
     for (let key in process.env) {
-        envString += `${key}=${process.env[key]}\n`;
+        if (key.startsWith("SERVER") || key.startsWith("MUSIC")) {
+            envString += `${key}=${process.env[key]}\n`;
+        }
     }
 
     return envString;

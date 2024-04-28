@@ -1,14 +1,13 @@
 const { envString, envJSON } = require("./packages/env");
-const env = require("dotenv");
 
 try {
     global.config = require("./config.json");
 } catch (e) {
     try {
-        env.config();
+        require("dotenv").config();
     } catch (e) {}
 
-    global.config = envJSON(envString(process.env));
+    global.config = envJSON(envString());
 }
 
 if (!global.config) {
