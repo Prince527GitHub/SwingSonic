@@ -37,19 +37,6 @@ function envJSON(env) {
     return json;
 }
 
-// function envString(obj) {
-//     let envString = '';
-
-//     for (const key in obj.parsed) {
-//         if (Object.prototype.hasOwnProperty.call(obj.parsed, key)) {
-//             const value = obj.parsed[key];
-//             envString += `${key}=${value}\n`;
-//         }
-//     }
-
-//     return envString;
-// }
-
 function envString() {
     let envString = '';
 
