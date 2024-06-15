@@ -71,7 +71,7 @@ module.exports = async(app) => {
 
             const name = path.basename(value).split(".js")[0];
 
-            app.get(`/rest/${name}`, async(req, res) => route(req, res, proxy, convertToXml));
+            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async(req, res) => route(req, res, proxy, convertToXml));
         }
     });
 
