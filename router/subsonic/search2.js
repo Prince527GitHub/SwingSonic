@@ -35,7 +35,7 @@ module.exports = async(req, res, proxy, xml) => {
             id: track.trackhash,
             parent: track.albumhash,
             title: track.title,
-            isDir: "false",
+            isDir: false,
             album: track.album,
             artist: track.albumartists[0].name,
             track: 0,
@@ -45,7 +45,7 @@ module.exports = async(req, res, proxy, xml) => {
             size: 0,
             contentType: "audio/mpeg",
             suffix: "mp3",
-            isVideo: "false"
+            isVideo: false
         }));
     }
 

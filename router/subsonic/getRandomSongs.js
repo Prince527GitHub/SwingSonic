@@ -22,7 +22,7 @@ module.exports = async(req, res, proxy, xml) => {
             id: track.trackhash,
             parent: track.albumhash,
             title: track.title,
-            isDir: "false",
+            isDir: false,
             album: track.album,
             artist: track.artists[0].name,
             track: 0,
