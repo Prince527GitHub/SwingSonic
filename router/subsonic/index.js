@@ -7,11 +7,12 @@ const proxy = require("../../packages/proxy");
 const path = require("path");
 
 function checkPassword(string, salt, password) {
-    if (string.startsWith("enc:")) {
+    if (string === password) return true;
+    else if (string.startsWith("enc:")) {
         try {
             const encodedData = string.substring(4);
             const decodedString = Buffer.from(encodedData, 'hex').toString('utf-8');
-            return decodedString;
+            return decodedString === password;
         } catch (error) {
             return false;
         }
