@@ -30,7 +30,7 @@ services:
     container_name: swingsonic
     ports:
       - 3000:3000
-    volumes:
+    volumes: # Use a config.json file for env (see below)
       - /PATH/config.json:/app/config.json
     environment:
       - SERVER_PORT=3000 # The port to listen on
