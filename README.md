@@ -41,5 +41,5 @@ services:
       - SERVER_USERS_0_USERNAME=test # First user's username
       - SERVER_USERS_0_PASSWORD=test # First user's password
       - SERVER_PROXY=true # Whether to proxy the content
-      - MUSIC_URL=http://ip:port # The URL of your Swing Music server
+      - MUSIC=http://ip:port # The URL of your Swing Music server
 ```
