@@ -37,8 +37,8 @@ services:
       - SERVER_URL=http://ip:port # The public URL of this API
       - SERVER_API_SUBSONIC=true # Enable of disable Subsonic API implementation
       - SERVER_API_JELLYFIN_ENABLE=true # Enable of disable Jellyfin API implementation
-      - SERVER_API_JELLYFIN_USER_USERNAME=admin # Enable of disable Jellyfin API implementation
-      - SERVER_API_JELLYFIN_USER_PASSWORD=admin # Enable of disable Jellyfin API implementation
+      - SERVER_API_JELLYFIN_USER_USERNAME=admin # Jellyfin implementation requires a Swing Music user's username
+      - SERVER_API_JELLYFIN_USER_PASSWORD=admin # Jellyfin implementation requires a Swing Music user's password
       - SERVER_API_EUTERPE=true # Enable of disable Enterpe API implementation
       - MUSIC=http://ip:port # The URL of your Swing Music server
 ```
