@@ -6,19 +6,44 @@ const proxy = require("../../packages/proxy");
 
 const path = require("path");
 
-function checkPassword(string, salt, password) {
-    if (string === password) return true;
-    else if (string.startsWith("enc:")) {
+async function checkPassword(string, salt, user) {
+    if (string) {
+        const auth = await fetch(`${global.config.music}/auth/login`, {
+            method: "POST",
+            body: JSON.stringify({
+                username: user.username,
+                password: string
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        return auth?.headers?.get("set-cookie") || false;
+    } else if (string.startsWith("enc:")) {
         try {
             const encodedData = string.substring(4);
-            const decodedString = Buffer.from(encodedData, 'hex').toString('utf-8');
-            return decodedString === password;
+            const decodedString = Buffer.from(encodedData, "hex").toString("utf-8");
+
+            const auth = await fetch(`${global.config.music}/auth/login`, {
+                method: "POST",
+                body: JSON.stringify({
+                    username: user.username,
+                    password: decodedString
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            return auth?.headers?.get("set-cookie") || false;
         } catch (error) {
             return false;
         }
     } else {
         if (string && salt && password) {
             try {
+                // You would have to unhash the password to keep this.
                 const hashed = hashPassword(password, salt);
                 return hashed === string;
             } catch (error) {
@@ -28,7 +53,7 @@ function checkPassword(string, salt, password) {
     }
 }
 
-function checkAuth(req, res, next) {
+async function checkAuth(req, res, next) {
     let { u, p, t, s, f } = req.query;
 
     const json = {
@@ -38,25 +63,28 @@ function checkAuth(req, res, next) {
         }
     }
 
-    if (global.config.server.users.length) {
-        if (!u || (!p && (!t || !s))) {
-            if (f === "json") return res.json(json);
-            else return res.send(convertToXml(json));
-        }
-
-        const user = global.config.server.users.find(user => user.username === u);
-        if (!user) {
-            if (f === "json") return res.json(json);
-            else return res.send(convertToXml(json));
-        }
-
-        if (!p) p = t;
-
-        if (!checkPassword(p, s, user.password)) {
-            if (f === "json") return res.json(json);
-            else return res.send(convertToXml(json));
-        }
+    if (!u || (!p && (!t || !s))) {
+        if (f === "json") return res.json(json);
+        else return res.send(convertToXml(json));
     }
+
+    const users = await (await fetch(`${global.config.music}/auth/users?simplified=true`)).json();
+
+    const user = users.users.find(user => user.username === u);
+    if (!user) {
+        if (f === "json") return res.json(json);
+        else return res.send(convertToXml(json));
+    }
+
+    if (!p) p = t;
+
+    const token = await checkPassword(p, s, user);
+    if (!token) {
+        if (f === "json") return res.json(json);
+        else return res.send(convertToXml(json));
+    }
+
+    req.user = token;
 
     next();
 }

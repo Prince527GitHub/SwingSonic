@@ -4,16 +4,15 @@
         "url": "http://ip:port",
         "api": {
             "subsonic": true,
-            "jellyfin": true,
+            "jellyfin": {
+                "enable": true,
+                "user": {
+                    "username": "admin",
+                    "password": "admin"
+                }
+            },
             "euterpe": true
-        },
-        "users": [
-            {
-                "username": "test",
-                "password": "test"
-            }
-        ],
-        "proxy": true
+        }
     },
     "music": "http://ip:port"
 }

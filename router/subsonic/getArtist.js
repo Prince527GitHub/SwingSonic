@@ -3,15 +3,23 @@ module.exports = async(req, res, proxy, xml) => {
 
     let { f } = req.query;
 
-    const getAlbums = await (await fetch(`${global.config.music}/artist/${id}/albums?limit=7&all=false`)).json();
-    const artist = await (await fetch(`${global.config.music}/artist/${id}`)).json();
+    const getAlbums = await (await fetch(`${global.config.music}/artist/${id}/albums?limit=7&all=false`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
+    const artist = await (await fetch(`${global.config.music}/artist/${id}`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const albums = getAlbums.appearances.map(album => ({
         id: album.albumhash,
         name: album.title,
         coverArt: album.image,
         songCount: 0,
-        created: new Date(album.created_date * 1000).toISOString(),
+        created: new Date(album.date * 1000).toISOString(),
         duration: 0,
         artist: album.albumartists[0].name,
         artistId: album.albumartists[0].artisthash
@@ -24,7 +32,7 @@ module.exports = async(req, res, proxy, xml) => {
                 name: artist.artist.name,
                 coverArt: artist.artist.image,
                 songCount: artist.artist.trackcount,
-                created: new Date(artist.artist.created_date * 1000).toISOString(),
+                created: new Date().toISOString(),
                 duration: artist.artist.duration,
                 artist: artist.artist.name,
                 artistId: id,

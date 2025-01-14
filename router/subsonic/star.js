@@ -2,10 +2,11 @@ module.exports = async(req, res, proxy, xml) => {
     let { f, id, albumId, artistId } = req.query;
 
     const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
-    if (type) await fetch(`${global.config.music}/favorite/add`, {
+    if (type) await fetch(`${global.config.music}/favorites/add`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Cookie": req.user
         },
         body: JSON.stringify({
             "type": type,

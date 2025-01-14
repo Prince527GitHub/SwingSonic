@@ -1,7 +1,11 @@
 module.exports = async(req, res, proxy, xml) => {
     let { title, f } = req.query;
 
-    let track = await (await fetch(`${global.config.music}/search/tracks?q=${title || ""}`)).json();
+    let track = await (await fetch(`${global.config.music}/search/tracks?q=${title || ""}`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
     if (!track.error || track.tracks.length) track = track.tracks[0];
 
     const lyrics = {
@@ -22,7 +26,8 @@ module.exports = async(req, res, proxy, xml) => {
         let getLyrics = await fetch(`${global.config.music}/lyrics`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify(body)
         });
@@ -30,7 +35,8 @@ module.exports = async(req, res, proxy, xml) => {
         if (!getLyrics.ok) getLyrics = await (await fetch(`${global.config.music}/plugins/lyrics/search`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify(body)
         })).json();

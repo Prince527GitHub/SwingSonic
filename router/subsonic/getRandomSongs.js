@@ -3,8 +3,16 @@ const { shuffleArray } = require("../../packages/array");
 module.exports = async(req, res, proxy, xml) => {
     let { size, f } = req.query;
 
-    const albumsSize = (await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`)).json()).total;
-    const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumsSize}&sortby=created_date&reverse=1`)).json();
+    const albumsSize = (await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json()).total;
+    const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumsSize}&sortby=created_date&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     let output = [];
     for (let index = 0; index < albums.items.length; index++) {
@@ -13,7 +21,8 @@ module.exports = async(req, res, proxy, xml) => {
         const tracks = await (await fetch(`${global.config.music}/album`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ albumhash: album.albumhash })
         })).json();

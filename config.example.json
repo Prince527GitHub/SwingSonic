@@ -4,16 +4,15 @@
         "url": "http://ip:port", // url of this api
         "api": { // enable of disable api implementation
             "subsonic": true,
-            "jellyfin": true,
+            "jellyfin": {
+                "enable": true,
+                "user": { // the jellyfin implementation requires a valid SwingMusic user
+                    "username": "admin",
+                    "password": "admin"
+                }
+            },
             "euterpe": true
-        },
-        "users": [ // list of users, if the array is empty then authentication is disabled
-            {
-                "username": "test",
-                "password": "test"
-            }
-        ],
-        "proxy": true // proxy the content
+        }
     },
     "music": "http://ip:port" // url of the swing music server
 }

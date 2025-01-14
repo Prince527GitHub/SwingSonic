@@ -1,9 +1,17 @@
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
-    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`)).json()).total;
+    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json()).total;
 
-    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`)).json();
+    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const output = artists.items.map(item => ({
         id: item.artisthash,

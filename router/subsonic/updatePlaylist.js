@@ -2,18 +2,20 @@ module.exports = async(req, res, proxy, xml) => {
     let { playlistId, name, songIdToAdd, songIdToRemove, f } = req.query;
 
     if (playlistId) {
-        if (songIdToAdd) await fetch(`${global.config.music}/playlist/${playlistId}/add`, {
+        if (songIdToAdd) await fetch(`${global.config.music}/playlists/${playlistId}/add`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ itemtype: "track", itemhash: songIdToAdd })
         });
 
-        if (songIdToRemove) await fetch(`${global.config.music}/playlist/${playlistId}/remove-tracks`, {
+        if (songIdToRemove) await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ tracks: [{ trackhash: songIdToRemove, index: 0 }] })
         });
@@ -22,10 +24,11 @@ module.exports = async(req, res, proxy, xml) => {
             const formData = new FormData();
             formData.append("name", name);
 
-            await fetch(`${global.config.music}/playlist/${playlistId}/update`, {
+            await fetch(`${global.config.music}/playlists/${playlistId}/update`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "multipart/form-data",
+                    "Cookie": req.user
                 },
                 body: formData
             });

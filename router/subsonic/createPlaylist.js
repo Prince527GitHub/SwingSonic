@@ -11,7 +11,8 @@ module.exports = async(req, res, proxy, xml) => {
     const playlist = await (await fetch(`${global.config.music}/playlist/new`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Cookie": req.user
         },
         body: JSON.stringify({ name: name })
     })).json();

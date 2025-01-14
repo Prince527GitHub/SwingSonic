@@ -6,7 +6,8 @@ module.exports = async(req, res, proxy, xml) => {
     const album = await (await fetch(`${global.config.music}/album`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Cookie": req.user
         },
         body: JSON.stringify({ albumhash: id })
     })).json();
@@ -17,7 +18,7 @@ module.exports = async(req, res, proxy, xml) => {
             name: album.info.title,
             coverArt: album.info.image,
             songCount: album.info.count,
-            created: new Date(album.info.created_date * 1000).toISOString(),
+            created: new Date(album.info.date * 1000).toISOString(),
             duration: album.info.duration,
             artist: album.info.albumartists[0].name,
             artistId: album.info.albumartists[0].artisthash,

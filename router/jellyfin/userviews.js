@@ -5,7 +5,8 @@ router.get("/", async(req, res) => {
     const folders = await (await fetch(`${global.config.music}/folder`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Cookie": req.user
         },
         body: JSON.stringify({
             "folder": "$home",
