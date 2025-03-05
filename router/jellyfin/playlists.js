@@ -4,7 +4,11 @@ const router = express.Router();
 router.get("/:id/items", async(req, res) => {
     const { id } = req.params;
 
-    const playlist = await (await fetch(`${global.config.music}/playlist/${id}?no_tracks=false`)).json();
+    const playlist = await (await fetch(`${global.config.music}/playlist/${id}?no_tracks=false`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const items = playlist.tracks.map(track => ({
         Name: track.title,

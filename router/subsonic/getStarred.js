@@ -1,7 +1,11 @@
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
-    const favorites = await (await fetch(`${global.config.music}/favorites`)).json();
+    const favorites = await (await fetch(`${global.config.music}/favorites`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const artists = favorites.artists.map(artist => ({
         name: artist.name,

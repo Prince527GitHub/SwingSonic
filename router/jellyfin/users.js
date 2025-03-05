@@ -7,7 +7,8 @@ router.get("/user/views", async(req, res) => {
     const folders = await (await fetch(`${global.config.music}/folder`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Cookie": req.user
         },
         body: JSON.stringify({
             "folder": "$home",
@@ -150,7 +151,8 @@ router.get("/user/items", async(req, res) => {
         const folders = await (await fetch(`${global.config.music}/folder`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({
                 "folder": "$home",
@@ -172,7 +174,11 @@ router.get("/user/items", async(req, res) => {
     let albums = [];
 
     if ((IncludeItemTypes === "MusicAlbum" && !AlbumArtistIds) || (!IncludeItemTypes && !AlbumArtistIds && !MediaTypes)) {
-        albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || '0'}&limit=${Limit || '50'}&sortby=created_date&reverse=1`)).json();
+        albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || '0'}&limit=${Limit || '50'}&sortby=created_date&reverse=1`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
 
         output = await Promise.all(await albums.items.map(async(album) => {
             const data = {
@@ -213,13 +219,21 @@ router.get("/user/items", async(req, res) => {
                 "LocationType": "FileSystem"
             }
 
-            const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${album.albumhash}&type=album`)).json();
+            const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${album.albumhash}&type=album`, {
+                headers: {
+                    "Cookie": req.user
+                }
+            })).json();
             if (favorite.is_favorite) data.UserData.IsFavorite = true;
 
             return data;
         }));
     } else if (IncludeItemTypes === "MusicAlbum" && AlbumArtistIds) {
-        albums = await (await fetch(`${global.config.music}/artist/${AlbumArtistIds}/albums?limit=7&all=false`)).json();
+        albums = await (await fetch(`${global.config.music}/artist/${AlbumArtistIds}/albums?limit=7&all=false`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
         albums.total = albums.appearances.length;
 
         output = albums.appearances.map(album => ({
@@ -259,13 +273,18 @@ router.get("/user/items", async(req, res) => {
             albums = await (await fetch(`${global.config.music}/album`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Cookie": req.user
                 },
                 body: JSON.stringify({ albumhash: ParentId })
             })).json();
 
             if (albums?.error) {
-                albums = await (await fetch(`${global.config.music}/playlist/${ParentId}?no_tracks=false`)).json();
+                albums = await (await fetch(`${global.config.music}/playlists/${ParentId}?no_tracks=false`, {
+                    headers: {
+                        "Cookie": req.user
+                    }
+                })).json();
                 console.log(albums)
             }
 
@@ -390,7 +409,11 @@ router.get("/user/items", async(req, res) => {
 
         }
     } else if (IncludeItemTypes === "Playlist") {
-        albums = await (await fetch(`${global.config.music}/playlists`)).json();
+        albums = await (await fetch(`${global.config.music}/playlists`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
         albums.total = albums.data.length;
 
         output = albums.data.map(playlist => ({
@@ -501,8 +524,16 @@ router.get("/user/items", async(req, res) => {
     if (Ids) {
         const id = Ids.split(",")[0];
 
-        const albumSize = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`)).json();
-        albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumSize.total}&sortby=created_date&reverse=1`)).json();
+        const albumSize = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
+        albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumSize.total}&sortby=created_date&reverse=1`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
 
         for (let index = 0; index < albums.items.length; index++) {
             const album = albums.items[index];
@@ -510,7 +541,8 @@ router.get("/user/items", async(req, res) => {
             const tracks = await (await fetch(`${global.config.music}/album`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Cookie": req.user
                 },
                 body: JSON.stringify({ albumhash: album.albumhash })
             })).json();
@@ -591,13 +623,18 @@ router.get("/user/items/:id", async(req, res) => {
         const albums = await (await fetch(`${global.config.music}/album`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ albumhash: id })
         })).json();
 
         if (albums?.error) {
-            const playlist = await (await fetch(`${global.config.music}/playlist/${id}?no_tracks=false`)).json();
+            const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
+                headers: {
+                    "Cookie": req.user
+                }
+            })).json();
 
             const items = playlist.tracks.map(track => ({
                 Album: track.album,
@@ -743,11 +780,16 @@ router.route("/user/favoriteitems/:id")
     .post(async(req, res) => {
         const id = req.params.id;
 
-        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
+        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`, {
+            headers: {
+                "Cookie": req.user
+            }
+        });
         const album = await fetch(`${global.config.music}/album`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ albumhash: id })
         });
@@ -756,7 +798,8 @@ router.route("/user/favoriteitems/:id")
         if (type) await fetch(`${global.config.music}/favorite/add`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({
                 type: type,
@@ -782,11 +825,16 @@ router.route("/user/favoriteitems/:id")
     .delete(async(req, res) => {
         const id = req.params.id;
 
-        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
+        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`, {
+            headers: {
+                "Cookie": req.user
+            }
+        });
         const album = await fetch(`${global.config.music}/album`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ albumhash: id })
         });
@@ -795,7 +843,8 @@ router.route("/user/favoriteitems/:id")
         if (type) await fetch(`${global.config.music}/favorite/remove`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({
                 type: type,

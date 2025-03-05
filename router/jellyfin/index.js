@@ -3,17 +3,28 @@ const { getFileList } = require("../../packages/files");
 async function checkAuth(req, res, next) {
     const login = ["/branding/configuration", "/displaypreferences/usersettings", "/playback/bitratetest", "/quickconnect/enabled", "/sessions/capabilities/full", "/system/endpoint", "/system/info", "/system/info/public", "/users/authenticatebyname", "/users/public", "/users/user", "/userviews/","/branding/css"];
 
-    const { server } = global.config;
-
-    if (server.users.length && !login.includes(`${req.baseUrl.toLowerCase()}${req.path.toLowerCase()}`)) {
-        const tokenHeader = req.headers["x-emby-token"] || req.headers["x-emby-authorization"] || req.headers["x-mediabrowser-token"] || req.headers["authorization"] || req.query.api_key || req.query.ApiKey;
+    if (!login.includes(`${req.baseUrl.toLowerCase()}${req.path.toLowerCase()}`)) {
+        const tokenHeader = req.headers["x-emby-token"] || req.headers["x-emby-authorization"] || req.headers["x-mediabrowser-token"] || req.headers["authorization"] || req.query.api_key || req.query.ApiKey || req.query.apiKey;
         if (!tokenHeader) return res.sendStatus(401);
 
         const token = tokenHeader.includes('Token=') ? tokenHeader.match(/Token="([^"]*)"/)?.[1] : tokenHeader;
         if (!token) return res.sendStatus(401);
 
         const [username, password] = token.split("@");
-        if (!server.users.some(user => user.username === username && user.password === password)) return res.sendStatus(401);
+
+        const auth = await fetch(`${global.config.music}/auth/login`, {
+            method: "POST",
+            body: JSON.stringify({
+                username,
+                password
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!auth.ok) return res.sendStatus(401);
+
+        req.user = auth.headers.get("set-cookie");
     }
 
     next();
@@ -33,5 +44,3 @@ module.exports = async(app) => {
         }
     });
 }
-
-module.exports.checkAuth = checkAuth;

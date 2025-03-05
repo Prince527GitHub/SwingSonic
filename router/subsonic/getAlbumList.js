@@ -3,7 +3,11 @@ const { shuffleArray } = require("../../packages/array");
 module.exports = async(req, res, proxy, xml) => {
     let { type, size, offset, f } = req.query;
 
-    const albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`)).json();
+    const albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset || '0'}&limit=${size || '50'}&sortby=created_date&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     let output = albums.items.map(item => ({
         id: item.item?.albumhash || item.albumhash,

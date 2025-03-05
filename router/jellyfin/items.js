@@ -2,38 +2,59 @@ const express = require("express");
 const router = express.Router();
 
 const proxy = require("../../packages/proxy");
-const { checkAuth } = require("./index");
+
+const { username, password } = global.config.server.api.jellyfin.user;
 
 router.get("/:id/images/primary", async(req, res) => {
     const id = req.params.id;
 
-    const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
+    // const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
 
-    const cover = `${global.config.music}/img/${artist.ok ? 'a': 't'}/${id}.webp`;
+    const auth = await fetch(`${global.config.music}/auth/login`, {
+        method: "POST",
+        body: JSON.stringify({
+            username,
+            password
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (!auth.ok) return res.sendStatus(401);
 
-    if (global.config.server.proxy) proxy(res, cover);
-    else res.redirect(cover);
+    req.user = auth.headers.get("set-cookie");
+
+    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${id}.webp`);
 });
 
-router.use("/:id/file", checkAuth, getFile);
-router.use("/:id/download", checkAuth, getFile);
+router.use("/:id/file", getFile);
+router.use("/:id/download", getFile);
 
 async function getFile(req, res) {
     const id = req.params.id;
 
-    const url = `${global.config.music}/file/${id}`;
+    const auth = await fetch(`${global.config.music}/auth/login`, {
+        method: "POST",
+        body: JSON.stringify({
+            username,
+            password
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (!auth.ok) return res.sendStatus(401);
 
-    if (global.config.server.proxy) proxy(res, url);
-    else res.redirect(url);
+    req.user = auth.headers.get("set-cookie");
+
+    proxy(res, req, `${global.config.music}/file/${id}`);
 }
 
-router.get("/:id/thememedia", checkAuth, (req, res) => res.json({
+router.get("/:id/thememedia", (req, res) => res.json({
     ThemeVideosResult: { items: [], totalRecordCount: 0, startIndex: 0 },
     ThemeSongsResult: { items: [], totalRecordCount: 0, startIndex: 0 },
     SoundtrackSongsResult: { items: [], totalRecordCount: 0, startIndex: 0 }
 }));
-
-router.use("/:id/playbackinfo", checkAuth);
 
 router.route("/:id/playbackinfo")
     .post(playBackInfo)
@@ -94,8 +115,8 @@ async function playBackInfo(req, res) {
     });
 }
 
-router.get("/", checkAuth, (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
-router.get("/:id/similar", checkAuth, (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
+router.get("/", (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
+router.get("/:id/similar", (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
 
 module.exports = {
     router: router,

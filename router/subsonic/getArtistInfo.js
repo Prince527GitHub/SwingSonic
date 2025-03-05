@@ -3,7 +3,11 @@ module.exports = async(req, res, proxy, xml) => {
 
     let { f } = req.query;
 
-    const artist = await (await fetch(`${global.config.music}/artist/${id}`)).json();
+    const artist = await (await fetch(`${global.config.music}/artist/${id}`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const json = {
         "subsonic-response": {

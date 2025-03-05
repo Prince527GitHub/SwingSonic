@@ -14,7 +14,11 @@ router.get("/", async(req, res) => {
 
     let results = [];
     if (by === "album") {
-        const albums = await (await fetch(`${global.config.music}/getall/albums?start=${start}&limit=${perPage}&sortby=title&reverse=${reverse}`)).json();
+        const albums = await (await fetch(`${global.config.music}/getall/albums?start=${start}&limit=${perPage}&sortby=title&reverse=${reverse}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
 
         results = albums.items.map(album => ({
             album: album.title,
@@ -26,7 +30,11 @@ router.get("/", async(req, res) => {
 
         results.total = albums.total;
     } else if (by === "artist") {
-        const artists = await (await fetch(`${global.config.music}/getall/artists?start=${start}&limit=${perPage}&sortby=name&reverse=${reverse}`)).json();
+        const artists = await (await fetch(`${global.config.music}/getall/artists?start=${start}&limit=${perPage}&sortby=name&reverse=${reverse}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
 
         results = artists.items.map(artist => ({
             artist: artist.name,

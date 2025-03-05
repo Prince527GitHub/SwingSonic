@@ -6,7 +6,11 @@ module.exports = async(req, res, proxy, xml) => {
     let artists = [];
 
     if (artistCount >= 1) {
-        artists = await (await fetch(`${global.config.music}/search/artists?q=${query}`)).json();
+        artists = await (await fetch(`${global.config.music}/search/artists?q=${query}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
         artists = artists.artists.map(artist => ({
             id: artist.artisthash,
             name: artist.name
@@ -16,7 +20,11 @@ module.exports = async(req, res, proxy, xml) => {
     let albums = [];
 
     if (albumCount >= 1) {
-        albums = await (await fetch(`${global.config.music}/search/albums?q=${query}`)).json();
+        albums = await (await fetch(`${global.config.music}/search/albums?q=${query}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
         albums = albums.albums.map(album => ({
             id: album.albumhash,
             parent: album.albumhash,
@@ -30,7 +38,11 @@ module.exports = async(req, res, proxy, xml) => {
     let tracks = [];
 
     if (songCount >= 1) {
-        tracks = await (await fetch(`${global.config.music}/search/tracks?q=${query}`)).json();
+        tracks = await (await fetch(`${global.config.music}/search/tracks?q=${query}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
         tracks = tracks.tracks.map(track => ({
             id: track.trackhash,
             parent: track.albumhash,

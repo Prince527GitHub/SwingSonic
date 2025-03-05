@@ -1,7 +1,11 @@
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
-    const playlists = await (await fetch(`${global.config.music}/playlists`)).json();
+    const playlists = await (await fetch(`${global.config.music}/playlists`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const output = playlists.data.map(playlist => ({
         id: playlist.id,

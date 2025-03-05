@@ -7,8 +7,16 @@ router.get("/", async(req, res) => {
     const query = req.query.q;
     if (!query) return res.json([]);
 
-    const size = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=title&reverse=1`)).json();
-    const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${size.total}&sortby=title&reverse=1`)).json();
+    const size = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=title&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
+    const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${size.total}&sortby=title&reverse=1`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     let result = [];
     if (albums.items.find(album => album.title === query)) {
@@ -17,7 +25,8 @@ router.get("/", async(req, res) => {
         const album = await (await fetch(`${global.config.music}/album`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Cookie": req.user
             },
             body: JSON.stringify({ albumhash: id })
         })).json();
@@ -34,7 +43,11 @@ router.get("/", async(req, res) => {
             duration: track.duration * 1000
         }));
     } else {
-        const search = await (await fetch(`${global.config.music}/search/tracks?q=${query}`)).json();
+        const search = await (await fetch(`${global.config.music}/search/tracks?q=${query}`, {
+            headers: {
+                "Cookie": req.user
+            }
+        })).json();
 
         result = search.tracks.map(track => ({
             album: track.album,

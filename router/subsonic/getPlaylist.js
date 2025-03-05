@@ -3,7 +3,11 @@ module.exports = async(req, res, proxy, xml) => {
 
     let { f } = req.query;
 
-    const playlist = await (await fetch(`${global.config.music}/playlist/${id}?no_tracks=false`)).json();
+    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const output = playlist.tracks.map(track => ({
         id: track.trackhash,
@@ -13,11 +17,11 @@ module.exports = async(req, res, proxy, xml) => {
         artist: track.artists[0].name,
         isDir: false,
         coverArt: track.image,
-        created: new Date(track.created_date * 1000).toISOString(),
+        created: new Date().toISOString(),
         duration: track.duration,
         bitRate: track.bitrate,
         track: track.track,
-        year: new Date(track.created_date * 1000).getFullYear(),
+        year: new Date().getFullYear(),
         size: 0,
         suffix: "mp3",
         contentType: "audio/mpeg",

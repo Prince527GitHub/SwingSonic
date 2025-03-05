@@ -1,14 +1,18 @@
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
-    const favorites = await (await fetch(`${global.config.music}/favorites`)).json();
+    const favorites = await (await fetch(`${global.config.music}/favorites`, {
+        headers: {
+            "Cookie": req.user
+        }
+    })).json();
 
     const artists = favorites.artists.map(artist => ({
         id: artist.artisthash,
         name: artist.name,
         coverArt: artist.image,
         albumCount: artist.albumcount,
-        starred: new Date(artist.created_date * 1000).toISOString()
+        starred: new Date(artist.date * 1000).toISOString()
     }));
 
     const albums = favorites.albums.map(album => ({
@@ -19,8 +23,8 @@ module.exports = async(req, res, proxy, xml) => {
         coverArt: album.image,
         songCount: album.count,
         duration: album.duration,
-        created: new Date(album.created_date * 1000).toISOString(),
-        starred: new Date(album.created_date * 1000).toISOString()
+        created: new Date(album.date * 1000).toISOString(),
+        starred: new Date(album.date * 1000).toISOString()
     }));
 
     const tracks = favorites.tracks.map(track => ({
@@ -31,8 +35,8 @@ module.exports = async(req, res, proxy, xml) => {
         artist: track.artists[0].name,
         isDir: false,
         coverArt: track.image,
-        created: new Date(track.created_date * 1000).toISOString(),
-        starred: new Date(track.created_date * 1000).toISOString(),
+        created: new Date(track.date * 1000).toISOString(),
+        starred: new Date(track.date * 1000).toISOString(),
         duration: track.duration,
         bitRate: track.bitrate,
         track: track.track,
