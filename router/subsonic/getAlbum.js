@@ -24,7 +24,7 @@ module.exports = async(req, res, proxy, xml) => {
             artistId: album.info.albumartists[0].artisthash,
             song: album.tracks.map(track => {
                 const song = {
-                    id: track.trackhash,
+                    id: JSON.stringify({ id: track.trackhash, path: track.filepath }),
                     parent: track.albumhash,
                     title: track.title,
                     album: track.album,
@@ -41,13 +41,14 @@ module.exports = async(req, res, proxy, xml) => {
                     path: track.filepath,
                     albumId: track.albumhash,
                     artistId: track.artists[0].artisthash,
-                    type: "music"
+                    track: track.track,
+                    type: "music",
                 };
 
                 if (track.is_favorite) song.starred = new Date(album.info.created_date * 1000).toISOString();
 
                 return song;
-            })
+            }).sort((a, b) => a.track - b.track)
         }
     }
 

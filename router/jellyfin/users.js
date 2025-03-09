@@ -173,7 +173,7 @@ router.get("/user/items", async(req, res) => {
     let output = [];
     let albums = [];
 
-    if ((IncludeItemTypes === "MusicAlbum" && !AlbumArtistIds) || (!IncludeItemTypes && !AlbumArtistIds && !MediaTypes)) {
+    if (!AlbumArtistIds && (IncludeItemTypes === "MusicAlbum" ||  (!IncludeItemTypes && !MediaTypes))) {
         albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || '0'}&limit=${Limit || '50'}&sortby=created_date&reverse=1`, {
             headers: {
                 "Cookie": req.user
@@ -308,11 +308,11 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": track.trackhash,
+                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
                     "Genres": [
                         "Unknown"
                     ],
-                    "Id": track.trackhash,
+                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
                     "ImageTags": {
                         "Primary": track.albumhash
                     },
@@ -345,8 +345,9 @@ router.get("/user/items", async(req, res) => {
                         "Rating": 0,
                         "UnplayedItemCount": 0,
                         "Key": track.albumhash
-                    }
-                }));
+                    },
+                    "track": track.track
+                })).sort((a, b) => a.track - b.track);
             } else {
                 output = albums.tracks.map(track => ({
                     "Album": track.album,
@@ -365,11 +366,11 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": track.trackhash,
+                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
                     "Genres": [
                         "Unknown"
                     ],
-                    "Id": track.trackhash,
+                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
                     "ImageTags": {
                         "Primary": track.albumhash
                     },
@@ -402,8 +403,9 @@ router.get("/user/items", async(req, res) => {
                         "Rating": 0,
                         "UnplayedItemCount": 0,
                         "Key": track.albumhash
-                    }
-                }));
+                    },
+                    "track": track.track
+                })).sort((a, b) => a.track - b.track);
             }
         } catch(err) {
 
@@ -566,11 +568,11 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": track.trackhash,
+                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "Genres": [
                         "Unknown"
                     ],
-                    "Id": track.trackhash,
+                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "ImageTags": {
                         "Primary": track.albumhash
                     },
@@ -602,8 +604,9 @@ router.get("/user/items", async(req, res) => {
                         "PlayedPercentage": 0,
                         "Rating": 0,
                         "UnplayedItemCount": 0
-                    }
-                }));
+                    },
+                    "track": track.track
+                })).sort((a, b) => a.track - b.track);
                 break;
             }
         }
@@ -647,9 +650,9 @@ router.get("/user/items/:id", async(req, res) => {
                 BackdropImageTags: [],
                 ChannelId: null,
                 ChildCount: 0,
-                Etag: track.trackhash,
+                Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                 Genres: ["Unknown"],
-                Id: track.trackhash,
+                Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                 ImageTags: { Primary: track.albumhash },
                 IndexNumber: track.track,
                 IndexNumberEnd: playlist.tracks.length,
@@ -689,9 +692,9 @@ router.get("/user/items/:id", async(req, res) => {
             BackdropImageTags: [],
             ChannelId: null,
             ChildCount: 0,
-            Etag: track.trackhash,
+            Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
             Genres: ["Unknown"],
-            Id: track.trackhash,
+            Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
             ImageTags: { Primary: track.albumhash },
             IndexNumber: track.track,
             IndexNumberEnd: albums.tracks.length,
@@ -709,8 +712,9 @@ router.get("/user/items/:id", async(req, res) => {
             SongCount: albums.tracks.length,
             Tags: ["Unknown"],
             Type: "Audio",
-            UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false }
-        }));
+            UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false },
+            track: track.track
+        })).sort((a, b) => a.track - b.track);
 
         res.json({
             Items: items,

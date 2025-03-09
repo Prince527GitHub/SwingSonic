@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, xml) => {
     })).json();
 
     const output = playlist.tracks.map(track => ({
-        id: track.trackhash,
+        id: JSON.stringify({ id: track.trackhash, path: track.filepath }),
         parent: "655",
         title: track.title,
         album: track.album,

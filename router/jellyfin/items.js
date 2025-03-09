@@ -5,8 +5,38 @@ const proxy = require("../../packages/proxy");
 
 const { username, password } = global.config.server.api.jellyfin.user;
 
+function isBase64(str) {
+    if (typeof str !== "string") return false;
+
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    if (!base64Regex.test(str)) return false;
+
+    if (str.length % 4 !== 0) return false;
+
+    try {
+        const decoded = Buffer.from(str, "base64").toString("utf8");
+        return Buffer.from(decoded, "utf8").toString("base64") === str;
+    } catch (e) {
+        return false;
+    }
+}
+
+function decodeId(id) {
+    if (!isBase64(id)) return { id };
+
+    try {
+        const parsed = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
+        console.log(parsed)
+        return { id: parsed?.album ?? id };
+    } catch {
+        return { id };
+    }
+};
+
 router.get("/:id/images/primary", async(req, res) => {
     const id = req.params.id;
+
+    const decoded = decodeId(id);
 
     // const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
 
@@ -24,7 +54,7 @@ router.get("/:id/images/primary", async(req, res) => {
 
     req.user = auth.headers.get("set-cookie");
 
-    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${id}.webp`);
+    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${decoded.id}.webp`);
 });
 
 router.use("/:id/file", getFile);
@@ -32,6 +62,8 @@ router.use("/:id/download", getFile);
 
 async function getFile(req, res) {
     const id = req.params.id;
+
+    const decoded = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
 
     const auth = await fetch(`${global.config.music}/auth/login`, {
         method: "POST",
@@ -47,7 +79,7 @@ async function getFile(req, res) {
 
     req.user = auth.headers.get("set-cookie");
 
-    proxy(res, req, `${global.config.music}/file/${id}`);
+    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${decoded.path}&container=mp3&quality=original`);
 }
 
 router.get("/:id/thememedia", (req, res) => res.json({

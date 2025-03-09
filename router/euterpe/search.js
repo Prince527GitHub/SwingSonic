@@ -40,8 +40,9 @@ router.get("/", async(req, res) => {
             id: track.trackhash,
             album_id: track.albumhash,
             format: path.extname(track.filepath).slice(1),
-            duration: track.duration * 1000
-        }));
+            duration: track.duration * 1000,
+            track: track.track
+        })).sort((a, b) => a.track - b.track);
     } else {
         const search = await (await fetch(`${global.config.music}/search/tracks?q=${query}`, {
             headers: {

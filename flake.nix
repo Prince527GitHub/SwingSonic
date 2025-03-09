@@ -1,5 +1,5 @@
 {
-  description = "Lamar";
+  description = "SwingSonic";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
