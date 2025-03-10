@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, xml) => {
     })).json();
 
     const output = playlist.tracks.map(track => ({
-        id: JSON.stringify({ id: track.trackhash, path: track.filepath }),
+        id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
         parent: "655",
         title: track.title,
         album: track.album,

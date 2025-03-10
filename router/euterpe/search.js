@@ -37,7 +37,7 @@ router.get("/", async(req, res) => {
             track: track.track,
             artist: track.artists[0].name,
             artist_id: track.artists[0].artisthash,
-            id: track.trackhash,
+            id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
             album_id: track.albumhash,
             format: path.extname(track.filepath).slice(1),
             duration: track.duration * 1000,
@@ -56,7 +56,7 @@ router.get("/", async(req, res) => {
             track: 1,
             artist: track.artists[0].name,
             artist_id: track.artists[0].artisthash,
-            id: track.trackhash,
+            id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
             album_id: track.albumhash,
             format: path.extname(track.filepath).slice(1),
             duration: track.duration * 1000

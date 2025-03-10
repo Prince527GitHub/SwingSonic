@@ -24,7 +24,7 @@ module.exports = async(req, res, proxy, xml) => {
             artistId: album.info.albumartists[0].artisthash,
             song: album.tracks.map(track => {
                 const song = {
-                    id: JSON.stringify({ id: track.trackhash, path: track.filepath }),
+                    id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
                     parent: track.albumhash,
                     title: track.title,
                     album: track.album,
