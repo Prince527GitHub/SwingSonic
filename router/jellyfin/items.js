@@ -79,7 +79,7 @@ async function getFile(req, res) {
 
     req.user = auth.headers.get("set-cookie");
 
-    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${decoded.path}&container=mp3&quality=original`);
+    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}&container=mp3&quality=original`);
 }
 
 router.get("/:id/thememedia", (req, res) => res.json({
