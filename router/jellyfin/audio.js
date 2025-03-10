@@ -8,8 +8,6 @@ router.get("/:id/*", async(req, res) => {
 
     const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
 
-    console.log(decoded)
-
     proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}&container=mp3&quality=original`);
 });
 

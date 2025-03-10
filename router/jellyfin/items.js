@@ -5,33 +5,15 @@ const proxy = require("../../packages/proxy");
 
 const { username, password } = global.config.server.api.jellyfin.user;
 
-function isBase64(str) {
-    if (typeof str !== "string") return false;
-
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    if (!base64Regex.test(str)) return false;
-
-    if (str.length % 4 !== 0) return false;
-
-    try {
-        const decoded = Buffer.from(str, "base64").toString("utf8");
-        return Buffer.from(decoded, "utf8").toString("base64") === str;
-    } catch (e) {
-        return false;
-    }
-}
-
 function decodeId(id) {
-    if (!isBase64(id)) return { id };
-
     try {
-        const parsed = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
-        console.log(parsed)
-        return { id: parsed?.album ?? id };
-    } catch {
+        const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
+
+        return { id: decoded?.album ?? decoded?.id ?? id };;
+    } catch (error) {
         return { id };
     }
-};
+}
 
 router.get("/:id/images/primary", async(req, res) => {
     const id = req.params.id;
