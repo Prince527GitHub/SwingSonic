@@ -1,17 +1,17 @@
 module.exports = async(req, res, proxy, xml) => {
     const query = req.query.query;
 
-    let { artistCount, albumCount, songCount, f } = req.query;
+    let { artistCount, artistOffset, albumCount, albumOffset, songCount, songOffset, f } = req.query;
 
     let artists = [];
 
     if (artistCount >= 1) {
-        artists = await (await fetch(`${global.config.music}/search/artists?q=${query}`, {
+        artists = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${query}&start=${artistOffset || '0'}&limit=${artistCount || '50'}`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
-        artists = artists.artists.map(artist => ({
+        artists = artists.results.map(artist => ({
             id: artist.artisthash,
             name: artist.name,
             coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64"),
@@ -22,17 +22,17 @@ module.exports = async(req, res, proxy, xml) => {
     let albums = [];
 
     if (albumCount >= 1) {
-        albums = await (await fetch(`${global.config.music}/search/albums?q=${query}`, {
+        albums = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${query}&start=${albumOffset || '0'}&limit=${albumCount || '50'}`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
-        albums = albums.albums.map(album => ({
+        albums = albums.results.map(album => ({
             id: album.albumhash,
             name: album.title,
             coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
             songCount: 0,
-            created: new Date(album.created_date * 1000).toISOString(),
+            created: new Date(album.date * 1000).toISOString(),
             duration: 0,
             artist: album.albumartists[0].name,
             artistId: album.albumartists[0].artisthash
@@ -42,12 +42,12 @@ module.exports = async(req, res, proxy, xml) => {
     let tracks = [];
 
     if (songCount >= 1) {
-        tracks = await (await fetch(`${global.config.music}/search/tracks?q=${query}`, {
+        tracks = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${query}&start=${songOffset || '0'}&limit=${songCount || '50'}`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
-        tracks = tracks.tracks.map(track => ({
+        tracks = tracks.results.map(track => ({
             id: track.trackhash,
             parent: track.albumhash,
             title: track.title,
