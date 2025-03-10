@@ -6,9 +6,11 @@ const proxy = require("../../packages/proxy");
 router.get("/:id/*", async(req, res) => {
     const id = req.params.id;
 
-    const decoded = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
+    const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
 
-    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${decoded.path}&container=mp3&quality=original`);
+    console.log(decoded)
+
+    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}&container=mp3&quality=original`);
 });
 
 module.exports = {

@@ -25,7 +25,7 @@ function decodeId(id) {
     if (!isBase64(id)) return { id };
 
     try {
-        const parsed = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
+        const parsed = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
         console.log(parsed)
         return { id: parsed?.album ?? id };
     } catch {
@@ -63,7 +63,7 @@ router.use("/:id/download", getFile);
 async function getFile(req, res) {
     const id = req.params.id;
 
-    const decoded = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
+    const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
 
     const auth = await fetch(`${global.config.music}/auth/login`, {
         method: "POST",
