@@ -5,7 +5,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     let artists = [];
 
-    if (artistCount >= 1) {
+    if (artistCount >= 1 && query) {
         artists = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${query}&start=${artistOffset || '0'}&limit=${artistCount || '50'}`, {
             headers: {
                 "Cookie": req.user
@@ -21,7 +21,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     let albums = [];
 
-    if (albumCount >= 1) {
+    if (albumCount >= 1 && query) {
         albums = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${query}&start=${albumOffset || '0'}&limit=${albumCount || '50'}`, {
             headers: {
                 "Cookie": req.user
@@ -41,7 +41,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     let tracks = [];
 
-    if (songCount >= 1) {
+    if (songCount >= 1 && query) {
         tracks = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${query}&start=${songOffset || '0'}&limit=${songCount || '50'}`, {
             headers: {
                 "Cookie": req.user
