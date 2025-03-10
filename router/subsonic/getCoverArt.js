@@ -1,13 +1,7 @@
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
-    // const artist = await fetch(`${global.config.music}/artist/${id.replace(/\.[^.]+$/, '')}/albums?limit=1&all=false`, {
-    //     headers: {
-    //         "Cookie": req.user
-    //     }
-    // });
+    const decode = JSON.parse(Buffer.from(id, "base64").toString("utf-8"));
 
-    // const cover = `${global.config.music}/img/${artist.ok ? 'a': 't'}/${id}`;
-
-    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${id}`);
+    proxy(res, req, `${global.config.music}/img/${decode.type === "artist" ? "artist" : "thumbnail"}/medium/${decode.id}`);
 }

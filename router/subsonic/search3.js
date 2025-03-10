@@ -14,7 +14,7 @@ module.exports = async(req, res, proxy, xml) => {
         artists = artists.artists.map(artist => ({
             id: artist.artisthash,
             name: artist.name,
-            coverArt: artist.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64"),
             albumCount: artist.albumcount
         }));
     }
@@ -30,7 +30,7 @@ module.exports = async(req, res, proxy, xml) => {
         albums = albums.albums.map(album => ({
             id: album.albumhash,
             name: album.title,
-            coverArt: album.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
             songCount: 0,
             created: new Date(album.created_date * 1000).toISOString(),
             duration: 0,
@@ -54,7 +54,7 @@ module.exports = async(req, res, proxy, xml) => {
             album: track.album,
             artist: track.albumartists[0].name,
             isDir: false,
-            coverArt: track.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
             created: "2007-03-15T06:46:06",
             duration: track.duration,
             bitRate: track.bitrate,

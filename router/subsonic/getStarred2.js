@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, xml) => {
     const artists = favorites.artists.map(artist => ({
         id: artist.artisthash,
         name: artist.name,
-        coverArt: artist.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64"),
         albumCount: artist.albumcount,
         starred: new Date(artist.date * 1000).toISOString()
     }));
@@ -20,7 +20,7 @@ module.exports = async(req, res, proxy, xml) => {
         name: album.title,
         artist: album.albumartists[0].artisthash,
         artistId: album.albumartists[0].name,
-        coverArt: album.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
         songCount: album.count,
         duration: album.duration,
         created: new Date(album.date * 1000).toISOString(),
@@ -34,7 +34,7 @@ module.exports = async(req, res, proxy, xml) => {
         album: track.album,
         artist: track.artists[0].name,
         isDir: false,
-        coverArt: track.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
         created: new Date(track.date * 1000).toISOString(),
         starred: new Date(track.date * 1000).toISOString(),
         duration: track.duration,

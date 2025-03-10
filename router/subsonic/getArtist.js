@@ -17,7 +17,7 @@ module.exports = async(req, res, proxy, xml) => {
     const albums = getAlbums.appearances.map(album => ({
         id: album.albumhash,
         name: album.title,
-        coverArt: album.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
         songCount: 0,
         created: new Date(album.date * 1000).toISOString(),
         duration: 0,
@@ -30,7 +30,7 @@ module.exports = async(req, res, proxy, xml) => {
             artist: {
                 id: id,
                 name: artist.artist.name,
-                coverArt: artist.artist.image,
+                coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64"),
                 songCount: artist.artist.trackcount,
                 created: new Date().toISOString(),
                 duration: artist.artist.duration,

@@ -16,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
         album: {
             id: album.info.albumhash,
             name: album.info.title,
-            coverArt: album.info.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.info.image })).toString("base64"),
             songCount: album.info.count,
             created: new Date(album.info.date * 1000).toISOString(),
             duration: album.info.duration,
@@ -30,7 +30,7 @@ module.exports = async(req, res, proxy, xml) => {
                     album: track.album,
                     artist: track.artists[0].name,
                     isDir: false,
-                    coverArt: track.image,
+                    coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
                     created: new Date(album.info.created_date * 1000).toISOString(),
                     duration: track.duration,
                     bitRate: track.bitrate,

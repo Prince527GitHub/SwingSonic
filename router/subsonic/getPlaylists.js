@@ -16,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
         songCount: playlist.count,
         duration: playlist.duration,
         created: playlist.last_updated,
-        coverArt: playlist.image
+        coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.image })).toString("base64")
     }));
 
     const json = {

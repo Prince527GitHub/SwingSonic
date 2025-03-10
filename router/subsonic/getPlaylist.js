@@ -1,9 +1,9 @@
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
-    let { f } = req.query;
+    let { f, size, offset } = req.query;
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
+    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || '0'}&limit=${size || '50'}`, {
         headers: {
             "Cookie": req.user
         }
@@ -16,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
         album: track.album,
         artist: track.artists[0].name,
         isDir: false,
-        coverArt: track.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
         created: new Date().toISOString(),
         duration: track.duration,
         bitRate: track.bitrate,
@@ -43,7 +43,7 @@ module.exports = async(req, res, proxy, xml) => {
                 songCount: playlist.info.count,
                 duration: playlist.info.duration,
                 created: 0, // 16 hours ago
-                coverArt: playlist.info.image,
+                coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.info.image })).toString("base64"),
                 entry: output
             },
             status: "ok",

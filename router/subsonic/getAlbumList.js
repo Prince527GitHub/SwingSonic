@@ -15,7 +15,7 @@ module.exports = async(req, res, proxy, xml) => {
         title: item.item?.title || item.title,
         artist: item.item?.albumartists[0].name || item.albumartists[0].name,
         isDir: true,
-        coverArt: item.item?.image || item.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "album", id: item.item?.image || item.image })).toString("base64"),
         userRating: 0,
         averageRating: 0
     }));

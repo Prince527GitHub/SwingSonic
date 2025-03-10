@@ -16,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
     const output = artists.items.map(item => ({
         id: item.artisthash,
         name: item.name,
-        coverArt: item.image,
+        coverArt: Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64"),
         albumCount: 0
     }));
 

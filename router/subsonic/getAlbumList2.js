@@ -31,7 +31,7 @@ module.exports = async(req, res, proxy, xml) => {
         const album = {
             id: id,
             name: item.item?.title || item.title,
-            coverArt: item.item?.image || item.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: item.item?.image || item.image })).toString("base64"),
             songCount: 0,
             created: new Date(item.item?.date || item.date * 1000).toISOString(),
             duration: 0,

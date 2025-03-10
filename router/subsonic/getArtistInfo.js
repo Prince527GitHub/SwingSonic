@@ -9,15 +9,18 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
+    const image = Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64");
+    const link = `${global.config.server.url}/rest/getCoverArt.view?id=${image}`;
+
     const json = {
         "subsonic-response": {
             artistInfo: {
                 biography: "Unknown",
                 musicBrainzId: id,
-                lastFmUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                smallImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                mediumImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
-                largeImageUrl: `${global.config.server.url}/rest/getCoverArt.view?id=${artist.artist.image}`,
+                lastFmUrl: link,
+                smallImageUrl: link,
+                mediumImageUrl: link,
+                largeImageUrl: link,
                 similarArtist: []
             },
             status: "ok",

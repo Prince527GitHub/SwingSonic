@@ -31,7 +31,7 @@ module.exports = async(req, res, proxy, xml) => {
             title: album.title,
             artist: album.albumartists[0].name,
             isDir: "true",
-            coverArt: album.image
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64")
         }));
     }
 
@@ -53,7 +53,7 @@ module.exports = async(req, res, proxy, xml) => {
             track: 0,
             year: 2024,
             genre: "Unknown",
-            coverArt: track.image,
+            coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
             size: 0,
             contentType: "audio/mpeg",
             suffix: "mp3",
