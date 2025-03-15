@@ -41,7 +41,9 @@ module.exports = async(req, res, proxy, xml) => {
             artist: track.albumartists[0]?.name || track.artists[0]?.name || ""
         };
 
-        const getLyrics = await (await fetch(`${global.config.music}/lyrics`, { method: "POST", headers, body: JSON.stringify(body) }).json() || await fetch(`${global.config.music}/plugins/lyrics/search`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+        let getLyrics = await (await fetch(`${global.config.music}/lyrics`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+        if (getLyrics.error) getLyrics = await (await fetch(`${global.config.music}/plugins/lyrics/search`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+
         if (getLyrics.lyrics) {
             lyrics.artist = body.artist;
             lyrics.title = body.title;
