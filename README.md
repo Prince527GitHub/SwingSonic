@@ -35,7 +35,8 @@ services:
     environment:
       - SERVER_PORT=3000 # The port to listen on
       - SERVER_URL=http://ip:port # The public URL of this API
-      - SERVER_API_SUBSONIC=true # Enable of disable Subsonic API implementation
+      - SERVER_API_SUBSONIC_ENABLE=true # Enable of disable Subsonic API implementation
+      - SERVER_API_SUBSONIC_OPTIONS_ZW=true # Enable of Zero Width Character Hack
       - SERVER_API_JELLYFIN_ENABLE=true # Enable of disable Jellyfin API implementation
       - SERVER_API_JELLYFIN_USER_USERNAME=admin # Jellyfin implementation requires a Swing Music user's username
       - SERVER_API_JELLYFIN_USER_PASSWORD=admin # Jellyfin implementation requires a Swing Music user's password

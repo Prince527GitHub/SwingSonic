@@ -1,17 +1,10 @@
 module.exports = async(req, res, proxy, xml) => {
+    const args = { headers: { "Cookie": req.user } };
+
     let { f } = req.query;
 
-    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json()).total;
-
-    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json()).total;
+    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, args)).json();
 
     const output = artists.items.map(item => ({
         id: item.artisthash,
@@ -20,22 +13,24 @@ module.exports = async(req, res, proxy, xml) => {
         albumCount: 0
     }));
 
-    const groupedByLetter = output.reduce((acc, artist) => {
-        const firstLetter = artist.name.charAt(0).toUpperCase();
-        acc[firstLetter] = acc[firstLetter] || [];
-        acc[firstLetter].push(artist);
+    const groupe = output.reduce((acc, artist) => {
+        const first = artist.name.charAt(0).toUpperCase();
+
+        acc[first] = acc[first] || [];
+        acc[first].push(artist);
+
         return acc;
     }, {});
 
-    const organizedArtists = Object.keys(groupedByLetter).map(letter => ({
+    const organize = Object.keys(groupe).map(letter => ({
         name: letter,
-        artist: groupedByLetter[letter]
+        artist: groupe[letter]
     }));
 
     const json = {
         "subsonic-response": {
             artists: {
-                index: organizedArtists
+                index: organize
             },
             status: "ok",
             version: "1.16.1"

@@ -3,7 +3,12 @@
         "port": 3000, // the port to listen on
         "url": "http://ip:port", // url of this api
         "api": { // enable of disable api implementation
-            "subsonic": true,
+            "subsonic": {
+                "enable": true,
+                "options": {
+                    "zw": true // enable zero width character hack
+                }
+            },
             "jellyfin": {
                 "enable": true,
                 "user": { // the jellyfin implementation requires a valid SwingMusic user

@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "*" }));
 app.use(require("./packages/logs"));
 
-if (global.config.server.api.subsonic) require("./router/subsonic")(app);
+if (global.config.server.api.subsonic.enable) require("./router/subsonic")(app);
 if (global.config.server.api.jellyfin.enable) require("./router/jellyfin")(app);
 if (global.config.server.api.euterpe) require("./router/euterpe")(app);
 

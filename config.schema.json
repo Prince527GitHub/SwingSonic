@@ -3,7 +3,12 @@
         "port": 3000,
         "url": "http://ip:port",
         "api": {
-            "subsonic": true,
+            "subsonic": {
+                "enable": true,
+                "options": {
+                    "zw": true
+                }
+            },
             "jellyfin": {
                 "enable": true,
                 "user": {

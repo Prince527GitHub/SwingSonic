@@ -1,3 +1,5 @@
+const zw = require("../../packages/zw");
+
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
@@ -12,7 +14,7 @@ module.exports = async(req, res, proxy, xml) => {
     const output = playlist.tracks.map(track => ({
         id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
         parent: "655",
-        title: track.title,
+        title: global.config.server.api.subsonic.options.zw ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64")) : track.title,
         album: track.album,
         artist: track.artists[0].name,
         isDir: false,
