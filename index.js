@@ -38,7 +38,7 @@ app.listen(global.config.server.port, () => {
     console.log("\x1b[35m            ▀ ▀      █   ██                       █   ██           ▀   \x1b[0m");
     console.log("\x1b[35m                                                                       \x1b[0m");
 
-    console.log(`> \x1b[34mSubsonic\x1b[0m ${global.config.server.api.subsonic? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
-    console.log(`> \x1b[34mJellyfin\x1b[0m ${global.config.server.api.jellyfin? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
-    console.log(`> \x1b[34mEuterpe\x1b[0m ${global.config.server.api.euterpe? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
+    console.log(`> \x1b[34mSubsonic\x1b[0m ${global.config.server.api.subsonic.enable ? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
+    console.log(`> \x1b[34mJellyfin\x1b[0m ${global.config.server.api.jellyfin.enable ? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
+    console.log(`> \x1b[34mEuterpe\x1b[0m ${global.config.server.api.euterpe ? "\x1b[32m\u2714\x1b[0m" : "\x1b[31m\u2718\x1b[0m"}`);
 });
