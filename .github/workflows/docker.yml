@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -37,6 +38,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Normalize image name
+        id: imagename
+        run: |
+          IMAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          echo "name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
       - name: Determine version and latest tag
         id: version
         run: |
@@ -58,7 +65,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-            ${{ steps.version.outputs.is_latest == 'true' && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) || '' }}
+            ${{ env.REGISTRY }}/${{ steps.imagename.outputs.name }}:${{ steps.version.outputs.version }}
+            ${{ steps.version.outputs.is_latest == 'true' && format('{0}/{1}:latest', env.REGISTRY, steps.imagename.outputs.name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
