@@ -55,7 +55,7 @@ module.exports = async(req, res, proxy, xml) => {
             track: 0,
             year: 2024,
             genre: "Unknown",
-            size: 0,
+            size: track.extra.filesize,
             suffix: "mp3",
             contentType: "audio/mpeg",
             isVideo: false,

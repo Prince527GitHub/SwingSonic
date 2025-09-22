@@ -84,7 +84,7 @@ async function playBackInfo(req, res) {
             Path: `/items/${id}/download`,
             Type: "Default",
             Container: "mp3",
-            Size: 0,
+            Size: 1024,
             Name: id,
             IsRemote: false,
             ETag: id,

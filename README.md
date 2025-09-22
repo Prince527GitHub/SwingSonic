@@ -1,3 +1,8 @@
+> [!IMPORTANT]  
+> Starting with version 2.1.0, the subsonic implementation requires a list of Swing Music users' usernames and passwords, see [config.example.json](config.example.json) or [.env](#Docker) for an example.
+> 
+> Also docker images are now tagged with the version and latest tag, see [Docker](#Docker) for an example.
+
 <h1 align="center">Swingsonic</h1>
 
 <p align="center"><sub><sup>Might have to find a new name...</sub></sup></p>
@@ -26,7 +31,7 @@ version: '3'
 
 services:
   app:
-    image: ghcr.io/prince527github/swingsonic:main
+    image: ghcr.io/prince527github/swingsonic:latest
     container_name: swingsonic
     ports:
       - 3000:3000
@@ -41,5 +46,7 @@ services:
       - SERVER_API_JELLYFIN_USER_USERNAME=admin # Jellyfin implementation requires a Swing Music user's username
       - SERVER_API_JELLYFIN_USER_PASSWORD=admin # Jellyfin implementation requires a Swing Music user's password
       - SERVER_API_EUTERPE=true # Enable of disable Enterpe API implementation
+      - SERVER_USERS_0_USERNAME=prinky # Subsonic implementation requires a list of Swing Music users's usernames
+      - SERVER_USERS_0_PASSWORD=J86wx5xhNzrAg4vImsE9g4qotPYngVqt # Subsonic implementation requires a list of Swing Music users's passwords
       - MUSIC=http://ip:port # The URL of your Swing Music server
 ```

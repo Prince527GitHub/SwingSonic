@@ -24,7 +24,7 @@ module.exports = async(req, res, proxy, xml) => {
         bitRate: track.bitrate,
         track: track.track,
         year: new Date().getFullYear(),
-        size: 0,
+        size: track.extra.filesize,
         suffix: "mp3",
         contentType: "audio/mpeg",
         isVideo: false,

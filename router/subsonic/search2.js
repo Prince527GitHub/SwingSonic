@@ -49,7 +49,7 @@ module.exports = async(req, res, proxy, xml) => {
             year: 2024,
             genre: "Unknown",
             coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
-            size: 0,
+            size: track.extra.filesize,
             contentType: "audio/mpeg",
             suffix: "mp3",
             isVideo: false

@@ -17,7 +17,13 @@
                 }
             },
             "euterpe": true
-        }
+        },
+        "users": [ // the subsonic implementation requires a list of SwingMusic users (in the future other implementations will use this)
+            {
+                "username": "admin",
+                "password": "admin"
+            }
+        ]
     },
     "music": "http://ip:port" // url of the swing music server
 }

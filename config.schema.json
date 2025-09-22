@@ -17,7 +17,13 @@
                 }
             },
             "euterpe": true
-        }
+        },
+        "users": [
+            {
+                "username": "admin",
+                "password": "admin"
+            }
+        ]
     },
     "music": "http://ip:port"
 }

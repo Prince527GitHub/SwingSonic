@@ -6,50 +6,32 @@ const proxy = require("../../packages/proxy");
 
 const path = require("path");
 
-async function checkPassword(string, salt, user) {
-    if (string) {
+async function checkPassword(input, salt, user) {
+    if (!input || !user?.username) return false;
+
+    try {
+        let password;
+
+        if (input.startsWith("enc:")) password = Buffer.from(input.substring(4), "hex").toString("utf-8");
+        else if (salt) {
+            const getUser = global.config.server.users.find(u => u.username === user.username);
+            if (!getUser?.password) return false;
+
+            const expectedHash = hashPassword(getUser.password, salt);
+            if (expectedHash !== input) return false;
+
+            password = getUser.password;
+        } else password = input;
+
         const auth = await fetch(`${global.config.music}/auth/login`, {
             method: "POST",
-            body: JSON.stringify({
-                username: user.username,
-                password: string
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: user.username, password })
         });
 
         return auth?.headers?.get("set-cookie") || false;
-    } else if (string.startsWith("enc:")) {
-        try {
-            const encodedData = string.substring(4);
-            const decodedString = Buffer.from(encodedData, "hex").toString("utf-8");
-
-            const auth = await fetch(`${global.config.music}/auth/login`, {
-                method: "POST",
-                body: JSON.stringify({
-                    username: user.username,
-                    password: decodedString
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-
-            return auth?.headers?.get("set-cookie") || false;
-        } catch (error) {
-            return false;
-        }
-    } else {
-        if (string && salt && password) {
-            try {
-                // You would have to unhash the password to keep this.
-                const hashed = hashPassword(password, salt);
-                return hashed === string;
-            } catch (error) {
-                return false;
-            }
-        } else return false;
+    } catch {
+        return false;
     }
 }
 
