@@ -52,11 +52,16 @@ jobs:
       - name: Determine version and latest tag
         id: version
         run: |
-          VERSION="${GITHUB_REF_NAME}"
-          VERSION=${VERSION#v}
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+            VERSION=${VERSION#v} # strip "v" prefix if included
+          else
+            VERSION="${GITHUB_REF_NAME#v}" # e.g. v1.2.3 → 1.2.3
+          fi
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+          # check if this is the highest semver tag
           LATEST_TAG=$(git tag --list "v*" | sort -V | tail -n1)
           if [ "v$VERSION" = "$LATEST_TAG" ]; then
             echo "is_latest=true" >> $GITHUB_OUTPUT
