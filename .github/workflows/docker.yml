@@ -61,7 +61,6 @@ jobs:
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # check if this is the highest semver tag
           LATEST_TAG=$(git tag --list "v*" | sort -V | tail -n1)
           if [ "v$VERSION" = "$LATEST_TAG" ]; then
             echo "is_latest=true" >> $GITHUB_OUTPUT
