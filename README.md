@@ -1,7 +1,7 @@
 > [!IMPORTANT]  
-> Starting with version 2.1.0, the subsonic implementation requires a list of Swing Music users' usernames and passwords, see [config.example.json](config.example.json) or [.env](#Docker) for an example.
-> 
-> Also docker images are now tagged with the version and latest tag, see [Docker](#Docker) for an example.
+> **Starting with version 2.1.0:**
+> - The Subsonic implementation now requires a list of Swing Music users. See [config.example.json](config.example.json) or the [.env](#Docker) section for examples.  
+> - Docker images are now published with both a specific version tag **and** the `latest` tag. See [Docker](https://github.com/Prince527GitHub/Swingsonic/pkgs/container/swingsonic) for details.
 
 <h1 align="center">Swingsonic</h1>
 
