@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, xml) => {
     const artists = favorites.artists.map(artist => ({
         name: artist.name,
         id: artist.artisthash,
-        starred: new Date(artist.created_date * 1000).toISOString()
+        starred: new Date(artist.date * 1000).toISOString()
     }));
 
     const albums = favorites.albums.map(album => ({
@@ -20,8 +20,8 @@ module.exports = async(req, res, proxy, xml) => {
         album: album.title,
         isDir: "true",
         coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
-        created: new Date(album.created_date * 1000).toISOString(),
-        starred: new Date(album.created_date * 1000).toISOString()
+        created: new Date(album.date * 1000).toISOString(),
+        starred: new Date(album.date * 1000).toISOString()
     }));
 
     const tracks = favorites.tracks.map(track => ({
