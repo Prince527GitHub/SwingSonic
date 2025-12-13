@@ -25,8 +25,6 @@ module.exports = async(req, res, proxy, xml) => {
         track: track.track,
         year: new Date().getFullYear(),
         size: track.extra.filesize,
-        suffix: "mp3",
-        contentType: "audio/mpeg",
         isVideo: false,
         path: track.filepath,
         albumId: track.albumhash,
