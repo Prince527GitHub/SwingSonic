@@ -55,7 +55,10 @@ module.exports = async(req, res, proxy, xml) => {
         "subsonic-response": {
             lyrics: lyrics,
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

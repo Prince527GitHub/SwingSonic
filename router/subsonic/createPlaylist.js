@@ -31,7 +31,10 @@ module.exports = async(req, res, proxy, xml) => {
                 coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.playlist.image })).toString("base64")
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

@@ -28,7 +28,10 @@ module.exports = async(req, res, proxy, xml) => {
                 album: output
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 
