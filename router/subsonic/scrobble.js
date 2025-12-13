@@ -6,7 +6,7 @@ module.exports = async(req, res, proxy, xml) => {
     const decoded = safeDecodeId(id);
     id = decoded ? decoded.id : id;
 
-    if (submission) {
+    if (submission === "true") {
         let trackInfo = await (
             await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, 
                 { headers: { "Cookie": req.user } })
