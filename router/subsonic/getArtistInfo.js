@@ -1,7 +1,7 @@
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
-    let { f } = req.query;
+    let { f, u, t, s } = req.query;
 
     const artist = await (await fetch(`${global.config.music}/artist/${id}`, {
         headers: {
@@ -10,18 +10,16 @@ module.exports = async(req, res, proxy, xml) => {
     })).json();
 
     const image = Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64");
-    const link = `${global.config.server.url}/rest/getCoverArt.view?id=${image}`;
+    const link = `${global.config.server.url}/rest/getCoverArt.view?id=${image}&u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}&s=${encodeURIComponent(s)}`;
 
     const json = {
         "subsonic-response": {
             artistInfo: {
                 biography: "Unknown",
                 musicBrainzId: id,
-                lastFmUrl: link,
                 smallImageUrl: link,
                 mediumImageUrl: link,
                 largeImageUrl: link,
-                similarArtist: []
             },
             status: "ok",
             version: "1.16.1",
