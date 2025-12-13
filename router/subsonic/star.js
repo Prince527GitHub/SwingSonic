@@ -1,11 +1,4 @@
-function safeDecodeId(id) {
-    try {
-        const json = Buffer.from(decodeURIComponent(id), "base64").toString("utf-8");
-        return JSON.parse(json);
-    } catch {
-        return null;
-    }
-}
+const { safeDecodeId } = require("../../packages/decodeId");
 
 module.exports = async(req, res, proxy, xml) => {
     let { f, id, albumId, artistId } = req.query;
