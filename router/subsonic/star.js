@@ -1,18 +1,38 @@
+function safeDecodeId(id) {
+    try {
+        const json = Buffer.from(decodeURIComponent(id), "base64").toString("utf-8");
+        return JSON.parse(json);
+    } catch {
+        return null;
+    }
+}
+
 module.exports = async(req, res, proxy, xml) => {
     let { f, id, albumId, artistId } = req.query;
 
+    const decoded = safeDecodeId(id || albumId || artistId);
+    if (decoded) {
+        id = decoded.id;
+        albumId = decoded.albumId;
+        artistId = decoded.artistId;
+    }
+
     const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
-    if (type) await fetch(`${global.config.music}/favorites/add`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({
-            "type": type,
-            "hash": id || albumId || artistId
-        })
-    });
+    if (type) {
+        let result = await fetch(`${global.config.music}/favorites/add`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Cookie": req.user
+            },
+            body: JSON.stringify({
+                "type": type,
+                "hash": id || albumId || artistId
+            })
+        });
+    } else {
+        console.log("No id, albumId, or artistId provided to star endpoint");
+    }
 
     const json = {
         "subsonic-response": {
