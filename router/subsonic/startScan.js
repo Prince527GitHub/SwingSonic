@@ -3,7 +3,7 @@ const { get } = require("../../packages/safe");
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
-    const scan = await (await fetch(`${global.config.music}/settings/trigger-scan`, {
+    const scan = await (await fetch(`${global.config.music}/notsettings/trigger-scan`, {
         headers: {
             "Cookie": req.user
         }
