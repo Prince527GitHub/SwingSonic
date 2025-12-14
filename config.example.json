@@ -12,7 +12,7 @@
             "jellyfin": true,
             "euterpe": true
         },
-        "users": [ // the subsonic implementation requires a list of SwingMusic users (in the future other implementations will use this)
+        "users": [ // the subsonic and jellyfin implementation requires a list of SwingMusic users
             {
                 "username": "admin",
                 "password": "admin"
