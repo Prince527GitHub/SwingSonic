@@ -65,8 +65,6 @@ module.exports = async(req, res, proxy, xml) => {
         }
     }
 
-    console.log(json["subsonic-response"].albumList2);
-
     if (f === "json") res.json(json);
     else res.send(xml(json));
 }
