@@ -1,26 +1,21 @@
-const { safeDecodeId } = require("../../packages/decodeId");
+const { get, safe, safeDecode } = require("../../packages/safe");
 
 module.exports = async(req, res, proxy, xml) => {
     let { f, id, time, submission } = req.query;
 
-    const decoded = safeDecodeId(id);
-    id = decoded ? decoded.id : id;
+    const decoded = safeDecode(id);
+    id = get(decoded, "id") || id;
 
     if (submission === "true") {
-        let trackInfo = await (
-            await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, 
-                { headers: { "Cookie": req.user } })
-        ).json();
+        let trackInfo = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(get(decoded, "path"))}`, { headers: { "Cookie": req.user } })).json();
 
-        const track = trackInfo.tracks.find(t => t.trackhash === id);
-        
-        // 240 is minimum duration for scrobbling in seconds
-        const duration = track ? track.duration : 240;
+        const track = safe(() => get(trackInfo, "tracks", []).find(t => t?.trackhash === id));
 
-        // convert milliseconds to seconds if needed
+        const duration = get(track, "duration", 240);
+
         time = time > 10_000_000_000 ? Math.floor(time / 1000) : time; 
 
-        let response = await fetch(`${global.config.music}/logger/track/log`, {
+        await fetch(`${global.config.music}/logger/track/log`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -33,11 +28,8 @@ module.exports = async(req, res, proxy, xml) => {
                 "source": "swingsonic",
             })
         });
-        if (!response.ok) {
-            console.log(`Failed to scrobble track with id ${id}: ${response.status} ${response.statusText}`);
-        }
     }
-    
+
     const json = {
         "subsonic-response": {
             status: "ok",

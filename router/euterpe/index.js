@@ -6,8 +6,8 @@ async function checkAuth(req, res, next) {
     if (!login.includes(req.originalUrl)) {
         try {
             const auth = req.headers["authorization"] || `Bearer ${req.query.token}`;
-            const credentials = auth.split(' ')[1];
-            const [username, password] = credentials.split(':');
+            const credentials = auth.split(" ")[1];
+            const [username, password] = credentials.split(":");
 
             const user = await fetch(`${global.config.music}/auth/login`, {
                 method: "POST",
@@ -22,7 +22,7 @@ async function checkAuth(req, res, next) {
             if (!user.ok) return res.sendStatus(401);
 
             req.user = user.headers.get("set-cookie");
-        } catch(err) {
+        } catch {
             return res.sendStatus(401);
         }
     }

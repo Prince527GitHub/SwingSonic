@@ -3,14 +3,14 @@ const router = express.Router();
 
 const proxy = require("../../packages/proxy");
 
-const { username, password } = global.config.server.api.jellyfin.user;
+const { username, password } = global.config.server.users[0];
 
 function decodeId(id) {
     try {
         const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
 
         return { id: decoded?.album ?? decoded?.id ?? id };;
-    } catch (error) {
+    } catch {
         return { id };
     }
 }

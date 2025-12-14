@@ -1,3 +1,5 @@
+const { get, safe } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
@@ -14,27 +16,27 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const albums = getAlbums.albums.map(album => ({
-        id: album.albumhash,
-        name: album.title,
-        coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
+    const albums = safe(() => get(getAlbums, "albums", []).map(album => ({
+        id: get(album, "albumhash"),
+        name: get(album, "title"),
+        coverArt: get(album, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(album, "image") })).toString("base64") : undefined,
         songCount: 0,
-        created: new Date(album.date * 1000).toISOString(),
+        created: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined,
         duration: 0,
-        artist: album.albumartists[0].name,
-        artistId: album.albumartists[0].artisthash
-    }));
+        artist: get(album, "albumartists[0].name"),
+        artistId: get(album, "albumartists[0].artisthash")
+    })), []);
 
     const json = {
         "subsonic-response": {
             artist: {
                 id: id,
-                name: artist.artist.name,
-                coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64"),
-                songCount: artist.artist.trackcount,
+                name: get(artist, "artist.name"),
+                coverArt: get(artist, "artist.image") ? Buffer.from(JSON.stringify({ type: "artist", id: get(artist, "artist.image") })).toString("base64") : undefined,
+                songCount: get(artist, "artist.trackcount"),
                 created: new Date().toISOString(),
-                duration: artist.artist.duration,
-                artist: artist.artist.name,
+                duration: get(artist, "artist.duration"),
+                artist: get(artist, "artist.name"),
                 artistId: id,
                 album: albums
             },

@@ -1,3 +1,5 @@
+const { get } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     let { playlistId, name, f } = req.query;
 
@@ -20,15 +22,15 @@ module.exports = async(req, res, proxy, xml) => {
     const json = {
         "subsonic-response": {
             playlists: {
-                id: playlist.playlist.id,
-                name: playlist.playlist.name,
+                id: get(playlist, "playlist.id"),
+                name: get(playlist, "playlist.name"),
                 comment: "No comment",
                 owner: "admin",
                 public: true,
-                songCount: playlist.playlist.count,
-                duration: playlist.playlist.duration,
-                created: playlist.playlist.last_updated,
-                coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.playlist.image })).toString("base64")
+                songCount: get(playlist, "playlist.count"),
+                duration: get(playlist, "playlist.duration"),
+                created: get(playlist, "playlist.last_updated"),
+                coverArt: get(playlist, "playlist.image") ? Buffer.from(JSON.stringify({ type: "playlist", id: get(playlist, "playlist.image") })).toString("base64") : undefined
             },
             status: "ok",
             version: "1.16.1",

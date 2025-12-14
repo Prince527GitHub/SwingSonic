@@ -1,17 +1,19 @@
+const { get, safe } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     const args = { headers: { "Cookie": req.user } };
 
     let { f } = req.query;
 
-    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json()).total;
+    const size = get(await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json(), "total", 50);
     const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, args)).json();
 
-    const output = artists.items.map(item => ({
-        id: item.artisthash,
-        name: item.name,
-        coverArt: Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64"),
+    const output = safe(() => get(artists, "items", []).map(item => ({
+        id: get(item, "artisthash"),
+        name: get(item, "name"),
+        coverArt: get(item, "image") ? Buffer.from(JSON.stringify({ type: "artist", id: get(item, "image") })).toString("base64") : undefined,
         albumCount: 0
-    }));
+    })), []);
 
     const groupe = output.reduce((acc, artist) => {
         const first = artist.name.charAt(0).toUpperCase();

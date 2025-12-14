@@ -1,3 +1,5 @@
+const { get, safe } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
@@ -13,10 +15,10 @@ module.exports = async(req, res, proxy, xml) => {
         })
     })).json();
 
-    const output = folders.folders.map((folder, index) => ({
+    const output = safe(() => get(folders, "folders", []).map((folder, index) => ({
         id: index,
-        name: folder.name
-    }));
+        name: get(folder, "name")
+    })), []);
 
     const json = {
         "subsonic-response": {

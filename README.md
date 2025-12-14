@@ -1,7 +1,5 @@
 > [!IMPORTANT]  
-> **Starting with version 2.1.0:**
-> - The Subsonic implementation now requires a list of Swing Music users. See [config.example.json](config.example.json) or the [.env](#Docker) section for examples.  
-> - Docker images are now published with both a specific version tag **and** the `latest` tag. See [Docker](https://github.com/Prince527GitHub/Swingsonic/pkgs/container/swingsonic) for details.
+> Please read [release notes](https://github.com/Prince527GitHub/Swingsonic/releases) for any breaking changes.
 
 <h1 align="center">Swingsonic</h1>
 
@@ -42,9 +40,7 @@ services:
       - SERVER_URL=http://ip:port # The public URL of this API
       - SERVER_API_SUBSONIC_ENABLE=true # Enable of disable Subsonic API implementation
       - SERVER_API_SUBSONIC_OPTIONS_ZW=true # Enable of Zero Width Character Hack
-      - SERVER_API_JELLYFIN_ENABLE=true # Enable of disable Jellyfin API implementation
-      - SERVER_API_JELLYFIN_USER_USERNAME=admin # Jellyfin implementation requires a Swing Music user's username
-      - SERVER_API_JELLYFIN_USER_PASSWORD=admin # Jellyfin implementation requires a Swing Music user's password
+      - SERVER_API_JELLYFIN=true # Enable of disable Jellyfin API implementation
       - SERVER_API_EUTERPE=true # Enable of disable Enterpe API implementation
       - SERVER_USERS_0_USERNAME=admin # Subsonic implementation requires a list of Swing Music users's usernames
       - SERVER_USERS_0_PASSWORD=admin # Subsonic implementation requires a list of Swing Music users's passwords

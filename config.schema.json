@@ -9,13 +9,7 @@
                     "zw": true
                 }
             },
-            "jellyfin": {
-                "enable": true,
-                "user": {
-                    "username": "admin",
-                    "password": "admin"
-                }
-            },
+            "jellyfin": true,
             "euterpe": true
         },
         "users": [

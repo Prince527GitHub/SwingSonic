@@ -1,3 +1,5 @@
+const { get } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
@@ -9,8 +11,9 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const image = Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64");
-    const link = `${global.config.server.url}/rest/getCoverArt.view?id=${image}&u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}&s=${encodeURIComponent(s)}`;
+    const artistImage = get(artist, "artist.image");
+    const image = artistImage ? Buffer.from(JSON.stringify({ type: "artist", id: artistImage })).toString("base64") : undefined;
+    const link = image ? `${get(global, "config.server.url")}/rest/getCoverArt.view?id=${image}&u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}&s=${encodeURIComponent(s)}` : undefined;
 
     const json = {
         "subsonic-response": {

@@ -7,13 +7,13 @@ function convertToXml(jsonObj) {
     function convertToXmlObj(obj, parent) {
         for (const key in obj) {
             if (Array.isArray(obj[key])) {
-                obj[key].forEach((item, index) => {
+                obj[key].forEach(item => {
                     const validKey = convertToValidXmlName(key);
                     const child = parent.ele(validKey);
-                    if (typeof item === 'object') convertToXmlObj(item, child);
+                    if (typeof item === "object") convertToXmlObj(item, child);
                     else child.text(item);
                 });
-            } else if (typeof obj[key] === 'object') {
+            } else if (typeof obj[key] === "object") {
                 const validKey = convertToValidXmlName(key);
                 const child = parent.ele(validKey);
                 convertToXmlObj(obj[key], child);
@@ -30,8 +30,8 @@ function convertToXml(jsonObj) {
 }
 
 function convertToValidXmlName(name) {
-    name = name.replace(/^[^a-zA-Z_]+/, '_');
-    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+    name = name.replace(/^[^a-zA-Z_]+/, "_");
+    return name.replace(/[^a-zA-Z0-9_]/g, "_");
 }
 
 module.exports = {

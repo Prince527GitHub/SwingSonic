@@ -25,7 +25,8 @@ function extract(text) {
 }
 
 function filter(text) {
-    return text.replace(/[\u200B\u200C\u200D\u2060\uFEFF]/g, '');
+    // eslint-disable-next-line no-misleading-character-class
+    return text.replace(/[\u200B\u200C\u200D\u2060\uFEFF]/g, "");
 }
 
 module.exports = {

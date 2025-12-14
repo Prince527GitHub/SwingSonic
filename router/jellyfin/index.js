@@ -7,7 +7,7 @@ async function checkAuth(req, res, next) {
         const tokenHeader = req.headers["x-emby-token"] || req.headers["x-emby-authorization"] || req.headers["x-mediabrowser-token"] || req.headers["authorization"] || req.query.api_key || req.query.ApiKey || req.query.apiKey;
         if (!tokenHeader) return res.sendStatus(401);
 
-        const token = tokenHeader.includes('Token=') ? tokenHeader.match(/Token="([^"]*)"/)?.[1] : tokenHeader;
+        const token = tokenHeader.includes("Token=") ? tokenHeader.match(/Token="([^"]*)"/)?.[1] : tokenHeader;
         if (!token) return res.sendStatus(401);
 
         const [username, password] = token.split("@");

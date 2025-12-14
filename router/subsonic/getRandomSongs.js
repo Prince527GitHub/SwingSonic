@@ -1,13 +1,14 @@
 const { shuffleArray } = require("../../packages/array");
+const { get, safe } = require("../../packages/safe");
 
 module.exports = async(req, res, proxy, xml) => {
     let { size, f } = req.query;
 
-    const albumsSize = (await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
+    const albumsSize = get(await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
         headers: {
             "Cookie": req.user
         }
-    })).json()).total;
+    })).json(), "total", 50);
     const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumsSize}&sortby=created_date&reverse=1`, {
         headers: {
             "Cookie": req.user
@@ -15,8 +16,9 @@ module.exports = async(req, res, proxy, xml) => {
     })).json();
 
     let output = [];
-    for (let index = 0; index < albums.items.length; index++) {
-        const album = albums.items[index];
+    const albumItems = get(albums, "items", []);
+    for (let index = 0; index < albumItems.length; index++) {
+        const album = albumItems[index];
 
         const tracks = await (await fetch(`${global.config.music}/album`, {
             method: "POST",
@@ -24,22 +26,22 @@ module.exports = async(req, res, proxy, xml) => {
                 "Content-Type": "application/json",
                 "Cookie": req.user
             },
-            body: JSON.stringify({ albumhash: album.albumhash })
+            body: JSON.stringify({ albumhash: get(album, "albumhash") })
         })).json();
 
-        output.push(...tracks.tracks.map(track => ({
-            id: track.trackhash,
-            parent: track.albumhash,
-            title: track.title,
+        output.push(...safe(() => get(tracks, "tracks", []).map(track => ({
+            id: get(track, "trackhash"),
+            parent: get(track, "albumhash"),
+            title: get(track, "title"),
             isDir: false,
-            album: track.album,
-            artist: track.artists[0].name,
+            album: get(track, "album"),
+            artist: get(track, "artists[0].name"),
             track: 0,
-            coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
-            size: track.extra.filesize,
-            duration: track.duration,
-            bitRate: track.bitrate
-        })));
+            coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
+            size: get(track, "extra.filesize"),
+            duration: get(track, "duration"),
+            bitRate: get(track, "bitrate")
+        })), []));
     }
 
     output = shuffleArray(output);

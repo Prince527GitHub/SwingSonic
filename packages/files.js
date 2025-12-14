@@ -1,5 +1,5 @@
-const { readdir } = require('fs').promises;
-const path = require('path');
+const { readdir } = require("fs").promises;
+const path = require("path");
 
 async function getFileList(dirName, filter, depth = 0) {
     let files = [];

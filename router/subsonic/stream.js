@@ -1,8 +1,10 @@
-module.exports = async(req, res, proxy, xml) => {
+const { safeDecode, get } = require("../../packages/safe");
+
+module.exports = async(req, res, proxy) => {
     const id = req.query.id;
 
-    const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
+    const decoded = safeDecode(id);
 
-    // due to using of legacy endpoint, no need to specify container and quality
-    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}`);
+    if (decoded && get(decoded, "id") && get(decoded, "path"))
+        proxy(res, req, `${global.config.music}/file/${get(decoded, "id")}/legacy?filepath=${encodeURIComponent(get(decoded, "path"))}`);
 }

@@ -9,13 +9,7 @@
                     "zw": true // enable zero width character hack
                 }
             },
-            "jellyfin": {
-                "enable": true,
-                "user": { // the jellyfin implementation requires a valid SwingMusic user
-                    "username": "admin",
-                    "password": "admin"
-                }
-            },
+            "jellyfin": true,
             "euterpe": true
         },
         "users": [ // the subsonic implementation requires a list of SwingMusic users (in the future other implementations will use this)

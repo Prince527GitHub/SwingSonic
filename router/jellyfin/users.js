@@ -174,7 +174,7 @@ router.get("/user/items", async(req, res) => {
     let albums = [];
 
     if (!AlbumArtistIds && (IncludeItemTypes === "MusicAlbum" ||  (!IncludeItemTypes && !MediaTypes))) {
-        albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || '0'}&limit=${Limit || '50'}&sortby=created_date&reverse=1`, {
+        albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || "0"}&limit=${Limit || "50"}&sortby=created_date&reverse=1`, {
             headers: {
                 "Cookie": req.user
             }
@@ -308,11 +308,11 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "Genres": [
                         "Unknown"
                     ],
-                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "ImageTags": {
                         "Primary": track.albumhash
                     },
@@ -366,11 +366,11 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "Genres": [
                         "Unknown"
                     ],
-                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                     "ImageTags": {
                         "Primary": track.albumhash
                     },
@@ -407,9 +407,7 @@ router.get("/user/items", async(req, res) => {
                     "track": track.track
                 })).sort((a, b) => a.track - b.track);
             }
-        } catch(err) {
-
-        }
+        } catch { /* empty */ }
     } else if (IncludeItemTypes === "Playlist") {
         albums = await (await fetch(`${global.config.music}/playlists`, {
             headers: {
@@ -692,9 +690,9 @@ router.get("/user/items/:id", async(req, res) => {
             BackdropImageTags: [],
             ChannelId: null,
             ChildCount: 0,
-            Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+            Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
             Genres: ["Unknown"],
-            Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString('base64')),
+            Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
             ImageTags: { Primary: track.albumhash },
             IndexNumber: track.track,
             IndexNumberEnd: albums.tracks.length,
@@ -770,7 +768,7 @@ router.get("/user/items/:id", async(req, res) => {
             LockedFields: [],
             LockData: false
         });
-    } catch (err) {
+    } catch {
         res.json({
             Items: [],
             TotalRecordCount: 0,

@@ -1,3 +1,5 @@
+const { get, safe } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
@@ -7,55 +9,53 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const artists = favorites.artists.map(artist => ({
-        id: artist.artisthash,
-        name: artist.name,
-        coverArt: Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64"),
-        albumCount: artist.albumcount,
-        starred: new Date(artist.date * 1000).toISOString()
-    }));
+    const artists = safe(() => get(favorites, "artists", []).map(artist => ({
+        id: get(artist, "artisthash"),
+        name: get(artist, "name"),
+        coverArt: get(artist, "image") ? Buffer.from(JSON.stringify({ type: "artist", id: get(artist, "image") })).toString("base64") : undefined,
+        albumCount: get(artist, "albumcount"),
+        starred: get(artist, "date") ? new Date(get(artist, "date") * 1000).toISOString() : undefined
+    })), []);
 
-    const albums = favorites.albums.map(album => ({
-        id: album.albumhash,
-        name: album.title,
-        artist: album.albumartists[0].artisthash,
-        artistId: album.albumartists[0].name,
-        coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
-        songCount: album.count,
-        duration: album.duration,
-        created: new Date(album.date * 1000).toISOString(),
-        starred: new Date(album.date * 1000).toISOString()
-    }));
+    const albums = safe(() => get(favorites, "albums", []).map(album => ({
+        id: get(album, "albumhash"),
+        name: get(album, "title"),
+        artist: get(album, "albumartists[0].artisthash"),
+        artistId: get(album, "albumartists[0].name"),
+        coverArt: get(album, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(album, "image") })).toString("base64") : undefined,
+        songCount: get(album, "count"),
+        duration: get(album, "duration"),
+        created: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined,
+        starred: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined
+    })), []);
 
-    const tracks = favorites.tracks.map(track => ({
-        id: track.trackhash,
-        parent: track.albumhash,
+    const tracks = safe(() => get(favorites, "tracks", []).map(track => ({
+        id: get(track, "trackhash"),
+        parent: get(track, "albumhash"),
         isDir: false,
-        title: track.title,
-        album: track.album,
-        artist: track.artists[0].name,
-        track: track.track,
-        genre: track.extra.genre[0],
-        coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
-        size: track.extra.filesize,
-        duration: track.duration,
-        bitRate: track.bitrate,
-        bitDepth: track.extra.bitdepth,
-        samplingRate: track.extra.samplerate,
-        channelCount: track.extra.channels,
-        path: track.filepath,
+        title: get(track, "title"),
+        album: get(track, "album"),
+        artist: get(track, "artists[0].name"),
+        track: get(track, "track"),
+        genre: get(track, "extra.genre[0]"),
+        coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
+        size: get(track, "extra.filesize"),
+        duration: get(track, "duration"),
+        bitRate: get(track, "bitrate"),
+        bitDepth: get(track, "extra.bitdepth"),
+        samplingRate: get(track, "extra.samplerate"),
+        channelCount: get(track, "extra.channels"),
+        path: get(track, "filepath"),
         isVideo: false,
-        discNumber: track.disc,
-        albumId: track.albumhash,
-        artistId: track.extra.artist[0].artisthash,
+        discNumber: get(track, "disc"),
+        albumId: get(track, "albumhash"),
+        artistId: get(track, "extra.artist[0].artisthash"),
         type: "music",
-        artists: track.extra.artist.map(artist => ({
-            name: artist,
-        })),
-        displayArtist: track.extra.artist[0],
-        explicitStatus: track.explicit ? "explicit" : "clean",
+        artists: safe(() => get(track, "extra.artist", []).map(artist => ({ name: artist })), []),
+        displayArtist: get(track, "extra.artist[0]"),
+        explicitStatus: get(track, "explicit") ? "explicit" : "clean",
         starred: new Date(0).toISOString(),
-    }));
+    })), []);
 
     const json = {
         "subsonic-response": {

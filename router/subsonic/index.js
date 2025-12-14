@@ -75,7 +75,7 @@ async function checkAuth(req, res, next) {
 }
 
 module.exports = async(app) => {
-    app.use("/rest/getOpenSubsonicExtensions.view", (req, res, next) => {
+    app.use("/rest/getOpenSubsonicExtensions.view", (req, res) => {
         let { f } = req.query;
 
         const json = {
@@ -107,7 +107,7 @@ module.exports = async(app) => {
         }
     });
 
-    app.use("/rest/*", (req, res, next) => {
+    app.use("/rest/*", (req, res) => {
         let { f } = req.query;
 
         const json = {

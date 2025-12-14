@@ -1,12 +1,12 @@
 function envJSON(env) {
-    const lines = env.split('\n');
+    const lines = env.split("\n");
     const json = {};
 
     lines.forEach(line => {
-        const [key, value] = line.split('=');
+        const [key, value] = line.split("=");
 
         if (key && value) {
-            let keys = key.split('_').map(k => k.toLowerCase());
+            let keys = key.split("_").map(k => k.toLowerCase());
             let objRef = json;
             let arrayIndex = null;
 
@@ -26,8 +26,8 @@ function envJSON(env) {
                     if (arrayIndex !== null) {
                         if (!objRef[keyPart][arrayIndex]) objRef[keyPart][arrayIndex] = {};
 
-                        if (key === `SERVER_USERS_${arrayIndex}_USERNAME`) objRef[keyPart][arrayIndex]['username'] = value;
-                        else if (key === `SERVER_USERS_${arrayIndex}_PASSWORD`) objRef[keyPart][arrayIndex]['password'] = value;
+                        if (key === `SERVER_USERS_${arrayIndex}_USERNAME`) objRef[keyPart][arrayIndex]["username"] = value;
+                        else if (key === `SERVER_USERS_${arrayIndex}_PASSWORD`) objRef[keyPart][arrayIndex]["password"] = value;
                     } else objRef[keyPart] = parseValue(value);
                 } else objRef = objRef[keyPart];
             });
@@ -38,7 +38,7 @@ function envJSON(env) {
 }
 
 function envString() {
-    let envString = '';
+    let envString = "";
 
     for (let key in process.env) {
         if (key.startsWith("SERVER") || key.startsWith("MUSIC")) {
@@ -50,7 +50,7 @@ function envString() {
 }
 
 function parseValue(value) {
-    if (value === 'true' || value === 'false') return value === 'true';
+    if (value === "true" || value === "false") return value === "true";
     else if (!isNaN(value)) return parseFloat(value);
     else return value;
 }

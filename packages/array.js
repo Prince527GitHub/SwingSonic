@@ -16,7 +16,7 @@ function shuffleArray(array) {
 function sortByProperty(arr, property) {
     if (arr.length === 0 || !property) return [];
 
-    if (!arr[0].hasOwnProperty(property)) throw new Error(`Property '${property}' not found in objects`);
+    if (!Object.prototype.hasOwnProperty.call(arr[0], property)) throw new Error(`Property '${property}' not found in objects`);
 
     arr.sort((a, b) => {
         if (a[property] < b[property]) return -1;

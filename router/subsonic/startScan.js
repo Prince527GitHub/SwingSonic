@@ -1,3 +1,5 @@
+const { get } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
@@ -15,13 +17,13 @@ module.exports = async(req, res, proxy, xml) => {
         body: JSON.stringify({ folder: "$home", tracks_only: false })
     })).json();
 
-    const status = scan?.msg === "Scan triggered!" ? true : false;
+    const status = get(scan, "msg") === "Scan triggered!";
 
     const json = {
         "subsonic-response": {
             scanStatus: {
                 scanning: status,
-                count: tracks?.folders[0]?.count || 0
+                count: get(tracks, "folders[0].count", 0)
             },
             status: "ok",
             version: "1.16.1",

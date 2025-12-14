@@ -1,3 +1,4 @@
+const { get, safe } = require("../../packages/safe");
 const zw = require("../../packages/zw");
 
 module.exports = async(req, res, proxy, xml) => {
@@ -5,45 +6,45 @@ module.exports = async(req, res, proxy, xml) => {
 
     let { f, size, offset } = req.query;
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || '0'}&limit=${size || '50'}`, {
+    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || "0"}&limit=${size || "50"}`, {
         headers: {
             "Cookie": req.user
         }
     })).json();
 
-    const output = playlist.tracks.map(track => ({
-        id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
+    const output = safe(() => get(playlist, "tracks", []).map(track => ({
+        id: get(track, "trackhash") && get(track, "filepath") ? encodeURIComponent(Buffer.from(JSON.stringify({ id: get(track, "trackhash"), path: get(track, "filepath") })).toString("base64")) : undefined,
         parent: "655",
-        title: global.config.server.api.subsonic.options.zw ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64")) : track.title,
-        album: track.album,
-        artist: track.artists[0].name,
+        title: get(global, "config.server.api.subsonic.options.zw") && get(track, "title") && get(track, "albumhash") && get(track, "trackhash") ? zw.inject(get(track, "title"), Buffer.from(JSON.stringify({ album: get(track, "albumhash"), id: get(track, "trackhash") })).toString("base64")) : get(track, "title"),
+        album: get(track, "album"),
+        artist: get(track, "artists[0].name"),
         isDir: false,
-        coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
+        coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
         created: new Date().toISOString(),
-        duration: track.duration,
-        bitRate: track.bitrate,
-        track: track.track,
+        duration: get(track, "duration"),
+        bitRate: get(track, "bitrate"),
+        track: get(track, "track"),
         year: new Date().getFullYear(),
-        size: track.extra.filesize,
+        size: get(track, "extra.filesize"),
         isVideo: false,
-        path: track.filepath,
-        albumId: track.albumhash,
-        artistId: track.artists[0].artisthash,
+        path: get(track, "filepath"),
+        albumId: get(track, "albumhash"),
+        artistId: get(track, "artists[0].artisthash"),
         type: "music"
-    }));
+    })), []);
 
     const json = {
         "subsonic-response": {
             playlist: {
-                id: playlist.info.id,
-                name: playlist.info.name,
+                id: get(playlist, "info.id"),
+                name: get(playlist, "info.name"),
                 comment: "No comment",
                 owner: "admin",
                 public: true,
-                songCount: playlist.info.count,
-                duration: playlist.info.duration,
+                songCount: get(playlist, "info.count"),
+                duration: get(playlist, "info.duration"),
                 created: 0, // 16 hours ago
-                coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.info.image })).toString("base64"),
+                coverArt: get(playlist, "info.image") ? Buffer.from(JSON.stringify({ type: "playlist", id: get(playlist, "info.image") })).toString("base64") : undefined,
                 entry: output
             },
             status: "ok",

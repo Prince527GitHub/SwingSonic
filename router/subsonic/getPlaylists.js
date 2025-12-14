@@ -1,3 +1,5 @@
+const { get, safe } = require("../../packages/safe");
+
 module.exports = async(req, res, proxy, xml) => {
     let { f } = req.query;
 
@@ -7,17 +9,17 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const output = playlists.data.map(playlist => ({
-        id: playlist.id,
-        name: playlist.name,
+    const output = safe(() => get(playlists, "data", []).map(playlist => ({
+        id: get(playlist, "id"),
+        name: get(playlist, "name"),
         comment: "No comment",
         owner: "admin",
         public: true,
-        songCount: playlist.count,
-        duration: playlist.duration,
-        created: playlist.last_updated,
-        coverArt: Buffer.from(JSON.stringify({ type: "playlist", id: playlist.image })).toString("base64")
-    }));
+        songCount: get(playlist, "count"),
+        duration: get(playlist, "duration"),
+        created: get(playlist, "last_updated"),
+        coverArt: get(playlist, "image") ? Buffer.from(JSON.stringify({ type: "playlist", id: get(playlist, "image") })).toString("base64") : undefined
+    })), []);
 
     const json = {
         "subsonic-response": {

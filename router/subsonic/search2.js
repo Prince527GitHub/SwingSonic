@@ -1,3 +1,4 @@
+const { get, safe } = require("../../packages/safe");
 const zw = require("../../packages/zw");
 
 // TODO: Make ZW support behind a flag
@@ -13,43 +14,43 @@ module.exports = async(req, res, proxy, xml) => {
     let artists = [];
 
     if (artistCount >= 1 && query) {
-        artists = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${query}&start=${artistOffset || 0}&limit=${artistCount || 50}`, args)).json();
-        artists = artists.results.map(artist => ({
-            id: artist.artisthash,
-            name: artist.name
-        }));
+        const artistResults = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${query}&start=${artistOffset || 0}&limit=${artistCount || 50}`, args)).json();
+        artists = safe(() => get(artistResults, "results", []).map(artist => ({
+            id: get(artist, "artisthash"),
+            name: get(artist, "name")
+        })), []);
     }
 
     let albums = [];
 
     if (albumCount >= 1 && query) {
-        albums = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${query}&start=${albumOffset || 0}&limit=${albumCount || 50}`, args)).json();
-        albums = albums.results.map(album => ({
-            id: album.albumhash,
-            parent: album.albumhash,
-            title: album.title,
-            artist: album.albumartists[0].name,
+        const albumResults = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${query}&start=${albumOffset || 0}&limit=${albumCount || 50}`, args)).json();
+        albums = safe(() => get(albumResults, "results", []).map(album => ({
+            id: get(album, "albumhash"),
+            parent: get(album, "albumhash"),
+            title: get(album, "title"),
+            artist: get(album, "albumartists[0].name"),
             isDir: "true",
-            coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64")
-        }));
+            coverArt: get(album, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(album, "image") })).toString("base64") : undefined
+        })), []);
     }
 
     let tracks = [];
 
     if (songCount >= 1 && query) {
-        tracks = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${query}&start=${songOffset || 0}&limit=${songCount || 50}`, args)).json();
-        tracks = tracks.results.map(track => ({
-            id: encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")),
-            parent: track.albumhash,
-            title: global.config.server.api.subsonic.options.zw ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64")) : track.title,
+        const trackResults = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${query}&start=${songOffset || 0}&limit=${songCount || 50}`, args)).json();
+        tracks = safe(() => get(trackResults, "results", []).map(track => ({
+            id: get(track, "trackhash") && get(track, "filepath") ? encodeURIComponent(Buffer.from(JSON.stringify({ id: get(track, "trackhash"), path: get(track, "filepath") })).toString("base64")) : undefined,
+            parent: get(track, "albumhash"),
+            title: get(global, "config.server.api.subsonic.options.zw") && get(track, "title") && get(track, "albumhash") && get(track, "trackhash") ? zw.inject(get(track, "title"), Buffer.from(JSON.stringify({ album: get(track, "albumhash"), id: get(track, "trackhash") })).toString("base64")) : get(track, "title"),
             isDir: false,
-            album: track.album,
-            artist: track.albumartists[0].name,
+            album: get(track, "album"),
+            artist: get(track, "albumartists[0].name"),
             track: 0,
-            coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
-            size: track.extra.filesize,
+            coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
+            size: get(track, "extra.filesize"),
             isVideo: false
-        }));
+        })), []);
     }
 
     const json = {
