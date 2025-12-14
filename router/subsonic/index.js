@@ -41,7 +41,10 @@ async function checkAuth(req, res, next) {
     const json = {
         "subsonic-response": {
             status: "unauthorized",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 
@@ -72,6 +75,24 @@ async function checkAuth(req, res, next) {
 }
 
 module.exports = async(app) => {
+    app.use("/rest/getOpenSubsonicExtensions.view", (req, res, next) => {
+        let { f } = req.query;
+
+        const json = {
+            "subsonic-response": {
+                "openSubsonicExtensions": [],
+                status: "ok",
+                version: "1.16.1",
+                type: "swingsonic",
+                serverVersion: "unknown",
+                openSubsonic: true
+            }
+        }
+
+        if (f === "json") res.status(200).json(json);
+        else res.status(200).send(convertToXml(json));
+    });
+
     app.use("/rest/*", checkAuth);
 
     const routeFiles = await getFileList(`${process.cwd()}/router/subsonic`, { type: ".js", recursively: false });
@@ -92,7 +113,10 @@ module.exports = async(app) => {
         const json = {
             "subsonic-response": {
                 status: "ok",
-                version: "1.16.1"
+                version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
             }
         }
 

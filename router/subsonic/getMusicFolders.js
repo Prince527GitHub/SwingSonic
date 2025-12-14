@@ -13,9 +13,9 @@ module.exports = async(req, res, proxy, xml) => {
         })
     })).json();
 
-    const output = folders.folders.map(folder => ({
-        "id": folder.path,
-        "name": folder.name
+    const output = folders.folders.map((folder, index) => ({
+        id: index,
+        name: folder.name
     }));
 
     const json = {
@@ -24,7 +24,10 @@ module.exports = async(req, res, proxy, xml) => {
                 musicFolder: output
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

@@ -14,7 +14,7 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const albums = getAlbums.appearances.map(album => ({
+    const albums = getAlbums.albums.map(album => ({
         id: album.albumhash,
         name: album.title,
         coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
@@ -39,7 +39,10 @@ module.exports = async(req, res, proxy, xml) => {
                 album: albums
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

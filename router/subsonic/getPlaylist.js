@@ -25,8 +25,6 @@ module.exports = async(req, res, proxy, xml) => {
         track: track.track,
         year: new Date().getFullYear(),
         size: track.extra.filesize,
-        suffix: "mp3",
-        contentType: "audio/mpeg",
         isVideo: false,
         path: track.filepath,
         albumId: track.albumhash,
@@ -49,7 +47,10 @@ module.exports = async(req, res, proxy, xml) => {
                 entry: output
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

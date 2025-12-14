@@ -46,12 +46,8 @@ module.exports = async(req, res, proxy, xml) => {
             album: track.album,
             artist: track.albumartists[0].name,
             track: 0,
-            year: 2024,
-            genre: "Unknown",
             coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
             size: track.extra.filesize,
-            contentType: "audio/mpeg",
-            suffix: "mp3",
             isVideo: false
         }));
     }
@@ -64,7 +60,10 @@ module.exports = async(req, res, proxy, xml) => {
                 song: tracks
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 

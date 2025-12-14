@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, xml) => {
     const artists = favorites.artists.map(artist => ({
         name: artist.name,
         id: artist.artisthash,
-        starred: new Date(artist.created_date * 1000).toISOString()
+        starred: new Date(artist.date * 1000).toISOString()
     }));
 
     const albums = favorites.albums.map(album => ({
@@ -20,33 +20,38 @@ module.exports = async(req, res, proxy, xml) => {
         album: album.title,
         isDir: "true",
         coverArt: Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64"),
-        created: new Date(album.created_date * 1000).toISOString(),
-        starred: new Date(album.created_date * 1000).toISOString()
+        created: new Date(album.date * 1000).toISOString(),
+        starred: new Date(album.date * 1000).toISOString()
     }));
 
     const tracks = favorites.tracks.map(track => ({
         id: track.trackhash,
         parent: track.albumhash,
+        isDir: false,
         title: track.title,
         album: track.album,
         artist: track.artists[0].name,
-        isDir: false,
+        track: track.track,
+        genre: track.extra.genre[0],
         coverArt: Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64"),
-        created: new Date(0).toISOString(),
-        starred: new Date(0).toISOString(),
+        size: track.extra.filesize,
         duration: track.duration,
         bitRate: track.bitrate,
-        track: track.track,
-        year: 2024,
-        genre: "Unknown",
-        size: track.extra.filesize,
-        suffix: "mp3",
-        contentType: "audio/mpeg",
-        isVideo: false,
+        bitDepth: track.extra.bitdepth,
+        samplingRate: track.extra.samplerate,
+        channelCount: track.extra.channels,
         path: track.filepath,
+        isVideo: false,
+        discNumber: track.disc,
         albumId: track.albumhash,
-        artistId: track.artists[0].artisthash,
-        type: "music"
+        artistId: track.extra.artist[0].artisthash,
+        type: "music",
+        artists: track.extra.artist.map(artist => ({
+            name: artist,
+        })),
+        displayArtist: track.extra.artist[0],
+        explicitStatus: track.explicit ? "explicit" : "clean",
+        starred: new Date(0).toISOString(),
     }));
 
     const json = {
@@ -57,7 +62,10 @@ module.exports = async(req, res, proxy, xml) => {
                 song: tracks
             },
             status: "ok",
-            version: "1.16.1"
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
         }
     }
 
