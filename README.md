@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> Please read [release notes](https://github.com/Prince527GitHub/Swingsonic/releases) for any breaking changes.
+> Please read the [release notes](https://github.com/Prince527GitHub/Swingsonic/releases) for any breaking changes.
 
 <h1 align="center">Swingsonic</h1>
 
