@@ -2,6 +2,8 @@ name: Build Docker
 
 on:
   push:
+    branches:
+      - "**"
     tags:
       - "v*.*.*"
   workflow_dispatch:
@@ -39,38 +41,38 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Image Name
-        id: name
+      - name: Compute Tags
+        id: tags
         run: |
-          IMAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          echo "name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          NAME=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          REGISTRY="${{ env.REGISTRY }}"
 
-      - name: Extract Version Tag
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.tag }}"
-            VERSION=${VERSION#v}
-          else
+          if [ "${{ github.ref_type }}" = "tag" ]; then
             VERSION="${GITHUB_REF_NAME#v}"
-          fi
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-          LATEST_TAG=$(git tag --list "v*" | sort -V | tail -n1)
-          if [ "v$VERSION" = "$LATEST_TAG" ]; then
-            echo "is_latest=true" >> $GITHUB_OUTPUT
+            LATEST_TAG=$(git tag --list "v*" | sort -V | tail -n1)
+            TAGS="${REGISTRY}/${NAME}:${VERSION}"
+            [ "v$VERSION" = "$LATEST_TAG" ] && TAGS="${TAGS}${IFS}${REGISTRY}/${NAME}:latest"
           else
-            echo "is_latest=false" >> $GITHUB_OUTPUT
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            DEFAULT_BRANCH=$(gh api repos/${{ github.repository }}/default_branch --jq '.name')
+            BRANCH="${GITHUB_REF_NAME}"
+            if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
+              TAGS="${REGISTRY}/${NAME}:dev${IFS}${REGISTRY}/${NAME}:dev-${SHORT_SHA}"
+            else
+              TAG=$(echo "$BRANCH" | tr '/' '-')
+              TAGS="${REGISTRY}/${NAME}:${TAG}${IFS}${REGISTRY}/${NAME}:${TAG}-${SHORT_SHA}"
+            fi
           fi
+
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          printf "%s\n" "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and Push
         uses: docker/build-push-action@v7
         with:
           context: .
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ steps.name.outputs.name }}:${{ steps.version.outputs.version }}
-            ${{ steps.version.outputs.is_latest == 'true' && format('{0}/{1}:latest', env.REGISTRY, steps.name.outputs.name) || '' }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
