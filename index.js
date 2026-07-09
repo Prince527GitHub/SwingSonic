@@ -3,10 +3,6 @@ const { envString, envJSON } = require("./packages/env");
 try {
     global.config = require("./config.json");
 } catch {
-    try {
-        require("dotenv").config();
-    } catch { /* empty */ }
-
     global.config = envJSON(envString());
 }
 

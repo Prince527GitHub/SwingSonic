@@ -1,4 +1,4 @@
-const axios = require("axios");
+const { Readable } = require("stream");
 
 module.exports = async (res, req, url) => {
     try {
@@ -11,14 +11,15 @@ module.exports = async (res, req, url) => {
 
         if (req.headers["range"]) headers["Range"] = req.headers["range"];
 
-        const response = await axios.get(url, {
-            responseType: "stream",
-            headers,
-        });
+        const response = await fetch(url, { headers });
 
-        res.writeHead(response.status, response.headers);
+        const forwarded = {};
 
-        response.data.pipe(res);
+        response.headers.forEach((value, key) => forwarded[key] = value);
+
+        res.writeHead(response.status, forwarded);
+
+        Readable.fromWeb(response.body).pipe(res);
     } catch (error) {
         console.error("Proxy error:", error.message);
         res.status(500).send("Error proxying request.");
