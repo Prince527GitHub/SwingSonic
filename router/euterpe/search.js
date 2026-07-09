@@ -7,11 +7,7 @@ router.get("/", async(req, res) => {
     const query = req.query.q;
     if (!query) return res.json([]);
 
-    const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=0&limit=50`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=0&limit=50`, { headers: { "Cookie": req.user } })).json();
 
     const result = (search.results || []).map(track => ({
         album: track.album,
