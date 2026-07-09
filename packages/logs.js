@@ -1,28 +1,27 @@
-module.exports = (req, res, next) => {
-    const KL = 1024;
-    const MB = KL * KL;
+function format(bytes) {
+    if (bytes < 1024) return `${bytes}`;
+    if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)}K`;
+    return `${(bytes / 1024 ** 2).toFixed(1)}M`;
+}
 
-    const startTime = Date.now();
+module.exports = (req, res, next) => {
+    const start = Date.now();
 
     res.on("finish", () => {
-        const reqTx = req.method + " ".repeat(Math.max(0, 4 - req.method.length)) + "\x1b[0m";
+        const time = Date.now() - start;
+        const size = Number((req.method === "POST" ? req : res).get("Content-Length")) || 0;
 
-        const time = Date.now() - startTime;
-        const timeStr = time < 1000 ? time.toString() : (time / 1000).toFixed(1) + "s";
-        const timeTx = " ".repeat(Math.max(0, 5 - timeStr.length)) + timeStr;
+        const status = res.statusCode;
+        const color = status >= 500 ? 31 : status >= 400 ? 33 : status >= 300 ? 36 : status >= 200 ? 32 : 0;
 
-        const size = parseInt((req.method === "POST" ? req : res).get("Content-Length") || "0");
-        const sizeStr = size < KL ? size.toString() : size < MB ? (size / KL).toFixed(1) + "K" : (size / MB).toFixed(1) + "M";
-        const sizeTx = " ".repeat(7 - sizeStr.length) + sizeStr;
-
-        const stat = res.statusCode;
-        const color = stat >= 500 ? 31 : stat >= 400 ? 33 : stat >= 300 ? 36 : stat >= 200 ? 32 : 0;
-        const statTx = `\x1b[${color}m${stat}\x1b[0m`;
-
-        const logTx = `${statTx} ${reqTx} ${timeTx} ${sizeTx} ${req.originalUrl}\n`;
-
-        process.stdout.write(logTx);
+        process.stdout.write(
+            `\x1b[${color}m${status}\x1b[0m ` +
+            `${req.method.padEnd(4)} ` +
+            `${(time < 1000 ? `${time}` : `${(time / 1000).toFixed(1)}s`).padStart(5)} ` +
+            `${format(size).padStart(7)} ` +
+            `${req.originalUrl}\n`
+        );
     });
 
     next();
-}
+};

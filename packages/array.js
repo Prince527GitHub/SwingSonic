@@ -1,8 +1,5 @@
-function createArray(array, size, offset) {
-    if (offset < 0 || offset >= array.length) return [];
-
-    const newArray = array.slice(offset, offset + size);
-    return newArray;
+function createArray(array, size, offset = 0) {
+    return offset >= 0 && offset < array.length ? array.slice(offset, offset + size) : [];
 }
 
 function shuffleArray(array) {
@@ -10,25 +7,22 @@ function shuffleArray(array) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+
     return array;
 }
 
-function sortByProperty(arr, property) {
-    if (arr.length === 0 || !property) return [];
+function sortByProperty(array, property) {
+    if (!array.length) return [];
+    if (!(property in array[0])) throw new Error(`Property '${property}' not found`);
 
-    if (!Object.prototype.hasOwnProperty.call(arr[0], property)) throw new Error(`Property '${property}' not found in objects`);
-
-    arr.sort((a, b) => {
-        if (a[property] < b[property]) return -1;
-        if (a[property] > b[property]) return 1;
-        return 0;
-    });
-
-    return arr;
+    return array.sort((a, b) =>
+        a[property] < b[property] ? -1 :
+        a[property] > b[property] ? 1 : 0
+    );
 }
 
 module.exports = {
-    sortByProperty,
+    createArray,
     shuffleArray,
-    createArray
-}
+    sortByProperty
+};

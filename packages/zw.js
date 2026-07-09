@@ -1,25 +1,24 @@
-function inject(visible, hidden) {
-    let binary = "";
-    for (const char of hidden) binary += char.charCodeAt(0).toString(2).padStart(8, "0");
+function inject(visible, content) {
+    const bits = [...content]
+        .map(char => char.charCodeAt(0).toString(2).padStart(8, "0"))
+        .join("");
 
-    let hiddenChars = "";
-    for (const bit of binary) hiddenChars += bit === "1" ? "\u200B" : "\u200C";
+    const hidden = [...bits]
+        .map(bit => (bit === "1" ? "\u200B" : "\u200C"))
+        .join("");
 
-    return visible + hiddenChars;
+    return `${visible}${hidden}`;
 }
 
 function extract(text) {
-    let binary = "";
-    for (let char of text) {
-        if (char === "\u200B") binary += "1";
-        else if (char === "\u200C") binary += "0";
-    }
+    const bits = [...text]
+        .filter(char => char === "\u200B" || char === "\u200C")
+        .map(char => (char === "\u200B" ? "1" : "0"))
+        .join("");
 
     let result = "";
-    for (let i = 0; i < binary.length; i += 8) {
-        const byte = binary.substring(i, i + 8);
-        if (byte.length === 8) result += String.fromCharCode(parseInt(byte, 2));
-    }
+    for (let i = 0; i + 8 <= bits.length; i += 8)
+        result += String.fromCharCode(parseInt(bits.slice(i, i + 8), 2));
 
     return result;
 }
@@ -33,4 +32,4 @@ module.exports = {
     inject,
     extract,
     filter
-}
+};

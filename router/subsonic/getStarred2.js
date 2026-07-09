@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = async(req, res, proxy, respond) => {
     const favorites = await (await fetch(`${global.config.music}/favorites`, {
         headers: {
@@ -25,7 +27,6 @@ module.exports = async(req, res, proxy, respond) => {
         starred: album?.date ? new Date(album.date * 1000).toISOString() : undefined
     }));
 
-    const path = require("path");
     const tracks = (favorites?.tracks || []).map(track => {
         const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
         return {
