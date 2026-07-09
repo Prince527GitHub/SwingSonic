@@ -1,33 +1,62 @@
-const { get, safe, safeDecode } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
     let { f, id, time, submission } = req.query;
 
-    const decoded = safeDecode(id);
-    id = get(decoded, "id") || id;
+    let ids = [];
+    let times = [];
 
-    if (submission === "true") {
-        let trackInfo = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(get(decoded, "path"))}`, { headers: { "Cookie": req.user } })).json();
+    if (id) {
+        const idList = Array.isArray(id) ? id : [id];
+        for (const singleId of idList) {
+            let decoded;
+            try {
+                const json = Buffer.from(decodeURIComponent(singleId), "base64").toString("utf-8");
+                decoded = JSON.parse(json);
+            } catch {
+                decoded = null;
+            }
+            ids.push({ raw: singleId, decoded });
+        }
+    }
 
-        const track = safe(() => get(trackInfo, "tracks", []).find(t => t?.trackhash === id));
+    if (time) {
+        times = Array.isArray(time) ? time : [time];
+    }
 
-        const duration = get(track, "duration", 240);
+    const isSubmission = submission !== "false";
 
-        time = time > 10_000_000_000 ? Math.floor(time / 1000) : time; 
+    for (let i = 0; i < ids.length; i++) {
+        const item = ids[i];
+        const decoded = item.decoded;
+        const trackId = decoded?.id || item.raw;
 
-        await fetch(`${global.config.music}/logger/track/log`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({
-                "timestamp": time,
-                "trackhash": id,
-                "duration": duration,
-                "source": "swingsonic",
-            })
-        });
+        if (isSubmission) {
+            let trackInfo = decoded?.path ? await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, { headers: { "Cookie": req.user } })).json() : { tracks: [] };
+
+            let track;
+            try {
+                track = (trackInfo?.tracks || []).find(t => t?.trackhash === trackId);
+            } catch {
+                track = null;
+            }
+
+            const duration = track?.duration ?? 240;
+            const ts = times[i] || time;
+            const timestamp = ts > 10_000_000_000 ? Math.floor(parseInt(ts) / 1000) : (parseInt(ts) || Math.floor(Date.now() / 1000));
+
+            await fetch(`${global.config.music}/logger/track/log`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Cookie": req.user
+                },
+                body: JSON.stringify({
+                    "timestamp": timestamp,
+                    "trackhash": trackId,
+                    "duration": duration,
+                    "source": "swingsonic",
+                })
+            });
+        }
     }
 
     const json = {

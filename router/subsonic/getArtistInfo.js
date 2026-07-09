@@ -1,5 +1,3 @@
-const { get } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
@@ -11,15 +9,16 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const artistImage = get(artist, "artist.image");
+    const artistImage = artist?.artist?.image;
     const image = artistImage ? Buffer.from(JSON.stringify({ type: "artist", id: artistImage })).toString("base64") : undefined;
-    const link = image ? `${get(global, "config.server.url")}/rest/getCoverArt.view?id=${image}&u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}&s=${encodeURIComponent(s)}` : undefined;
+    const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
 
     const json = {
         "subsonic-response": {
             artistInfo: {
-                biography: "Unknown",
-                musicBrainzId: id,
+                biography: artist?.artist?.biography || "Unknown",
+                musicBrainzId: artist?.artist?.musicbrainz_id || "",
+                lastFmUrl: artist?.artist?.lastfm_url || "",
                 smallImageUrl: link,
                 mediumImageUrl: link,
                 largeImageUrl: link,

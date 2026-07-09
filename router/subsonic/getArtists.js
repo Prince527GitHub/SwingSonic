@@ -1,22 +1,29 @@
-const { get, safe } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
     const args = { headers: { "Cookie": req.user } };
 
-    let { f } = req.query;
+    let { f, musicFolderId } = req.query;
 
-    const size = get(await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json(), "total", 50);
+    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json())?.total ?? 50;
     const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, args)).json();
 
-    const output = safe(() => get(artists, "items", []).map(item => ({
-        id: get(item, "artisthash"),
-        name: get(item, "name"),
-        coverArt: get(item, "image") ? Buffer.from(JSON.stringify({ type: "artist", id: get(item, "image") })).toString("base64") : undefined,
-        albumCount: 0
-    })), []);
+    const output = await Promise.all((artists?.items || []).map(async(item) => {
+        const node = {
+            id: item?.artisthash,
+            name: item?.name,
+            coverArt: item?.image ? Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64") : undefined,
+            albumCount: item?.albumcount || 0
+        };
+
+        const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${item?.artisthash}&type=artist`, {
+            headers: { "Cookie": req.user }
+        })).json();
+        if (favorite?.is_favorite) node.starred = favorite?.date ? new Date(favorite.date * 1000).toISOString() : new Date(0).toISOString();
+
+        return node;
+    }));
 
     const groupe = output.reduce((acc, artist) => {
-        const first = artist.name.charAt(0).toUpperCase();
+        const first = (artist.name || "")?.charAt(0)?.toUpperCase() || "#";
 
         acc[first] = acc[first] || [];
         acc[first].push(artist);
@@ -24,7 +31,7 @@ module.exports = async(req, res, proxy, xml) => {
         return acc;
     }, {});
 
-    const organize = Object.keys(groupe).map(letter => ({
+    const organize = Object.keys(groupe).sort().map(letter => ({
         name: letter,
         artist: groupe[letter]
     }));
@@ -32,6 +39,7 @@ module.exports = async(req, res, proxy, xml) => {
     const json = {
         "subsonic-response": {
             artists: {
+                ignoredArticles: "",
                 index: organize
             },
             status: "ok",

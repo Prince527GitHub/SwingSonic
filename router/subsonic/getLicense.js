@@ -3,9 +3,11 @@ module.exports = async(req, res, proxy, xml) => {
 
     const json = {
         "subsonic-response": {
-            scanStatus: {
-                scanning: false,
-                count: 0
+            license: {
+                valid: true,
+                email: "admin@swingsonic",
+                key: "opensource",
+                date: new Date().toISOString()
             },
             status: "ok",
             version: "1.16.1",

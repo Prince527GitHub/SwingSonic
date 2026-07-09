@@ -1,7 +1,5 @@
-const { get, safe } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
-    let { f } = req.query;
+    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const favorites = await (await fetch(`${global.config.music}/favorites`, {
         headers: {
@@ -9,50 +7,55 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const artists = safe(() => get(favorites, "artists", []).map(artist => ({
-        name: get(artist, "name"),
-        id: get(artist, "artisthash"),
-        starred: get(artist, "date") ? new Date(get(artist, "date") * 1000).toISOString() : undefined
-    })), []);
+    const artists = (favorites?.artists || []).map(artist => ({
+        name: artist?.name,
+        id: artist?.artisthash,
+        starred: artist?.date ? new Date(artist.date * 1000).toISOString() : undefined
+    }));
 
-    const albums = safe(() => get(favorites, "albums", []).map(album => ({
-        id: get(album, "albumhash"),
-        parent: get(album, "albumhash"),
-        title: get(album, "title"),
-        album: get(album, "title"),
+    const albums = (favorites?.albums || []).map(album => ({
+        id: album?.albumhash,
+        parent: album?.albumhash,
+        title: album?.title,
+        album: album?.title,
         isDir: "true",
-        coverArt: get(album, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(album, "image") })).toString("base64") : undefined,
-        created: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined,
-        starred: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined
-    })), []);
+        coverArt: album?.image ? Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64") : undefined,
+        created: album?.date ? new Date(album.date * 1000).toISOString() : undefined,
+        starred: album?.date ? new Date(album.date * 1000).toISOString() : undefined
+    }));
 
-    const tracks = safe(() => get(favorites, "tracks", []).map(track => ({
-        id: get(track, "trackhash"),
-        parent: get(track, "albumhash"),
-        isDir: false,
-        title: get(track, "title"),
-        album: get(track, "album"),
-        artist: get(track, "artists[0].name"),
-        track: get(track, "track"),
-        genre: get(track, "extra.genre[0]"),
-        coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
-        size: get(track, "extra.filesize"),
-        duration: get(track, "duration"),
-        bitRate: get(track, "bitrate"),
-        bitDepth: get(track, "extra.bitdepth"),
-        samplingRate: get(track, "extra.samplerate"),
-        channelCount: get(track, "extra.channels"),
-        path: get(track, "filepath"),
-        isVideo: false,
-        discNumber: get(track, "disc"),
-        albumId: get(track, "albumhash"),
-        artistId: get(track, "extra.artist[0].artisthash"),
-        type: "music",
-        artists: safe(() => get(track, "extra.artist", []).map(artist => ({ name: artist })), []),
-        displayArtist: get(track, "extra.artist[0]"),
-        explicitStatus: get(track, "explicit") ? "explicit" : "clean",
-        starred: new Date(0).toISOString(),
-    })), []);
+    const path = require("path");
+    const tracks = (favorites?.tracks || []).map(track => {
+        const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
+        return {
+            id: track?.trackhash,
+            parent: track?.albumhash,
+            isDir: false,
+            title: track?.title,
+            album: track?.album,
+            artist: track?.artists?.[0]?.name,
+            track: track?.track || 0,
+            year: new Date().getFullYear(),
+            coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
+            suffix: extension || "mp3",
+            contentType: `audio/${extension || "mpeg"}`,
+            duration: track?.duration || 0,
+            bitRate: track?.bitrate || 0,
+            path: track?.filepath,
+            isVideo: false,
+            discNumber: track?.disc || 1,
+            created: new Date().toISOString(),
+            size: track?.size || 1048576,
+            albumId: track?.albumhash,
+            artistId: track?.artists?.[0]?.artisthash,
+            type: "music",
+            artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
+            albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
+            displayArtist: track?.artists?.[0]?.name,
+            explicitStatus: track?.explicit ? "explicit" : "clean",
+            starred: new Date(0).toISOString(),
+        };
+    });
 
     const json = {
         "subsonic-response": {

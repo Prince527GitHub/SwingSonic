@@ -16,7 +16,7 @@ router.get("/user/views", async(req, res) => {
         })
     })).json();
 
-    const items = folders.folders.map(folder => ({
+    const items = (folders?.folders || []).map(folder => ({
         Name: folder.name,
         ServerId: "server",
         Id: folder.name,
@@ -65,8 +65,6 @@ router.get("/user", sendUser);
 
 function sendUser(req, res) {
     const { Pw: password, Username: username } = req.body;
-
-    console.log(`${req.baseUrl.toLowerCase()}${req.path.toLowerCase()}`)
 
     const userSettings = {
         Name: username,
@@ -143,7 +141,6 @@ function sendUser(req, res) {
     });
 }
 
-// NOTE: This function still need to be refactored
 router.get("/user/items", async(req, res) => {
     let { IncludeItemTypes, Limit, StartIndex, ParentId, AlbumArtistIds, Ids, MediaTypes } = req.query;
 
@@ -160,7 +157,7 @@ router.get("/user/items", async(req, res) => {
             })
         })).json();
 
-        for (let index = 0; index < folders.folders.length; index++) {
+        for (let index = 0; index < (folders?.folders || []).length; index++) {
             const folder = folders.folders[index];
 
             if (folder.path === ParentId) {
@@ -171,33 +168,33 @@ router.get("/user/items", async(req, res) => {
     } else if (ParentId && !IncludeItemTypes) IncludeItemTypes = "Audio";
 
     let output = [];
-    let albums = [];
+    let albums = { items: [], total: 0 };
 
-    if (!AlbumArtistIds && (IncludeItemTypes === "MusicAlbum" ||  (!IncludeItemTypes && !MediaTypes))) {
+    if (!AlbumArtistIds && (IncludeItemTypes === "MusicAlbum" || (!IncludeItemTypes && !MediaTypes))) {
         albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || "0"}&limit=${Limit || "50"}&sortby=created_date&reverse=1`, {
             headers: {
                 "Cookie": req.user
             }
-        })).json();
+        })).json() || { items: [], total: 0 };
 
-        output = await Promise.all(await albums.items.map(async(album) => {
+        output = await Promise.all((albums?.items || []).map(async(album) => {
             const data = {
                 "Name": album.title,
                 "ServerId": "server",
                 "Id": album.albumhash,
-                "PremiereDate": "2010-02-03T00:00:00.0000000Z", // change
+                "PremiereDate": "2010-02-03T00:00:00.0000000Z",
                 "ChannelId": null,
                 "RunTimeTicks": 0,
                 "ProductionYear": album.date,
                 "IsFolder": true,
                 "Type": "MusicAlbum",
-                "Artists": album.albumartists.map(artist => artist.name),
-                "ArtistItems": album.albumartists.map(artist => ({
+                "Artists": (album.albumartists || []).map(artist => artist.name),
+                "ArtistItems": (album.albumartists || []).map(artist => ({
                     "Id": artist.artisthash,
                     "Name": artist.name
                 })),
-                "AlbumArtist": album.albumartists[0].name,
-                "AlbumArtists": album.albumartists.map(artist => ({
+                "AlbumArtist": album.albumartists?.[0]?.name,
+                "AlbumArtists": (album.albumartists || []).map(artist => ({
                     "Id": artist.artisthash,
                     "Name": artist.name
                 })),
@@ -205,8 +202,8 @@ router.get("/user/items", async(req, res) => {
                     "Primary" : album.albumhash
                 },
                 "UserData": {
-                    "IsFavorite": false, // change
-                    "LastPlayedDate": "2019-08-24T14:15:22Z", // change
+                    "IsFavorite": false,
+                    "LastPlayedDate": "2019-08-24T14:15:22Z",
                     "Likes": false,
                     "PlaybackPositionTicks": 0,
                     "PlayCount": 0,
@@ -224,7 +221,7 @@ router.get("/user/items", async(req, res) => {
                     "Cookie": req.user
                 }
             })).json();
-            if (favorite.is_favorite) data.UserData.IsFavorite = true;
+            if (favorite?.is_favorite) data.UserData.IsFavorite = true;
 
             return data;
         }));
@@ -233,10 +230,9 @@ router.get("/user/items", async(req, res) => {
             headers: {
                 "Cookie": req.user
             }
-        })).json();
-        albums.total = albums.appearances.length;
+        })).json() || { appearances: [], albums: [], singles_and_eps: [], compilations: [] };
 
-        output = albums.appearances.map(album => ({
+        output = (albums?.appearances || []).map(album => ({
             "Name": album.title,
             "ServerId": "server",
             "Id": album.albumhash,
@@ -252,13 +248,13 @@ router.get("/user/items", async(req, res) => {
                 "IsFavorite": false,
                 "Played": false,
             },
-            "Artists": album.albumartists.map(artist => artist.name),
-            "ArtistItems": album.albumartists.map(artist => ({
+            "Artists": (album.albumartists || []).map(artist => artist.name),
+            "ArtistItems": (album.albumartists || []).map(artist => ({
                 "Id": artist.artisthash,
                 "Name": artist.name
             })),
-            "AlbumArtist": album.albumartists[0].name,
-            "AlbumArtists": album.albumartists.map(artist => ({
+            "AlbumArtist": album.albumartists?.[0]?.name,
+            "AlbumArtists": (album.albumartists || []).map(artist => ({
                 "Id": artist.artisthash,
                 "Name": artist.name
             })),
@@ -270,73 +266,69 @@ router.get("/user/items", async(req, res) => {
         }));
     } else if ((IncludeItemTypes === "Audio" || MediaTypes === "Audio,Video") && ParentId) {
         try {
-            albums = await (await fetch(`${global.config.music}/album`, {
+            const albumResp = await fetch(`${global.config.music}/album`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
                 body: JSON.stringify({ albumhash: ParentId })
-            })).json();
+            });
+            albums = await albumResp.json();
 
             if (albums?.error) {
-                albums = await (await fetch(`${global.config.music}/playlists/${ParentId}?no_tracks=false`, {
+                const playlistResp = await fetch(`${global.config.music}/playlists/${ParentId}?no_tracks=false`, {
                     headers: {
                         "Cookie": req.user
                     }
-                })).json();
-                console.log(albums)
+                });
+                albums = await playlistResp.json();
             }
 
-            albums.total = albums.tracks.length;
+            const trackList = albums?.tracks || [];
+            const albumInfo = albums?.info || {};
 
-            if (albums.info?.albumartists) {
-                output = albums.tracks.map(track => ({
+            if (albumInfo?.albumartists) {
+                output = trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists[0].name,
-                    "AlbumArtists": albums.info.albumartists.map(artist => ({
+                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtists": (albumInfo.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
                     "AlbumId": track.albumhash,
                     "AlbumPrimaryImageTag": track.trackhash,
-                    "ArtistItems": track.artists.map(artist => ({
+                    "ArtistItems": (track.artists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
-                    "Artists": track.artists.map(artist => artist.name),
+                    "Artists": (track.artists || []).map(artist => artist.name),
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
                     "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "Genres": [
-                        "Unknown"
-                    ],
+                    "Genres": ["Unknown"],
                     "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "ImageTags": {
-                        "Primary": track.albumhash
-                    },
-                    "IndexNumber": track.track,
-                    "IndexNumberEnd": albums.total,
+                    "ImageTags": { "Primary": track.albumhash },
+                    "IndexNumber": track.track || 0,
+                    "IndexNumberEnd": trackList.length,
                     "IsFolder": false,
                     "LocationType": "FileSystem",
                     "MediaType": "Audio",
                     "Name": track.title,
                     "ParentIndexNumber": 1,
                     "ParentPrimaryImageItemId": track.albumhash,
-                    "PremiereDate": "2010-02-03T00:00:00.0000000Z", // change
-                    "ProductionYear": albums.info.date,
+                    "PremiereDate": "2010-02-03T00:00:00.0000000Z",
+                    "ProductionYear": albumInfo.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round(track.duration * 9962075.847328244),
+                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
                     "ServerId": "server",
-                    "SongCount": albums.total,
-                    "Tags": [
-                        "Unknown"
-                    ],
+                    "SongCount": trackList.length,
+                    "Tags": ["Unknown"],
                     "Type": "Audio",
                     "UserData": {
                         "IsFavorite": track.is_favorite,
-                        "LastPlayedDate": "2019-08-24T14:15:22Z", // change
+                        "LastPlayedDate": "2019-08-24T14:15:22Z",
                         "Likes": false,
                         "PlaybackPositionTicks": 0,
                         "PlayCount": 0,
@@ -346,55 +338,49 @@ router.get("/user/items", async(req, res) => {
                         "UnplayedItemCount": 0,
                         "Key": track.albumhash
                     },
-                    "track": track.track
+                    "track": track.track || 0
                 })).sort((a, b) => a.track - b.track);
             } else {
-                output = albums.tracks.map(track => ({
+                output = trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists[0].name,
-                    "AlbumArtists": track.albumartists.map(artist => ({
+                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtists": (track.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
                     "AlbumId": track.albumhash,
                     "AlbumPrimaryImageTag": track.trackhash,
-                    "ArtistItems": track.artists.map(artist => ({
+                    "ArtistItems": (track.artists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
-                    "Artists": track.artists.map(artist => artist.name),
+                    "Artists": (track.artists || []).map(artist => artist.name),
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
                     "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "Genres": [
-                        "Unknown"
-                    ],
+                    "Genres": ["Unknown"],
                     "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "ImageTags": {
-                        "Primary": track.albumhash
-                    },
-                    "IndexNumber": track.track,
-                    "IndexNumberEnd": albums.total,
+                    "ImageTags": { "Primary": track.albumhash },
+                    "IndexNumber": track.track || 0,
+                    "IndexNumberEnd": trackList.length,
                     "IsFolder": false,
                     "LocationType": "FileSystem",
                     "MediaType": "Audio",
                     "Name": track.title,
                     "ParentIndexNumber": 1,
                     "ParentPrimaryImageItemId": track.albumhash,
-                    "PremiereDate": "2010-02-03T00:00:00.0000000Z", // change
-                    "ProductionYear": track.date,
+                    "PremiereDate": "2010-02-03T00:00:00.0000000Z",
+                    "ProductionYear": albumInfo.date || track.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round(track.duration * 9962075.847328244),
+                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
                     "ServerId": "server",
-                    "SongCount": albums.total,
-                    "Tags": [
-                        "Unknown"
-                    ],
+                    "SongCount": trackList.length,
+                    "Tags": ["Unknown"],
                     "Type": "Audio",
                     "UserData": {
                         "IsFavorite": track.is_favorite,
-                        "LastPlayedDate": "2019-08-24T14:15:22Z", // change
+                        "LastPlayedDate": "2019-08-24T14:15:22Z",
                         "Likes": false,
                         "PlaybackPositionTicks": 0,
                         "PlayCount": 0,
@@ -404,26 +390,27 @@ router.get("/user/items", async(req, res) => {
                         "UnplayedItemCount": 0,
                         "Key": track.albumhash
                     },
-                    "track": track.track
+                    "track": track.track || 0
                 })).sort((a, b) => a.track - b.track);
             }
-        } catch { /* empty */ }
+        } catch { albums = { items: [], total: 0 }; }
     } else if (IncludeItemTypes === "Playlist") {
-        albums = await (await fetch(`${global.config.music}/playlists`, {
+        const plResp = await (await fetch(`${global.config.music}/playlists`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
-        albums.total = albums.data.length;
+        const plData = plResp?.data || [];
+        albums = { items: plData, total: plData.length };
 
-        output = albums.data.map(playlist => ({
+        output = plData.map(playlist => ({
             "Name": playlist.name,
             "ServerId": "server",
             "Id": String(playlist.id),
             "CanDelete": true,
             "SortName": playlist.name,
             "ChannelId": null,
-            "RunTimeTicks": Math.round(playlist.duration * 9962075.847328244),
+            "RunTimeTicks": Math.round((playlist.duration || 0) * 9962075.847328244),
             "IsFolder": true,
             "Type": "Playlist",
             "UserData": {
@@ -442,103 +429,28 @@ router.get("/user/items", async(req, res) => {
             "LocationType": "FileSystem",
             "MediaType": "Audio"
         }));
-    } 
-    // else if (IncludeItemTypes === "AllTracks") {
-    //     const albumSize = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`)).json();
-    //     albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumSize.total}&sortby=created_date&reverse=1`)).json();
-
-    //     for (let index = 0; index < albums.items.length; index++) {
-    //         const album = albums.items[index];
-
-    //         const tracks = await (await fetch(`${global.config.music}/album`, {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             },
-    //             body: JSON.stringify({ albumhash: album.albumhash })
-    //         })).json();
-
-    //         console.log(tracks)
-
-    //         output = [
-    //             ...output,
-    //             tracks.tracks.map(track => ({
-    //                 "Album": track.album,
-    //                 "AlbumArtist": track.albumartists[0].name,
-    //                 "AlbumArtists": tracks.info.albumartists.map(artist => ({
-    //                     "Id": artist.artisthash,
-    //                     "Name": artist.name
-    //                 })),
-    //                 "AlbumId": track.albumhash,
-    //                 "AlbumPrimaryImageTag": track.trackhash,
-    //                 "ArtistItems": track.artists.map(artist => ({
-    //                     "Id": artist.artisthash,
-    //                     "Name": artist.name
-    //                 })),
-    //                 "Artists": track.artists.map(artist => artist.name),
-    //                 "BackdropImageTags": [],
-    //                 "ChannelId": null,
-    //                 "ChildCount": 0,
-    //                 "Etag": track.trackhash,
-    //                 "Genres": [
-    //                     "Unknown"
-    //                 ],
-    //                 "Id": track.trackhash,
-    //                 "ImageTags": {
-    //                     "Primary": track.albumhash
-    //                 },
-    //                 "IndexNumber": track.track,
-    //                 "IndexNumberEnd": tracks.total,
-    //                 "IsFolder": false,
-    //                 "LocationType": "FileSystem",
-    //                 "MediaType": "Audio",
-    //                 "Name": track.title,
-    //                 "ParentIndexNumber": 1,
-    //                 "ParentPrimaryImageItemId": track.albumhash,
-    //                 "PremiereDate": "2010-02-03T00:00:00.0000000Z", // change
-    //                 "ProductionYear": tracks.info.date,
-    //                 "ProviderIds": {},
-    //                 "RunTimeTicks": Math.round(track.duration * 9962075.847328244),
-    //                 "ServerId": "server",
-    //                 "SongCount": tracks.total,
-    //                 "Tags": [
-    //                     "Unknown"
-    //                 ],
-    //                 "Type": "Audio",
-    //                 "UserData": {
-    //                     "IsFavorite": track.is_favorite,
-    //                     "LastPlayedDate": "2019-08-24T14:15:22Z", // change
-    //                     "Likes": false,
-    //                     "PlaybackPositionTicks": 0,
-    //                     "PlayCount": 0,
-    //                     "Played": false,
-    //                     "PlayedPercentage": 0,
-    //                     "Rating": 0,
-    //                     "UnplayedItemCount": 0
-    //                 }
-    //             }))
-    //         ]
-    //     }
-    // }
+    }
 
     if (Ids) {
         const id = Ids.split(",")[0];
 
-        const albumSize = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
+        const sizeResp = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
-        albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${albumSize.total}&sortby=created_date&reverse=1`, {
+        const totalSize = sizeResp?.total || 50;
+
+        const allAlbums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${totalSize}&sortby=created_date&reverse=1`, {
             headers: {
                 "Cookie": req.user
             }
         })).json();
 
-        for (let index = 0; index < albums.items.length; index++) {
-            const album = albums.items[index];
+        for (let index = 0; index < (allAlbums?.items || []).length; index++) {
+            const album = allAlbums.items[index];
 
-            const tracks = await (await fetch(`${global.config.music}/album`, {
+            const tracksResp = await (await fetch(`${global.config.music}/album`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -547,54 +459,51 @@ router.get("/user/items", async(req, res) => {
                 body: JSON.stringify({ albumhash: album.albumhash })
             })).json();
 
-            if (tracks.tracks.find(track => track.trackhash === id)) {
-                albums.total = tracks.total;
-                output = tracks.tracks.map(track => ({
+            const trackList = tracksResp?.tracks || [];
+            const albumMatch = trackList.find(track => track.trackhash === id);
+
+            if (albumMatch) {
+                albums = tracksResp;
+                output = trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists[0].name,
-                    "AlbumArtists": tracks.info.albumartists.map(artist => ({
+                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtists": (tracksResp?.info?.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
                     "AlbumId": track.albumhash,
                     "AlbumPrimaryImageTag": track.trackhash,
-                    "ArtistItems": track.artists.map(artist => ({
+                    "ArtistItems": (track.artists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
                     })),
-                    "Artists": track.artists.map(artist => artist.name),
+                    "Artists": (track.artists || []).map(artist => artist.name),
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
                     "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "Genres": [
-                        "Unknown"
-                    ],
+                    "Genres": ["Unknown"],
                     "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
-                    "ImageTags": {
-                        "Primary": track.albumhash
-                    },
-                    "IndexNumber": track.track,
-                    "IndexNumberEnd": tracks.total,
+                    "ImageTags": { "Primary": track.albumhash },
+                    "IndexNumber": track.track || 0,
+                    "IndexNumberEnd": trackList.length,
                     "IsFolder": false,
                     "LocationType": "FileSystem",
                     "MediaType": "Audio",
                     "Name": track.title,
                     "ParentIndexNumber": 1,
                     "ParentPrimaryImageItemId": track.albumhash,
-                    "PremiereDate": "2010-02-03T00:00:00.0000000Z", // change
-                    "ProductionYear": tracks.info.date,
+                    "PremiereDate": "2010-02-03T00:00:00.0000000Z",
+                    "ProductionYear": tracksResp?.info?.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round(track.duration * 9962075.847328244),
+                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
                     "ServerId": "server",
-                    "SongCount": tracks.total,
-                    "Tags": [
-                        "Unknown"
-                    ],
+                    "SongCount": trackList.length,
+                    "Tags": ["Unknown"],
                     "Type": "Audio",
                     "UserData": {
                         "IsFavorite": track.is_favorite,
-                        "LastPlayedDate": "2019-08-24T14:15:22Z", // change
+                        "LastPlayedDate": "2019-08-24T14:15:22Z",
                         "Likes": false,
                         "PlaybackPositionTicks": 0,
                         "PlayCount": 0,
@@ -603,7 +512,7 @@ router.get("/user/items", async(req, res) => {
                         "Rating": 0,
                         "UnplayedItemCount": 0
                     },
-                    "track": track.track
+                    "track": track.track || 0
                 })).sort((a, b) => a.track - b.track);
                 break;
             }
@@ -612,7 +521,7 @@ router.get("/user/items", async(req, res) => {
 
     res.json({
         "Items": output,
-        "TotalRecordCount": albums.total || 0,
+        "TotalRecordCount": albums?.total || output.length || 0,
         "StartIndex": Number(StartIndex) || 0
     });
 });
@@ -637,14 +546,14 @@ router.get("/user/items/:id", async(req, res) => {
                 }
             })).json();
 
-            const items = playlist.tracks.map(track => ({
+            const items = (playlist?.tracks || []).map(track => ({
                 Album: track.album,
-                AlbumArtist: track.artists[0].name,
-                AlbumArtists: track.artists.map(artist => ({ Id: artist.artisthash, Name: artist.name })),
+                AlbumArtist: track.artists?.[0]?.name,
+                AlbumArtists: (track.artists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
                 AlbumId: track.albumhash,
                 AlbumPrimaryImageTag: track.trackhash,
-                ArtistItems: track.artists.map(artist => ({ Id: artist.artisthash, Name: artist.name })),
-                Artists: track.artists.map(artist => artist.name),
+                ArtistItems: (track.artists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
+                Artists: (track.artists || []).map(artist => artist.name),
                 BackdropImageTags: [],
                 ChannelId: null,
                 ChildCount: 0,
@@ -652,8 +561,8 @@ router.get("/user/items/:id", async(req, res) => {
                 Genres: ["Unknown"],
                 Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
                 ImageTags: { Primary: track.albumhash },
-                IndexNumber: track.track,
-                IndexNumberEnd: playlist.tracks.length,
+                IndexNumber: track.track || 0,
+                IndexNumberEnd: (playlist?.tracks || []).length,
                 IsFolder: false,
                 LocationType: "FileSystem",
                 MediaType: "Audio",
@@ -661,11 +570,11 @@ router.get("/user/items/:id", async(req, res) => {
                 ParentIndexNumber: 1,
                 ParentPrimaryImageItemId: track.albumhash,
                 PremiereDate: "2010-02-03T00:00:00.0000000Z",
-                ProductionYear: track.created_date,
+                ProductionYear: "2010",
                 ProviderIds: {},
-                RunTimeTicks: Math.round(track.duration * 9962075.847328244),
+                RunTimeTicks: Math.round((track.duration || 0) * 9962075.847328244),
                 ServerId: "server",
-                SongCount: playlist.tracks.length,
+                SongCount: (playlist?.tracks || []).length,
                 Tags: ["Unknown"],
                 Type: "Audio",
                 UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false }
@@ -673,20 +582,23 @@ router.get("/user/items/:id", async(req, res) => {
 
             return res.json({
                 Items: items,
-                TotalRecordCount: playlist.info.count,
+                TotalRecordCount: playlist?.info?.count || 0,
                 StartIndex: 0,
                 ServerId: "server"
             });
         }
 
-        const items = albums.tracks.map(track => ({
+        const trackList = albums?.tracks || [];
+        const albumInfo = albums?.info || {};
+
+        const items = trackList.map(track => ({
             Album: track.album,
-            AlbumArtist: track.albumartists[0].name,
-            AlbumArtists: albums.info.albumartists.map(artist => ({ Id: artist.artisthash, Name: artist.name })),
+            AlbumArtist: track.albumartists?.[0]?.name,
+            AlbumArtists: (albumInfo.albumartists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
             AlbumId: track.albumhash,
             AlbumPrimaryImageTag: track.trackhash,
-            ArtistItems: track.artists.map(artist => ({ Id: artist.artisthash, Name: artist.name })),
-            Artists: track.artists.map(artist => artist.name),
+            ArtistItems: (track.artists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
+            Artists: (track.artists || []).map(artist => artist.name),
             BackdropImageTags: [],
             ChannelId: null,
             ChildCount: 0,
@@ -694,8 +606,8 @@ router.get("/user/items/:id", async(req, res) => {
             Genres: ["Unknown"],
             Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
             ImageTags: { Primary: track.albumhash },
-            IndexNumber: track.track,
-            IndexNumberEnd: albums.tracks.length,
+            IndexNumber: track.track || 0,
+            IndexNumberEnd: trackList.length,
             IsFolder: false,
             LocationType: "FileSystem",
             MediaType: "Audio",
@@ -703,44 +615,44 @@ router.get("/user/items/:id", async(req, res) => {
             ParentIndexNumber: 1,
             ParentPrimaryImageItemId: track.albumhash,
             PremiereDate: "2010-02-03T00:00:00.0000000Z",
-            ProductionYear: albums.info.date,
+            ProductionYear: albumInfo.date,
             ProviderIds: {},
-            RunTimeTicks: Math.round(track.duration * 9962075.847328244),
+            RunTimeTicks: Math.round((track.duration || 0) * 9962075.847328244),
             ServerId: "server",
-            SongCount: albums.tracks.length,
+            SongCount: trackList.length,
             Tags: ["Unknown"],
             Type: "Audio",
-            UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false },
-            track: track.track
+            UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false, PlayedPercentage: 0, Rating: 0, UnplayedItemCount: 0, Key: track.albumhash },
+            track: track.track || 0
         })).sort((a, b) => a.track - b.track);
 
         res.json({
             Items: items,
-            TotalRecordCount: albums.tracks.length,
+            TotalRecordCount: trackList.length,
             StartIndex: 0,
-            Name: albums.info.title,
+            Name: albumInfo.title,
             ServerId: "server",
-            Id: albums.info.albumhash,
-            Etag: albums.info.albumhash,
+            Id: albumInfo.albumhash,
+            Etag: albumInfo.albumhash,
             DateCreated: "2024-03-04T00:39:33.730766Z",
             CanDelete: true,
             CanDownload: true,
-            SortName: albums.info.title,
+            SortName: albumInfo.title,
             PremiereDate: "2010-02-03T00:00:00.0000000Z",
             ExternalUrls: [],
             Path: "undefined",
             EnableMediaSourceDisplay: true,
             ChannelId: null,
             Taglines: [],
-            Genres: albums.info.genres,
-            CumulativeRunTimeTicks: Math.round(albums.info.duration * 9962075.847328244),
-            RunTimeTicks: Math.round(albums.info.duration * 9962075.847328244),
+            Genres: albumInfo.genres || [],
+            CumulativeRunTimeTicks: Math.round((albumInfo.duration || 0) * 9962075.847328244),
+            RunTimeTicks: Math.round((albumInfo.duration || 0) * 9962075.847328244),
             PlayAccess: "Full",
-            ProductionYear: albums.info.date,
+            ProductionYear: albumInfo.date,
             RemoteTrailers: [],
             ProviderIds: {},
             IsFolder: true,
-            ParentId: albums.info.albumhash,
+            ParentId: albumInfo.albumhash,
             Type: "MusicAlbum",
             People: [],
             Studios: [],
@@ -749,20 +661,20 @@ router.get("/user/items/:id", async(req, res) => {
             UserData: {
                 PlaybackPositionTicks: 0,
                 PlayCount: 0,
-                IsFavorite: albums.info.is_favorite,
+                IsFavorite: albumInfo.is_favorite,
                 Played: false
             },
-            RecursiveItemCount: albums.info.count,
-            ChildCount: albums.info.count,
+            RecursiveItemCount: albumInfo.count,
+            ChildCount: albumInfo.count,
             SpecialFeatureCount: 0,
-            DisplayPreferencesId: albums.info.albumhash,
+            DisplayPreferencesId: albumInfo.albumhash,
             Tags: [],
             PrimaryImageAspectRatio: 1,
-            Artists: albums.info.albumartists.map(artist => artist.name),
-            ArtistItems: albums.info.albumartists.map(artist => ({ Name: artist.name, Id: artist.artisthash })),
-            AlbumArtist: albums.info.albumartists[0].name,
-            AlbumArtists: albums.info.albumartists.map(artist => ({ Name: artist.name, Id: artist.artisthash })),
-            ImageTags: { Primary: albums.info.albumhash },
+            Artists: (albumInfo.albumartists || []).map(artist => artist.name),
+            ArtistItems: (albumInfo.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
+            AlbumArtist: albumInfo.albumartists?.[0]?.name,
+            AlbumArtists: (albumInfo.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
+            ImageTags: { Primary: albumInfo.albumhash },
             BackdropImageTags: [],
             LocationType: "FileSystem",
             LockedFields: [],
@@ -797,7 +709,7 @@ router.route("/user/favoriteitems/:id")
         });
 
         const type = artist.ok ? "artist" : album.ok ? "album" : "track";
-        if (type) await fetch(`${global.config.music}/favorite/add`, {
+        if (type) await fetch(`${global.config.music}/favorites/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -842,7 +754,7 @@ router.route("/user/favoriteitems/:id")
         });
 
         const type = artist.ok ? "artist" : album.ok ? "album" : "track";
-        if (type) await fetch(`${global.config.music}/favorite/remove`, {
+        if (type) await fetch(`${global.config.music}/favorites/remove`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

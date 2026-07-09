@@ -4,35 +4,35 @@ const router = express.Router();
 router.get("/:id/items", async(req, res) => {
     const { id } = req.params;
 
-    const playlist = await (await fetch(`${global.config.music}/playlist/${id}?no_tracks=false`, {
+    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
         headers: {
             "Cookie": req.user
         }
     })).json();
 
-    const items = playlist.tracks.map(track => ({
+    const items = (playlist?.tracks || []).map(track => ({
         Name: track.title,
         ServerId: "server",
         Id: track.trackhash,
         PlaylistItemId: track.trackhash,
         PremiereDate: "2010-02-03T00:00:00.0000000Z",
-        RunTimeTicks: Math.round(track.duration * 9962075.847328244),
-        IndexNumber: track.track,
-        ParentIndexNumber: track.track,
+        RunTimeTicks: Math.round((track.duration || 0) * 9962075.847328244),
+        IndexNumber: track.track || 0,
+        ParentIndexNumber: 1,
         IsFolder: false,
         Type: "Audio",
         UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false },
         PrimaryImageAspectRatio: 1,
-        Artists: track.artists.map(artist => artist.name),
-        ArtistItems: track.artists.map(artist => ({
+        Artists: (track.artists || []).map(artist => artist.name),
+        ArtistItems: (track.artists || []).map(artist => ({
             Name: artist.name,
             Id: artist.artisthash
         })),
         Album: track.album,
         AlbumId: track.albumhash,
         AlbumPrimaryImageTag: track.albumhash,
-        AlbumArtist: track.albumartists[0].name,
-        AlbumArtists: track.albumartists.map(artist => ({
+        AlbumArtist: track.albumartists?.[0]?.name,
+        AlbumArtists: (track.albumartists || []).map(artist => ({
             Name: artist.name,
             Id: artist.artisthash
         })),
@@ -46,7 +46,7 @@ router.get("/:id/items", async(req, res) => {
 
     res.json({
         Items: items,
-        TotalRecordCount: playlist.info.count,
+        TotalRecordCount: playlist?.info?.count || 0,
         StartIndex: 0
     });
 });

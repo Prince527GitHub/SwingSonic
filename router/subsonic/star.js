@@ -1,13 +1,17 @@
-const { safeDecode, get } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
     let { f, id, albumId, artistId } = req.query;
 
-    const decoded = safeDecode(id || albumId || artistId);
+    let decoded;
+    try {
+        const json = Buffer.from(decodeURIComponent(id || albumId || artistId), "base64").toString("utf-8");
+        decoded = JSON.parse(json);
+    } catch {
+        decoded = null;
+    }
     if (decoded) {
-        id = get(decoded, "id");
-        albumId = get(decoded, "albumId");
-        artistId = get(decoded, "artistId");
+        id = decoded?.id;
+        albumId = decoded?.albumId;
+        artistId = decoded?.artistId;
     }
 
     const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
