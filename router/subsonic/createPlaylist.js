@@ -1,33 +1,26 @@
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     let { playlistId, name, songId } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
-    if (playlistId) {
-        return res.json({
-            "subsonic-response": {
-                status: "ok",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true
-            }
-        });
-    }
+    if (playlistId) return res.json({
+        "subsonic-response": {
+            status: "ok",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true
+        }
+    });
 
-    if (!name) {
-        const json = {
-            "subsonic-response": {
-                status: "failed",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true,
-                error: { code: 10, message: "Required parameter 'name' is missing" }
-            }
-        };
-        if (f === "json") return res.json(json);
-        else return res.send(xml(json));
-    }
+    if (!name) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 10, message: "Required parameter 'name' is missing" }
+        }
+    });
 
     const playlist = await (await fetch(`${global.config.music}/playlists/new`, {
         method: "POST",
@@ -59,7 +52,7 @@ module.exports = async(req, res, proxy, xml) => {
         ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
         : new Date();
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             playlist: {
                 id: pl?.id,
@@ -79,8 +72,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

@@ -1,24 +1,19 @@
 const zw = require("../../packages/zw");
 const path = require("path");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
-    if (!id) {
-        const json = {
-            "subsonic-response": {
-                status: "failed",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true,
-                error: { code: 10, message: "Required parameter 'id' is missing" }
-            }
-        };
-        if (f === "json") return res.json(json);
-        else return res.send(xml(json));
-    }
+    if (!id) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 10, message: "Required parameter 'id' is missing" }
+        }
+    });
 
     let decoded;
     try {
@@ -67,7 +62,7 @@ module.exports = async(req, res, proxy, xml) => {
                 created: a?.date ? new Date(a.date * 1000).toISOString() : undefined
             }));
 
-            const json = {
+            return respond(res, req, {
                 "subsonic-response": {
                     directory: {
                         id: effectiveId,
@@ -81,13 +76,10 @@ module.exports = async(req, res, proxy, xml) => {
                     serverVersion: "unknown",
                     openSubsonic: true
                 }
-            };
-
-            if (f === "json") return res.json(json);
-            else return res.send(xml(json));
+            });
         }
 
-        const json = {
+        return respond(res, req, {
             "subsonic-response": {
                 status: "failed",
                 version: "1.16.1",
@@ -96,9 +88,7 @@ module.exports = async(req, res, proxy, xml) => {
                 openSubsonic: true,
                 error: { code: 70, message: "Directory not found" }
             }
-        };
-        if (f === "json") return res.json(json);
-        else return res.send(xml(json));
+        });
     }
 
     const info = album.info || {};
@@ -138,7 +128,7 @@ module.exports = async(req, res, proxy, xml) => {
         };
     });
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             directory: {
                 id: effectiveId,
@@ -153,8 +143,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

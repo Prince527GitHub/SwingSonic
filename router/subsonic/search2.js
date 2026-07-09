@@ -1,6 +1,6 @@
 const zw = require("../../packages/zw");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const args = { headers: { "Cookie": req.user } };
 
     const query = req.query.query
@@ -8,7 +8,6 @@ module.exports = async(req, res, proxy, xml) => {
         .replace(/[-_]/g, " ");
 
     let { artistCount, artistOffset, albumCount, albumOffset, songCount, songOffset } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     let artists = [];
 
@@ -60,7 +59,7 @@ module.exports = async(req, res, proxy, xml) => {
         });
     }
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             searchResult2: {
                 artist: artists,
@@ -73,8 +72,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

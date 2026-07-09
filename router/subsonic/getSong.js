@@ -1,23 +1,18 @@
 const path = require("path");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
-    if (!id) {
-        const json = {
-            "subsonic-response": {
-                status: "failed",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true,
-                error: { code: 10, message: "Required parameter 'id' is missing" }
-            }
-        };
-        if (f === "json") return res.json(json);
-        else return res.send(xml(json));
-    }
+    if (!id) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 10, message: "Required parameter 'id' is missing" }
+        }
+    });
 
     let decoded;
     try {
@@ -41,20 +36,16 @@ module.exports = async(req, res, proxy, xml) => {
         track = search?.results?.[0];
     }
 
-    if (!track) {
-        const json = {
-            "subsonic-response": {
-                status: "failed",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true,
-                error: { code: 70, message: "Song not found" }
-            }
-        };
-        if (f === "json") return res.json(json);
-        else return res.send(xml(json));
-    }
+    if (!track) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 70, message: "Song not found" }
+        }
+    });
 
     const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
@@ -85,7 +76,7 @@ module.exports = async(req, res, proxy, xml) => {
         displayArtist: track?.artists?.[0]?.name,
     };
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             song: song,
             status: "ok",
@@ -94,8 +85,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

@@ -1,26 +1,21 @@
-module.exports = async (req, res, proxy, xml) => {
+module.exports = async (req, res, proxy, respond) => {
     let { username } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const users = await (await fetch(`${global.config.music}/auth/users?simplified=true`)).json();
     const user = users.users.find(u => u.username === username);
 
-    if (!user) {
-        const json = {
-            "subsonic-response": {
-                status: "failed",
-                version: "1.16.1",
-                type: "swingsonic",
-                serverVersion: "unknown",
-                openSubsonic: true,
-                error: { code: 70, message: "User not found" }
-            }
-        };
-        if (f === "json") return res.status(200).json(json);
-        else return res.status(200).send(xml(json));
-    }
+    if (!user) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 70, message: "User not found" }
+        }
+    });
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             user: {
                 username: user.username,
@@ -48,8 +43,5 @@ module.exports = async (req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    };
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 };

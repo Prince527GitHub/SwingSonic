@@ -1,7 +1,5 @@
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const args = { headers: { "Cookie": req.user } };
-
-    let { f, musicFolderId } = req.query;
 
     const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, args)).json())?.total ?? 50;
     const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, args)).json();
@@ -14,9 +12,7 @@ module.exports = async(req, res, proxy, xml) => {
             albumCount: item?.albumcount || 0
         };
 
-        const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${item?.artisthash}&type=artist`, {
-            headers: { "Cookie": req.user }
-        })).json();
+        const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${item?.artisthash}&type=artist`, args)).json();
         if (favorite?.is_favorite) node.starred = favorite?.date ? new Date(favorite.date * 1000).toISOString() : new Date(0).toISOString();
 
         return node;
@@ -36,7 +32,7 @@ module.exports = async(req, res, proxy, xml) => {
         artist: groupe[letter]
     }));
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             artists: {
                 ignoredArticles: "",
@@ -48,8 +44,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

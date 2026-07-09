@@ -1,6 +1,4 @@
-module.exports = async(req, res, proxy, xml) => {
-    let f = [].concat(req.query.f).filter(Boolean)[0];
-
+module.exports = async(req, res, proxy, respond) => {
     const folders = await (await fetch(`${global.config.music}/folder`, {
         method: "POST",
         headers: {
@@ -18,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
         name: folder?.name
     }));
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             musicFolders: {
                 musicFolder: output
@@ -29,8 +27,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

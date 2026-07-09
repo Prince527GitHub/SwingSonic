@@ -1,10 +1,8 @@
 const zw = require("../../packages/zw");
 const path = require("path");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
-
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const album = await (await fetch(`${global.config.music}/album`, {
         method: "POST",
@@ -92,7 +90,7 @@ module.exports = async(req, res, proxy, xml) => {
         output.album.starred = new Date().toISOString();
     }
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             ...output,
             status: "ok",
@@ -101,8 +99,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

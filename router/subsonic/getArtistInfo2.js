@@ -1,7 +1,7 @@
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
 
-    let { f, u, t, s } = req.query;
+    let { u, t, s } = req.query;
 
     const artist = await (await fetch(`${global.config.music}/artist/${id}`, {
         headers: {
@@ -13,7 +13,7 @@ module.exports = async(req, res, proxy, xml) => {
     const image = artistImage ? Buffer.from(JSON.stringify({ type: "artist", id: artistImage })).toString("base64") : undefined;
     const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             artistInfo2: {
                 biography: artist?.artist?.biography || "Unknown",
@@ -29,8 +29,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

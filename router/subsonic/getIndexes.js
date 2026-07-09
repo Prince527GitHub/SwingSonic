@@ -1,6 +1,4 @@
-module.exports = async(req, res, proxy, xml) => {
-    let { f, musicFolderId } = req.query;
-
+module.exports = async(req, res, proxy, respond) => {
     const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, {
         headers: { "Cookie": req.user }
     })).json())?.total ?? 50;
@@ -36,7 +34,7 @@ module.exports = async(req, res, proxy, xml) => {
         artist: groupe[letter]
     }));
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             indexes: {
                 ignoredArticles: "",
@@ -50,8 +48,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

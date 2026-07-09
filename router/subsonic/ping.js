@@ -1,7 +1,5 @@
-module.exports = async(req, res, proxy, xml) => {
-    let f = [].concat(req.query.f).filter(Boolean)[0];
-
-    const json = {
+module.exports = async(req, res, proxy, respond) => {
+    respond(res, req, {
         "subsonic-response": {
             status: "ok",
             version: "1.16.1",
@@ -9,8 +7,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

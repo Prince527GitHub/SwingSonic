@@ -1,6 +1,4 @@
-module.exports = async(req, res, proxy, xml) => {
-    let f = [].concat(req.query.f).filter(Boolean)[0];
-
+module.exports = async(req, res, proxy, respond) => {
     const favorites = await (await fetch(`${global.config.music}/favorites`, {
         headers: {
             "Cookie": req.user
@@ -57,7 +55,7 @@ module.exports = async(req, res, proxy, xml) => {
         };
     });
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             starred: {
                 artist: artists,
@@ -70,8 +68,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

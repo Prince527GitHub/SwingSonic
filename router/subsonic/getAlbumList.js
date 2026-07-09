@@ -1,8 +1,7 @@
 const { shuffleArray } = require("../../packages/array");
 
-module.exports = async(req, res, proxy, xml) => {
-    let { type, size, offset, fromYear, toYear, genre } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
+module.exports = async(req, res, proxy, respond) => {
+    let { type, size, offset, genre } = req.query;
 
     size = Math.min(parseInt(size) || 10, 500);
     offset = parseInt(offset) || 0;
@@ -92,7 +91,7 @@ module.exports = async(req, res, proxy, xml) => {
         averageRating: 0
     }));
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             albumList: {
                 album: items
@@ -103,8 +102,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }
