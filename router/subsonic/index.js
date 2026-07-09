@@ -35,8 +35,11 @@ async function checkPassword(input, salt, user) {
     }
 }
 
+const getF = (req) => [].concat(req.query.f).filter(Boolean)[0];
+
 async function checkAuth(req, res, next) {
-    let { u, p, t, s, f } = req.query;
+    let { u, p, t, s } = req.query;
+    let f = getF(req);
 
     const json = {
         "subsonic-response": {
@@ -76,7 +79,7 @@ async function checkAuth(req, res, next) {
 
 module.exports = async(app) => {
     app.use("/rest/getOpenSubsonicExtensions.view", (req, res) => {
-        let { f } = req.query;
+        let f = getF(req);
 
         const json = {
             "subsonic-response": {
@@ -108,15 +111,15 @@ module.exports = async(app) => {
     });
 
     app.use("/rest/*", (req, res) => {
-        let { f } = req.query;
+        let f = getF(req);
 
         const json = {
             "subsonic-response": {
                 status: "ok",
                 version: "1.16.1",
-            type: "swingsonic",
-            serverVersion: "unknown",
-            openSubsonic: true
+                type: "swingsonic",
+                serverVersion: "unknown",
+                openSubsonic: true
             }
         }
 

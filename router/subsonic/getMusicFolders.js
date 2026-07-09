@@ -1,7 +1,5 @@
-const { get, safe } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
-    let { f } = req.query;
+    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const folders = await (await fetch(`${global.config.music}/folder`, {
         method: "POST",
@@ -15,10 +13,10 @@ module.exports = async(req, res, proxy, xml) => {
         })
     })).json();
 
-    const output = safe(() => get(folders, "folders", []).map((folder, index) => ({
+    const output = (folders?.folders || []).map((folder, index) => ({
         id: index,
-        name: get(folder, "name")
-    })), []);
+        name: folder?.name
+    }));
 
     const json = {
         "subsonic-response": {

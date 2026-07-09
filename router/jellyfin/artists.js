@@ -10,7 +10,7 @@ router.get("/albumartists", async(req, res) => {
         }
     })).json();
 
-    const items = artists.items.map(artist => ({
+    const items = (artists?.items || []).map(artist => ({
         Name: artist.name,
         Id: artist.artisthash,
         Type: "MusicArtist",
@@ -21,7 +21,7 @@ router.get("/albumartists", async(req, res) => {
 
     res.json({
         Items: items,
-        TotalRecordCount: artists.total,
+        TotalRecordCount: artists?.total || 0,
         StartIndex: Number(StartIndex)
     });
 });

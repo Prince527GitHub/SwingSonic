@@ -1,7 +1,5 @@
-const { get } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
-    let { f } = req.query;
+    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const scan = await (await fetch(`${global.config.music}/notsettings/trigger-scan`, {
         headers: {
@@ -17,13 +15,13 @@ module.exports = async(req, res, proxy, xml) => {
         body: JSON.stringify({ folder: "$home", tracks_only: false })
     })).json();
 
-    const status = get(scan, "msg") === "Scan triggered!";
+    const status = scan?.msg === "Scan triggered!";
 
     const json = {
         "subsonic-response": {
             scanStatus: {
                 scanning: status,
-                count: get(tracks, "folders[0].count", 0)
+                count: tracks?.folders?.[0]?.count ?? 0
             },
             status: "ok",
             version: "1.16.1",

@@ -4,27 +4,43 @@ function convertToXml(jsonObj) {
     const rootKey = Object.keys(jsonObj)[0];
     const xml = xmlbuilder.create(rootKey);
 
-    function convertToXmlObj(obj, parent) {
+    function convertToXmlObj(obj, parent, keyName) {
+        if (Array.isArray(obj)) {
+            obj.forEach(item => {
+                const validKey = convertToValidXmlName(keyName);
+                const child = parent.ele(validKey);
+                if (typeof item === "object" && item !== null) {
+                    convertToXmlObj(item, child, keyName);
+                } else if (item !== null && item !== undefined) {
+                    child.text(item);
+                }
+            });
+            return;
+        }
         for (const key in obj) {
-            if (Array.isArray(obj[key])) {
-                obj[key].forEach(item => {
+            const value = obj[key];
+            if (Array.isArray(value)) {
+                value.forEach(item => {
                     const validKey = convertToValidXmlName(key);
                     const child = parent.ele(validKey);
-                    if (typeof item === "object") convertToXmlObj(item, child);
-                    else child.text(item);
+                    if (typeof item === "object" && item !== null) {
+                        convertToXmlObj(item, child, key);
+                    } else if (item !== null && item !== undefined) {
+                        child.text(item);
+                    }
                 });
-            } else if (typeof obj[key] === "object") {
+            } else if (typeof value === "object" && value !== null) {
                 const validKey = convertToValidXmlName(key);
                 const child = parent.ele(validKey);
-                convertToXmlObj(obj[key], child);
-            } else {
+                convertToXmlObj(value, child, key);
+            } else if (value !== null && value !== undefined) {
                 const validKey = convertToValidXmlName(key);
-                parent.att(validKey, obj[key]);
+                parent.att(validKey, value);
             }
         }
     }
 
-    convertToXmlObj(jsonObj[rootKey], xml);
+    convertToXmlObj(jsonObj[rootKey], xml, rootKey);
 
     return xml.end({ pretty: true });
 }

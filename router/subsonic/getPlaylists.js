@@ -1,7 +1,5 @@
-const { get, safe } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
-    let { f } = req.query;
+    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const playlists = await (await fetch(`${global.config.music}/playlists`, {
         headers: {
@@ -9,17 +7,24 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const output = safe(() => get(playlists, "data", []).map(playlist => ({
-        id: get(playlist, "id"),
-        name: get(playlist, "name"),
-        comment: "No comment",
-        owner: "admin",
-        public: true,
-        songCount: get(playlist, "count"),
-        duration: get(playlist, "duration"),
-        created: get(playlist, "last_updated"),
-        coverArt: get(playlist, "image") ? Buffer.from(JSON.stringify({ type: "playlist", id: get(playlist, "image") })).toString("base64") : undefined
-    })), []);
+    const output = (playlists?.data || []).map(playlist => {
+        const lastUpdated = playlist?.last_updated;
+        const createdDate = lastUpdated
+            ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
+            : new Date();
+        return {
+            id: playlist?.id,
+            name: playlist?.name,
+            comment: "No comment",
+            owner: "admin",
+            public: true,
+            songCount: playlist?.count || 0,
+            duration: playlist?.duration || 0,
+            created: createdDate.toISOString(),
+            changed: createdDate.toISOString(),
+            coverArt: playlist?.image ? Buffer.from(JSON.stringify({ type: "playlist", id: playlist.image })).toString("base64") : undefined
+        };
+    });
 
     const json = {
         "subsonic-response": {

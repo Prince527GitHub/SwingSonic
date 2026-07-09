@@ -1,9 +1,7 @@
-const { get, safe } = require("../../packages/safe");
-
 module.exports = async(req, res, proxy, xml) => {
     const id = req.query.id;
 
-    let { f } = req.query;
+    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const getAlbums = await (await fetch(`${global.config.music}/artist/${id}/albums?limit=7&all=false`, {
         headers: {
@@ -16,28 +14,27 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const albums = safe(() => get(getAlbums, "albums", []).map(album => ({
-        id: get(album, "albumhash"),
-        name: get(album, "title"),
-        coverArt: get(album, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(album, "image") })).toString("base64") : undefined,
-        songCount: 0,
-        created: get(album, "date") ? new Date(get(album, "date") * 1000).toISOString() : undefined,
-        duration: 0,
-        artist: get(album, "albumartists[0].name"),
-        artistId: get(album, "albumartists[0].artisthash")
-    })), []);
+    const albums = (getAlbums?.albums || []).map(album => ({
+        id: album?.albumhash,
+        name: album?.title,
+        coverArt: album?.image ? Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64") : undefined,
+        songCount: album?.trackcount || 0,
+        created: album?.date ? new Date(album.date * 1000).toISOString() : undefined,
+        duration: album?.duration || 0,
+        artist: album?.albumartists?.[0]?.name,
+        artistId: album?.albumartists?.[0]?.artisthash
+    }));
 
     const json = {
         "subsonic-response": {
             artist: {
                 id: id,
-                name: get(artist, "artist.name"),
-                coverArt: get(artist, "artist.image") ? Buffer.from(JSON.stringify({ type: "artist", id: get(artist, "artist.image") })).toString("base64") : undefined,
-                songCount: get(artist, "artist.trackcount"),
+                name: artist?.artist?.name,
+                coverArt: artist?.artist?.image ? Buffer.from(JSON.stringify({ type: "artist", id: artist.artist.image })).toString("base64") : undefined,
+                albumCount: artist?.artist?.albumcount || 0,
+                songCount: artist?.artist?.trackcount || 0,
                 created: new Date().toISOString(),
-                duration: get(artist, "artist.duration"),
-                artist: get(artist, "artist.name"),
-                artistId: id,
+                duration: artist?.artist?.duration || 0,
                 album: albums
             },
             status: "ok",

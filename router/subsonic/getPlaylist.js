@@ -1,4 +1,3 @@
-const { get, safe } = require("../../packages/safe");
 const zw = require("../../packages/zw");
 
 module.exports = async(req, res, proxy, xml) => {
@@ -12,39 +11,50 @@ module.exports = async(req, res, proxy, xml) => {
         }
     })).json();
 
-    const output = safe(() => get(playlist, "tracks", []).map(track => ({
-        id: get(track, "trackhash") && get(track, "filepath") ? encodeURIComponent(Buffer.from(JSON.stringify({ id: get(track, "trackhash"), path: get(track, "filepath") })).toString("base64")) : undefined,
-        parent: "655",
-        title: get(global, "config.server.api.subsonic.options.zw") && get(track, "title") && get(track, "albumhash") && get(track, "trackhash") ? zw.inject(get(track, "title"), Buffer.from(JSON.stringify({ album: get(track, "albumhash"), id: get(track, "trackhash") })).toString("base64")) : get(track, "title"),
-        album: get(track, "album"),
-        artist: get(track, "artists[0].name"),
+    const output = (playlist?.tracks || []).map(track => ({
+        id: track?.trackhash && track?.filepath ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")) : undefined,
+        parent: track?.albumhash || "0",
+        title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64")) : track?.title,
+        album: track?.album,
+        artist: track?.artists?.[0]?.name,
         isDir: false,
-        coverArt: get(track, "image") ? Buffer.from(JSON.stringify({ type: "album", id: get(track, "image") })).toString("base64") : undefined,
+        coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
         created: new Date().toISOString(),
-        duration: get(track, "duration"),
-        bitRate: get(track, "bitrate"),
-        track: get(track, "track"),
-        year: new Date().getFullYear(),
-        size: get(track, "extra.filesize"),
+        duration: track?.duration || 0,
+        bitRate: track?.bitrate || 0,
+        track: track?.track || 0,
+        year: track?.year || new Date().getFullYear(),
+        suffix: "mp3",
+        contentType: "audio/mpeg",
         isVideo: false,
-        path: get(track, "filepath"),
-        albumId: get(track, "albumhash"),
-        artistId: get(track, "artists[0].artisthash"),
+        discNumber: track?.disc || 1,
+        size: track?.size || 1048576,
+        path: track?.filepath,
+        albumId: track?.albumhash,
+        artistId: track?.artists?.[0]?.artisthash,
+        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
         type: "music"
-    })), []);
+    }));
+
+    const info = playlist?.info || {};
 
     const json = {
         "subsonic-response": {
             playlist: {
-                id: get(playlist, "info.id"),
-                name: get(playlist, "info.name"),
+                id: info?.id,
+                name: info?.name,
                 comment: "No comment",
                 owner: "admin",
                 public: true,
-                songCount: get(playlist, "info.count"),
-                duration: get(playlist, "info.duration"),
-                created: 0, // 16 hours ago
-                coverArt: get(playlist, "info.image") ? Buffer.from(JSON.stringify({ type: "playlist", id: get(playlist, "info.image") })).toString("base64") : undefined,
+                songCount: info?.count || 0,
+                duration: info?.duration || 0,
+                created: info?.last_updated
+                    ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString()
+                    : new Date().toISOString(),
+                changed: info?.last_updated
+                    ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString()
+                    : new Date().toISOString(),
+                coverArt: info?.image ? Buffer.from(JSON.stringify({ type: "playlist", id: info.image })).toString("base64") : undefined,
                 entry: output
             },
             status: "ok",

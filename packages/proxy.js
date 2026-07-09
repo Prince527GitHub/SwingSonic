@@ -2,26 +2,26 @@ const { Readable } = require("stream");
 
 module.exports = async (res, req, url) => {
     try {
-        const headers = {
-            "Cookie": req.user,
-            "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
-            "Accept": req.headers["accept"] || "*/*",
-            "Connection": "keep-alive",
-        };
+        const response = await fetch(url, {
+            headers: {
+                Cookie: req.user,
+                "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
+                Accept: req.headers["accept"] || "*/*",
+                Connection: "keep-alive",
+                ...(req.headers["range"] && { Range: req.headers["range"] }),
+            }
+        });
 
-        if (req.headers["range"]) headers["Range"] = req.headers["range"];
+        res.writeHead(response.status, {
+            ...Object.fromEntries(response.headers),
+            "accept-ranges": "bytes",
+        });
 
-        const response = await fetch(url, { headers });
-
-        const forwarded = {};
-
-        response.headers.forEach((value, key) => forwarded[key] = value);
-
-        res.writeHead(response.status, forwarded);
-
-        Readable.fromWeb(response.body).pipe(res);
+        Readable.fromWeb(response.body)
+            .on("error", (err) => console.error("[PROXY] Stream error:", err.message))
+            .pipe(res);
     } catch (error) {
         console.error("Proxy error:", error.message);
-        res.status(500).send("Error proxying request.");
+        if (!res.headersSent) res.status(500).send("Error proxying request.");
     }
 };
