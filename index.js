@@ -12,13 +12,12 @@ if (!global.config) {
 }
 
 const express = require("express");
-const cors = require("cors");
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors({ origin: "*" }));
+app.use(require("./packages/cors"));
 app.use(require("./packages/logs"));
 
 if (global.config.server.api.subsonic.enable) require("./router/subsonic")(app);
