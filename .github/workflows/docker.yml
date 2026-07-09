@@ -50,7 +50,7 @@ jobs:
             [ "v$VERSION" = "$LATEST_TAG" ] && TAGS="${TAGS}${IFS}${REGISTRY}/${NAME}:latest"
           else
             SHORT_SHA=$(git rev-parse --short HEAD)
-            DEFAULT_BRANCH=$(gh api repos/${{ github.repository }}/default_branch --jq '.name')
+            DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
             BRANCH="${GITHUB_REF_NAME}"
             if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
               TAGS="${REGISTRY}/${NAME}:dev${IFS}${REGISTRY}/${NAME}:dev-${SHORT_SHA}"
