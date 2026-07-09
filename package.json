@@ -4,16 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node --env-file-if-exists=.env index.js",
     "lint": "eslint ."
   },
   "keywords": [],
   "author": "Prinky",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "axios": "^1.13.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
     "express": "^4.22.1",
     "xmlbuilder": "^15.1.1"
   },
