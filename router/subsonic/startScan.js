@@ -1,11 +1,10 @@
-module.exports = async(req, res, proxy, xml) => {
-    let f = [].concat(req.query.f).filter(Boolean)[0];
-
+module.exports = async(req, res, proxy, respond) => {
     const scan = await (await fetch(`${global.config.music}/notsettings/trigger-scan`, {
         headers: {
             "Cookie": req.user
         }
     })).json();
+
     const tracks = await (await fetch(`${global.config.music}/folder`, {
         method: "POST",
         headers: {
@@ -17,7 +16,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     const status = scan?.msg === "Scan triggered!";
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             scanStatus: {
                 scanning: status,
@@ -29,8 +28,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

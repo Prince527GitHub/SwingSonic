@@ -1,9 +1,8 @@
 const { shuffleArray } = require("../../packages/array");
 const path = require("path");
 
-module.exports = async(req, res, proxy, xml) => {
-    let { size, genre, fromYear, toYear, musicFolderId } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
+module.exports = async(req, res, proxy, respond) => {
+    let { size } = req.query;
 
     size = Math.min(parseInt(size) || 10, 500);
 
@@ -66,7 +65,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     output = output.slice(0, size);
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             randomSongs: {
                 song: output
@@ -77,8 +76,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

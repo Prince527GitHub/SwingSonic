@@ -1,9 +1,9 @@
 const zw = require("../../packages/zw");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
 
-    let { f, size, offset } = req.query;
+    let { size, offset } = req.query;
 
     const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || "0"}&limit=${size || "50"}`, {
         headers: {
@@ -38,7 +38,7 @@ module.exports = async(req, res, proxy, xml) => {
 
     const info = playlist?.info || {};
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             playlist: {
                 id: info?.id,
@@ -63,8 +63,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

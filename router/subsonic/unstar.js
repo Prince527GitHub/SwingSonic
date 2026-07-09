@@ -1,5 +1,5 @@
-module.exports = async(req, res, proxy, xml) => {
-    let { f, id, albumId, artistId } = req.query;
+module.exports = async(req, res, proxy, respond) => {
+    let { id, albumId, artistId } = req.query;
 
     const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
     if (type) await fetch(`${global.config.music}/favorites/remove`, {
@@ -14,7 +14,7 @@ module.exports = async(req, res, proxy, xml) => {
         })
     });
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             status: "ok",
             version: "1.16.1",
@@ -22,8 +22,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

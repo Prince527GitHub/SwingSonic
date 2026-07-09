@@ -1,8 +1,7 @@
 const zw = require("../../packages/zw");
 
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     let { title } = req.query;
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const headers = {
         "Content-Type": "application/json",
@@ -63,7 +62,7 @@ module.exports = async(req, res, proxy, xml) => {
         }
     }
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             lyrics: lyrics,
             status: "ok",
@@ -72,8 +71,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

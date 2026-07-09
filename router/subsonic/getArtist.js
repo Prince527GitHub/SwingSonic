@@ -1,7 +1,5 @@
-module.exports = async(req, res, proxy, xml) => {
+module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
-
-    let f = [].concat(req.query.f).filter(Boolean)[0];
 
     const getAlbums = await (await fetch(`${global.config.music}/artist/${id}/albums?limit=7&all=false`, {
         headers: {
@@ -25,7 +23,7 @@ module.exports = async(req, res, proxy, xml) => {
         artistId: album?.albumartists?.[0]?.artisthash
     }));
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             artist: {
                 id: id,
@@ -43,8 +41,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

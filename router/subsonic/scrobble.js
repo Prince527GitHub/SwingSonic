@@ -1,5 +1,5 @@
-module.exports = async(req, res, proxy, xml) => {
-    let { f, id, time, submission } = req.query;
+module.exports = async(req, res, proxy, respond) => {
+    let { id, time, submission } = req.query;
 
     let ids = [];
     let times = [];
@@ -59,7 +59,7 @@ module.exports = async(req, res, proxy, xml) => {
         }
     }
 
-    const json = {
+    respond(res, req, {
         "subsonic-response": {
             status: "ok",
             version: "1.16.1",
@@ -67,8 +67,5 @@ module.exports = async(req, res, proxy, xml) => {
             serverVersion: "unknown",
             openSubsonic: true
         }
-    }
-
-    if (f === "json") res.json(json);
-    else res.send(xml(json));
+    });
 }

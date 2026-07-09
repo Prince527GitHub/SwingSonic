@@ -35,42 +35,43 @@ async function checkPassword(input, salt, user) {
     }
 }
 
-const getF = (req) => [].concat(req.query.f).filter(Boolean)[0];
+function getF(req) {
+    return [].concat(req.query.f).filter(Boolean)[0];
+}
 
-async function checkAuth(req, res, next) {
-    let { u, p, t, s } = req.query;
-    let f = getF(req);
+function respond(res, req, json) {
+    const f = getF(req);
+    if (f === "json") res.json(json);
+    else res.send(convertToXml(json));
+}
 
-    const json = {
+function error(status, code, message) {
+    return {
         "subsonic-response": {
-            status: "unauthorized",
+            status,
             version: "1.16.1",
             type: "swingsonic",
             serverVersion: "unknown",
-            openSubsonic: true
+            openSubsonic: true,
+            ...(code ? { error: { code, message } } : {})
         }
-    }
+    };
+}
 
-    if (!u || (!p && (!t || !s))) {
-        if (f === "json") return res.json(json);
-        else return res.send(convertToXml(json));
-    }
+async function checkAuth(req, res, next) {
+    let { u, p, t, s } = req.query;
+
+    if (!u || (!p && (!t || !s))) return respond(res, req, error("unauthorized"));
 
     const users = await (await fetch(`${global.config.music}/auth/users?simplified=true`)).json();
 
     const user = users.users.find(user => user.username === u);
-    if (!user) {
-        if (f === "json") return res.json(json);
-        else return res.send(convertToXml(json));
-    }
+    if (!user) return respond(res, req, error("unauthorized"));
 
     if (!p) p = t;
 
     const token = await checkPassword(p, s, user);
-    if (!token) {
-        if (f === "json") return res.json(json);
-        else return res.send(convertToXml(json));
-    }
+    if (!token) return respond(res, req, error("unauthorized"));
 
     req.user = token;
 
@@ -79,9 +80,7 @@ async function checkAuth(req, res, next) {
 
 module.exports = async(app) => {
     app.use("/rest/getOpenSubsonicExtensions.view", (req, res) => {
-        let f = getF(req);
-
-        const json = {
+        respond(res, req, {
             "subsonic-response": {
                 "openSubsonicExtensions": [],
                 status: "ok",
@@ -90,10 +89,7 @@ module.exports = async(app) => {
                 serverVersion: "unknown",
                 openSubsonic: true
             }
-        }
-
-        if (f === "json") res.status(200).json(json);
-        else res.status(200).send(convertToXml(json));
+        });
     });
 
     app.use("/rest/*", checkAuth);
@@ -106,14 +102,12 @@ module.exports = async(app) => {
 
             const name = path.basename(value).split(".js")[0];
 
-            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async(req, res) => route(req, res, proxy, convertToXml));
+            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async(req, res) => route(req, res, proxy, respond));
         }
     });
 
     app.use("/rest/*", (req, res) => {
-        let f = getF(req);
-
-        const json = {
+        respond(res, req, {
             "subsonic-response": {
                 status: "ok",
                 version: "1.16.1",
@@ -121,9 +115,6 @@ module.exports = async(app) => {
                 serverVersion: "unknown",
                 openSubsonic: true
             }
-        }
-
-        if (f === "json") res.status(200).json(json);
-        else res.status(200).send(convertToXml(json));
+        });
     });
 }
