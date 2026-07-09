@@ -6,6 +6,7 @@ async function checkAuth(req, res, next) {
     if (!login.includes(req.originalUrl)) {
         try {
             const auth = req.headers["authorization"] || `Bearer ${req.query.token}`;
+
             const credentials = auth.split(" ")[1];
             const [username, password] = credentials.split(":");
 
