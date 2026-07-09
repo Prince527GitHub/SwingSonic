@@ -1,61 +1,54 @@
 function envJSON(env) {
-    const lines = env.split("\n");
     const json = {};
 
-    lines.forEach(line => {
-        const [key, value] = line.split("=");
+    for (const line of env.split("\n")) {
+        const i = line.indexOf("=");
+        if (i === -1) continue;
 
-        if (key && value) {
-            let keys = key.split("_").map(k => k.toLowerCase());
-            let objRef = json;
-            let arrayIndex = null;
+        const key = line.slice(0, i);
+        const value = parseValue(line.slice(i + 1));
 
-            const arrayKeyIndex = keys.findIndex(k => k.match(/^\d+$/));
-            if (arrayKeyIndex !== -1) {
-                arrayIndex = parseInt(keys[arrayKeyIndex]);
-                keys = keys.slice(0, arrayKeyIndex);
+        const parts = key.toLowerCase().split("_");
+        let obj = json;
+
+        for (let j = 0; j < parts.length; j++) {
+            const part = parts[j];
+            const next = parts[j + 1];
+
+            if (j === parts.length - 1) {
+                obj[part] = value;
+                break;
             }
 
-            keys.forEach((keyPart, index) => {
-                if (!objRef[keyPart]) {
-                    if (arrayIndex !== null && index === keys.length - 1) objRef[keyPart] = [];
-                    else objRef[keyPart] = {};
-                }
-
-                if (index === keys.length - 1) {
-                    if (arrayIndex !== null) {
-                        if (!objRef[keyPart][arrayIndex]) objRef[keyPart][arrayIndex] = {};
-
-                        if (key === `SERVER_USERS_${arrayIndex}_USERNAME`) objRef[keyPart][arrayIndex]["username"] = value;
-                        else if (key === `SERVER_USERS_${arrayIndex}_PASSWORD`) objRef[keyPart][arrayIndex]["password"] = value;
-                    } else objRef[keyPart] = parseValue(value);
-                } else objRef = objRef[keyPart];
-            });
+            if (/^\d+$/.test(next)) {
+                obj[part] ??= [];
+                obj[part][next] ??= {};
+                obj = obj[part][next];
+                j++;
+            } else {
+                obj[part] ??= {};
+                obj = obj[part];
+            }
         }
-    });
+    }
 
     return json;
 }
 
 function envString() {
-    let envString = "";
-
-    for (let key in process.env) {
-        if (key.startsWith("SERVER") || key.startsWith("MUSIC")) {
-            envString += `${key}=${process.env[key]}\n`;
-        }
-    }
-
-    return envString;
+    return Object.entries(process.env)
+        .filter(([key]) => key.startsWith("SERVER") || key.startsWith("MUSIC"))
+        .map(([key, value]) => `${key}=${value}`)
+        .join("\n");
 }
 
 function parseValue(value) {
     if (value === "true" || value === "false") return value === "true";
-    else if (!isNaN(value)) return parseFloat(value);
-    else return value;
+    if (!Number.isNaN(Number(value))) return Number(value);
+    return value;
 }
 
 module.exports = {
     envString,
     envJSON
-}
+};
