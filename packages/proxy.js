@@ -15,10 +15,12 @@ module.exports = (res, req, url) => {
                 Cookie: req.user,
                 "User-Agent": req.headers["user-agent"] ?? "Mozilla/5.0",
                 Accept: req.headers.accept ?? "*/*",
-                ...(req.headers.range && { Range: req.headers.range }),
+                ...(req.headers.range && { Range: req.headers.range })
             }
         },
         (response) => {
+            if (res.destroyed) return response.destroy();
+
             res.writeHead(response.statusCode, response.headers);
 
             pipeline(response, res, (err) => {
@@ -33,6 +35,8 @@ module.exports = (res, req, url) => {
     proxy.on("error", (err) => {
         console.error("[PROXY] Request error:", err.message);
 
+        if (res.destroyed) return;
+
         if (res.headersSent) res.destroy();
         else {
             res.statusCode = 500;
@@ -41,6 +45,6 @@ module.exports = (res, req, url) => {
     });
 
     res.on("close", () => {
-        if (!res.writableEnded) proxy.destroy();
+        if (!res.writableEnded && !proxy.destroyed) proxy.destroy();
     });
 };
