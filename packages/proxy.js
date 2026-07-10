@@ -1,10 +1,12 @@
-const http = require("http");
+const { pipeline } = require("stream");
 const https = require("https");
+const http = require("http");
 
 module.exports = (res, req, url) => {
     const target = new URL(url);
+    const module = target.protocol === "https:" ? https : http;
 
-    const proxy = (target.protocol === "https:" ? https : http).get(
+    const proxy = module.get(
         {
             hostname: target.hostname,
             port: target.port,
@@ -14,26 +16,31 @@ module.exports = (res, req, url) => {
                 "User-Agent": req.headers["user-agent"] ?? "Mozilla/5.0",
                 Accept: req.headers.accept ?? "*/*",
                 ...(req.headers.range && { Range: req.headers.range }),
-            },
+            }
         },
         (response) => {
-            res.writeHead(response.statusCode, {
-                ...response.headers,
-                "accept-ranges": "bytes",
-            });
+            res.writeHead(response.statusCode, response.headers);
 
-            response.on("error", () => {
-                if (!res.writableEnded) res.destroy();
+            pipeline(response, res, (err) => {
+                if (err && !res.destroyed) {
+                    console.error("[PROXY] Stream error:", err.message);
+                    res.destroy();
+                }
             });
-
-            response.pipe(res);
-        },
+        }
     );
 
     proxy.on("error", (err) => {
-        console.error("[PROXY]", err.message);
-        if (!res.headersSent) res.status(500).send("Error proxying request.");
+        console.error("[PROXY] Request error:", err.message);
+
+        if (res.headersSent) res.destroy();
+        else {
+            res.statusCode = 500;
+            res.end("Error proxying request.");
+        }
     });
 
-    req.on("close", () => proxy.destroy());
+    res.on("close", () => {
+        if (!res.writableEnded) proxy.destroy();
+    });
 };
