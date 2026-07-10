@@ -1,13 +1,17 @@
 const { Readable } = require("stream");
 
 module.exports = async (res, req, url) => {
+    const controller = new AbortController();
+
+    req.on("close", () => controller.abort());
+
     try {
         const response = await fetch(url, {
+            signal: controller.signal,
             headers: {
                 Cookie: req.user,
                 "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
                 Accept: req.headers["accept"] || "*/*",
-                Connection: "keep-alive",
                 ...(req.headers["range"] && { Range: req.headers["range"] }),
             }
         });
@@ -18,9 +22,10 @@ module.exports = async (res, req, url) => {
         });
 
         Readable.fromWeb(response.body)
-            .on("error", (err) => console.error("[PROXY] Stream error:", err.message))
+            .on("error", () => { if (!res.writableEnded) res.destroy(); })
             .pipe(res);
     } catch (error) {
+        if (error.name === "AbortError") return;
         console.error("Proxy error:", error.message);
         if (!res.headersSent) res.status(500).send("Error proxying request.");
     }
