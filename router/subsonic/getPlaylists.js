@@ -11,7 +11,7 @@ module.exports = async(req, res, proxy, respond) => {
             ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
             : new Date();
         return {
-            id: playlist?.id,
+            id: String(playlist?.id),
             name: playlist?.name,
             comment: "No comment",
             owner: "admin",

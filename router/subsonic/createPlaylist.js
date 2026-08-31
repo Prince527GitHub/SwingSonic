@@ -58,7 +58,7 @@ module.exports = async(req, res, proxy, respond) => {
     respond(res, req, {
         "subsonic-response": {
             playlist: {
-                id: pl?.id,
+                id: String(pl?.id),
                 name: pl?.name,
                 comment: "No comment",
                 owner: "admin",

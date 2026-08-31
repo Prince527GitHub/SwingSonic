@@ -3,9 +3,7 @@ const zw = require("../../packages/zw");
 module.exports = async(req, res, proxy, respond) => {
     const args = { headers: { "Cookie": req.user } };
 
-    const query = req.query.query
-        .replace(/[^a-zA-Z0-9 ]/g, "")
-        .replace(/[-_]/g, " ");
+    const query = (req.query.query || "").replace(/[-_]/g, " ");
 
     let { artistCount, artistOffset, albumCount, albumOffset, songCount, songOffset } = req.query;
 
