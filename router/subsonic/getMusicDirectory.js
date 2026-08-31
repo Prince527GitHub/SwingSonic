@@ -1,5 +1,6 @@
 const zw = require("../../packages/zw");
 const path = require("path");
+const decode = require("../../packages/decode");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
@@ -15,13 +16,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    let decoded;
-    try {
-        const json = Buffer.from(decodeURIComponent(id), "base64").toString("utf-8");
-        decoded = JSON.parse(json);
-    } catch {
-        decoded = null;
-    }
+    const decoded = decode.decode(id);
 
     const effectiveId = decoded?.id || id;
 

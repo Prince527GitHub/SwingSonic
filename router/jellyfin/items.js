@@ -1,24 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
+const decode = require("../../packages/decode");
 const proxy = require("../../packages/proxy");
 
 const { username, password } = global.config.server.users[0];
 
-function decodeId(id) {
-    try {
-        const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
-
-        return { id: decoded?.album ?? decoded?.id ?? id };;
-    } catch {
-        return { id };
-    }
-}
-
 router.get("/:id/images/primary", async(req, res) => {
     const id = req.params.id;
 
-    const decoded = decodeId(id);
+    const decoded = decode.decode(id);
 
     // const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
 
@@ -36,7 +27,9 @@ router.get("/:id/images/primary", async(req, res) => {
 
     req.user = auth.headers.get("set-cookie");
 
-    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${decoded.id}.webp`);
+    const image = decoded?.album ?? decoded?.id ?? id;
+
+    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${image}.webp`);
 });
 
 router.use("/:id/file", getFile);
@@ -45,7 +38,7 @@ router.use("/:id/download", getFile);
 async function getFile(req, res) {
     const id = req.params.id;
 
-    const decoded = JSON.parse(Buffer.from(decodeURIComponent(id), "base64").toString("utf-8"));
+    const decoded = decode.decode(id);
 
     const auth = await fetch(`${global.config.music}/auth/login`, {
         method: "POST",

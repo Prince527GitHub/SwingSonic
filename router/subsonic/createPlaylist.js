@@ -1,3 +1,5 @@
+const decode = require("../../packages/decode");
+
 module.exports = async(req, res, proxy, respond) => {
     let { playlistId, name, songId } = req.query;
 
@@ -36,13 +38,14 @@ module.exports = async(req, res, proxy, respond) => {
     if (songId) {
         const songIds = Array.isArray(songId) ? songId : [songId];
         for (const sid of songIds) {
+            const trackhash = decode.trackhash(sid);
             await fetch(`${global.config.music}/playlists/${pl?.id}/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: sid })
+                body: JSON.stringify({ itemtype: "tracks", itemhash: trackhash })
             });
         }
     }
