@@ -1,13 +1,9 @@
+const decode = require("../../packages/decode");
+
 module.exports = async(req, res, proxy, respond) => {
     let { id, albumId, artistId } = req.query;
 
-    let decoded;
-    try {
-        const json = Buffer.from(decodeURIComponent(id || albumId || artistId), "base64").toString("utf-8");
-        decoded = JSON.parse(json);
-    } catch {
-        decoded = null;
-    }
+    const decoded = decode.decode(id || albumId || artistId);
     if (decoded) {
         id = decoded?.id;
         albumId = decoded?.albumId;

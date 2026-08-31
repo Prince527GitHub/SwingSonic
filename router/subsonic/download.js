@@ -1,15 +1,10 @@
 const { convertToXml } = require("../../packages/xml");
+const decode = require("../../packages/decode");
 
 module.exports = async(req, res, proxy) => {
     const id = req.query.id;
 
-    let decoded;
-    try {
-        const json = Buffer.from(decodeURIComponent(id), "base64").toString("utf-8");
-        decoded = JSON.parse(json);
-    } catch {
-        decoded = null;
-    }
+    const decoded = decode.decode(id);
 
     if (!id) {
         const json = {

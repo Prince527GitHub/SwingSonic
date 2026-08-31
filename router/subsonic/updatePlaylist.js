@@ -1,3 +1,5 @@
+const decode = require("../../packages/decode");
+
 module.exports = async(req, res, proxy, respond) => {
     let { playlistId, name, songIdToAdd, songIdToRemove, songIndexToRemove } = req.query;
 
@@ -15,13 +17,14 @@ module.exports = async(req, res, proxy, respond) => {
     if (songIdToAdd) {
         const idsToAdd = Array.isArray(songIdToAdd) ? songIdToAdd : [songIdToAdd];
         for (const sid of idsToAdd) {
+            const trackhash = decode.trackhash(sid);
             await fetch(`${global.config.music}/playlists/${playlistId}/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: sid })
+                body: JSON.stringify({ itemtype: "tracks", itemhash: trackhash })
             });
         }
     }
@@ -29,13 +32,14 @@ module.exports = async(req, res, proxy, respond) => {
     if (songIdToRemove) {
         const idsToRemove = Array.isArray(songIdToRemove) ? songIdToRemove : [songIdToRemove];
         for (const sid of idsToRemove) {
+            const trackhash = decode.trackhash(sid);
             await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ tracks: [{ trackhash: sid, index: 0 }] })
+                body: JSON.stringify({ tracks: [{ trackhash, index: 0 }] })
             });
         }
     }

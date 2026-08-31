@@ -1,3 +1,4 @@
+const decode = require("../../packages/decode");
 const path = require("path");
 
 module.exports = async(req, res, proxy, respond) => {
@@ -14,13 +15,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    let decoded;
-    try {
-        const json = Buffer.from(decodeURIComponent(id), "base64").toString("utf-8");
-        decoded = JSON.parse(json);
-    } catch {
-        decoded = null;
-    }
+    const decoded = decode.decode(id);
 
     const trackId = decoded?.id || id;
     const filepath = decoded?.path;

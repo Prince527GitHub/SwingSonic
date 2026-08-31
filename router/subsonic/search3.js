@@ -10,10 +10,17 @@ module.exports = async(req, res, proxy, respond) => {
 
     let { artistCount, artistOffset, albumCount, albumOffset, songCount, songOffset } = req.query;
 
+    artistCount = parseInt(artistCount) || 20;
+    albumCount = parseInt(albumCount) || 20;
+    songCount = parseInt(songCount) || 20;
+    artistOffset = parseInt(artistOffset) || 0;
+    albumOffset = parseInt(albumOffset) || 0;
+    songOffset = parseInt(songOffset) || 0;
+
     let artists = [];
 
     if (artistCount >= 1 && query) {
-        const artistResults = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${encodeURIComponent(query)}&start=${artistOffset || 0}&limit=${artistCount || 20}`, args)).json();
+        const artistResults = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${encodeURIComponent(query)}&start=${artistOffset}&limit=${artistCount}`, args)).json();
         artists = (artistResults?.results || []).map(artist => ({
             id: artist?.artisthash,
             name: artist?.name,
@@ -26,7 +33,7 @@ module.exports = async(req, res, proxy, respond) => {
     let albums = [];
 
     if (albumCount >= 1 && query) {
-        const albumResults = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${encodeURIComponent(query)}&start=${albumOffset || 0}&limit=${albumCount || 20}`, args)).json();
+        const albumResults = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${encodeURIComponent(query)}&start=${albumOffset}&limit=${albumCount}`, args)).json();
         albums = (albumResults?.results || []).map(album => ({
             id: album?.albumhash,
             name: album?.title,
@@ -42,7 +49,7 @@ module.exports = async(req, res, proxy, respond) => {
     let tracks = [];
 
     if (songCount >= 1 && query) {
-        const trackResults = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=${songOffset || 0}&limit=${songCount || 20}`, args)).json();
+        const trackResults = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=${songOffset}&limit=${songCount}`, args)).json();
         tracks = (trackResults?.results || []).map(track => {
             const id = track?.trackhash && track?.filepath
                 ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64"))

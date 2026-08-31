@@ -1,3 +1,5 @@
+const decode = require("../../packages/decode");
+
 module.exports = async(req, res, proxy, respond) => {
     let { id, time, submission } = req.query;
 
@@ -7,14 +9,7 @@ module.exports = async(req, res, proxy, respond) => {
     if (id) {
         const idList = Array.isArray(id) ? id : [id];
         for (const singleId of idList) {
-            let decoded;
-            try {
-                const json = Buffer.from(decodeURIComponent(singleId), "base64").toString("utf-8");
-                decoded = JSON.parse(json);
-            } catch {
-                decoded = null;
-            }
-            ids.push({ raw: singleId, decoded });
+            ids.push({ raw: singleId, decoded: decode.decode(singleId) });
         }
     }
 
