@@ -7,11 +7,12 @@
 
 ## Supported
 
-- [Subsonic](https://www.subsonic.org/pages/index.jsp) <sub><sup>*(75%)*</sub></sup>
-- [Jellyfin](https://jellyfin.org/) <sub><sup>*(40%)*</sub></sup>
-- [Euterpe](https://listen-to-euterpe.eu/) <sub><sup>*(100%)*</sub></sup>
+- [Subsonic](https://www.subsonic.org/pages/index.jsp)
+- [Jellyfin](https://jellyfin.org/)
+- [Euterpe](https://listen-to-euterpe.eu/)
 
-> Note: Client compatibility varies; the percentages reflect my experience with client compatibility, not the entire API.
+> [!NOTE]
+> Client compatibility varies, and not all clients are fully supported. Please submit an issue if you encounter any problems.
 
 ## Images
 
