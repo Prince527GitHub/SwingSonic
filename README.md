@@ -24,12 +24,12 @@
 To use this with docker, simply deploy the following docker-compose.
 
 ```yml
-version: '3'
-
 services:
   app:
-    image: ghcr.io/prince527github/swingsonic:latest
+    # use :dev for the development version, or :latest for the latest stable release
+    image: ghcr.io/prince527github/swingsonic:latest # or git.serversmp.xyz/prince527/swingsonic:latest
     container_name: swingsonic
+    restart: unless-stopped
     ports:
       - 3000:3000
     volumes: # Use a config.json file or env (see below)
@@ -38,7 +38,7 @@ services:
       - SERVER_PORT=3000 # The port to listen on
       - SERVER_URL=http://ip:port # The public URL of this API
       - SERVER_API_SUBSONIC_ENABLE=true # Enable of disable Subsonic API implementation
-      - SERVER_API_SUBSONIC_OPTIONS_ZW=true # Enable of Zero Width Character Hack
+      - SERVER_API_SUBSONIC_OPTIONS_ZW=true # Enable of Zero Width Character Hack (check wiki for more information)
       - SERVER_API_JELLYFIN=true # Enable of disable Jellyfin API implementation
       - SERVER_API_EUTERPE=true # Enable of disable Enterpe API implementation
       - SERVER_USERS_0_USERNAME=admin # Subsonic and Jellyfin implementation requires a list of Swing Music users's usernames
