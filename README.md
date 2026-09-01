@@ -1,7 +1,7 @@
 > [!IMPORTANT]  
 > Please read the [release notes](https://github.com/Prince527GitHub/Swingsonic/releases) for any breaking changes.
 
-<h1 align="center">Swingsonic</h1>
+<h1 align="center">SwingSonic</h1>
 
 <p align="center">A translation layer allowing clients from <a href="#supported">other music servers</a> to work with <a href="https://github.com/swing-opensource/swingmusic">Swing Music</a>.</p>
 

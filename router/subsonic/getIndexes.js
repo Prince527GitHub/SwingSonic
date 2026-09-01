@@ -10,7 +10,7 @@ module.exports = async(req, res, proxy, respond) => {
     const output = (artists?.items || []).map(item => ({
         id: item?.artisthash,
         name: item?.name,
-        artistImageUrl: item?.image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64")}` : undefined
+        artistImageUrl: item?.image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64"))}` : undefined
     }));
 
     const children = (artists?.items || []).map(item => ({

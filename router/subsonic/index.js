@@ -1,5 +1,6 @@
 const { getFileList } = require("../../packages/files");
 
+const { sanitizeCookie } = require("../../packages/cookie");
 const { hashPassword } = require("../../packages/crypto");
 const { convertToXml } = require("../../packages/xml");
 const proxy = require("../../packages/proxy");
@@ -29,7 +30,7 @@ async function checkPassword(input, salt, user) {
             body: JSON.stringify({ username: user.username, password })
         });
 
-        return auth?.headers?.get("set-cookie") || false;
+        return sanitizeCookie(auth?.headers?.get("set-cookie")) || false;
     } catch {
         return false;
     }

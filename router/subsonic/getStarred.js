@@ -27,7 +27,7 @@ module.exports = async(req, res, proxy, respond) => {
     const tracks = (favorites?.tracks || []).map(track => {
         const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
         return {
-            id: track?.trackhash,
+            id: track?.trackhash && track?.filepath ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")) : track?.trackhash,
             parent: track?.albumhash,
             isDir: false,
             title: track?.title,
