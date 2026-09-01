@@ -3,7 +3,7 @@ const { pipeline } = require("stream");
 const https = require("https");
 const http = require("http");
 
-const HEADERS = ["set-cookie", "connection", "keep-alive", "proxy-connection", "transfer-encoding"];
+const HEADERS = ["set-cookie", "connection", "keep-alive", "proxy-connection"];
 
 module.exports = (res, req, url) => {
     const target = new URL(url);
