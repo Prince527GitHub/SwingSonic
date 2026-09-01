@@ -1,8 +1,21 @@
 const zw = require("../../packages/zw");
 const path = require("path");
+const decode = require("../../packages/decode");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
+    if (!id) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 10, message: "Required parameter 'id' is missing" }
+        }
+    });
+
+    const decoded = decode.decode(id);
 
     const album = await (await fetch(`${global.config.music}/album`, {
         method: "POST",
@@ -10,8 +23,18 @@ module.exports = async(req, res, proxy, respond) => {
             "Content-Type": "application/json",
             "Cookie": req.user
         },
-        body: JSON.stringify({ albumhash: id })
+        body: JSON.stringify({ albumhash: decoded?.album || decoded?.id || id })
     })).json();
+    if (album?.error || !album?.info) return respond(res, req, {
+        "subsonic-response": {
+            status: "failed",
+            version: "1.16.1",
+            type: "swingsonic",
+            serverVersion: "unknown",
+            openSubsonic: true,
+            error: { code: 70, message: "Album not found" }
+        }
+    });
 
     const info = album.info || {};
     const tracks = album.tracks || [];
@@ -21,10 +44,15 @@ module.exports = async(req, res, proxy, respond) => {
         album: {
             id: info.albumhash,
             name: info.title,
+            title: info.title,
+            album: info.title,
+            parent: info.albumartists?.[0]?.artisthash || info.albumhash,
+            isDir: true,
+            isVideo: false,
             version: info.versions?.[0],
             artist: info.albumartists?.[0]?.name,
             artistId: info.albumartists?.[0]?.artisthash,
-            coverArt: info.image ? Buffer.from(JSON.stringify({ type: "album", id: info.image })).toString("base64") : undefined,
+            coverArt: info.image ? Buffer.from(JSON.stringify({ type: "album", id: info.image })).toString("base64") : Buffer.from(JSON.stringify({ type: "album", id: info.albumhash })).toString("base64"),
             songCount: info.trackcount || 0,
             duration: info.duration || 0,
             playCount: info.playcount || 0,
@@ -72,7 +100,8 @@ module.exports = async(req, res, proxy, respond) => {
                     albumId: track?.albumhash,
                     artistId: track?.artists?.[0]?.artisthash,
                     type: "music",
-                    artists: (track?.artists || []).map(a => ({ name: a?.name })),
+                    artists: (track?.artists || []).map(a => ({ id: a?.artisthash || track?.artists?.[0]?.artisthash || info.albumartists?.[0]?.artisthash || "unknown", name: a?.name })),
+                    albumArtists: (track?.albumartists || track?.artists || info.albumartists || []).map(a => ({ id: a?.artisthash || "unknown", name: a?.name })),
                     displayArtist: track?.artists?.[0]?.name,
                     explicitStatus: track?.explicit ? "explicit" : "clean",
                 };
@@ -86,9 +115,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     }
 
-    if (info.is_favorite) {
-        output.album.starred = new Date().toISOString();
-    }
+    if (info.is_favorite) output.album.starred = new Date().toISOString();
 
     respond(res, req, {
         "subsonic-response": {
