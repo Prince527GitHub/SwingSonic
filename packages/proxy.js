@@ -1,27 +1,38 @@
+const { sanitizeCookie } = require("./cookie");
 const { pipeline } = require("stream");
 const https = require("https");
 const http = require("http");
 
+const HEADERS = ["set-cookie", "connection", "keep-alive", "proxy-connection", "transfer-encoding"];
+
 module.exports = (res, req, url) => {
     const target = new URL(url);
-    const module = target.protocol === "https:" ? https : http;
+    const client = target.protocol === "https:" ? https : http;
 
-    const proxy = module.get(
+    const cookie = sanitizeCookie(req.user);
+
+    const proxy = client.get(
         {
             hostname: target.hostname,
             port: target.port,
             path: `${target.pathname}${target.search}`,
             headers: {
-                Cookie: req.user,
+                ...(cookie && { Cookie: cookie }),
                 "User-Agent": req.headers["user-agent"] ?? "Mozilla/5.0",
                 Accept: req.headers.accept ?? "*/*",
-                ...(req.headers.range && { Range: req.headers.range })
+                ...(req.headers.range && { Range: req.headers.range }),
+                ...(req.headers["if-range"] && { "If-Range": req.headers["if-range"] })
             }
         },
         (response) => {
             if (res.destroyed) return response.destroy();
 
-            res.writeHead(response.statusCode, response.headers);
+            const headers = { ...response.headers };
+            HEADERS.forEach(header => delete headers[header]);
+
+            if (req.url?.includes("/rest/download") && !headers["content-disposition"]) headers["content-disposition"] = "attachment";
+
+            res.writeHead(response.statusCode, headers);
 
             pipeline(response, res, (err) => {
                 if (err && !res.destroyed) {
