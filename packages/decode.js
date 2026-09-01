@@ -2,14 +2,20 @@ function decode(id) {
     if (!id) return null;
 
     try {
-        let value = decodeURIComponent(id).replace(/ /g, "+");
+        let raw = id;
 
         try {
-            const decoded = decodeURIComponent(value);
-            if (/^[A-Za-z0-9+/=]+$/.test(decoded.replace(/\s/g, ""))) value = decoded;
+            raw = decodeURIComponent(raw);
+        } catch { }
+
+        raw = raw.replace(/ /g, "+");
+
+        try {
+            const decoded = decodeURIComponent(raw);
+            if (decoded !== raw && /^[A-Za-z0-9+/=]+$/.test(decoded.replace(/\s/g, ""))) raw = decoded;
         } catch {}
 
-        return JSON.parse(Buffer.from(value, "base64").toString("utf8"));
+        return JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
     } catch {
         return null;
     }
