@@ -14,7 +14,7 @@ How would we fix this? Well my solution is zero width characters which are chara
 
 | Before | After |
 | :----------- | :--------------: |
-| ![before](https://github.com/user-attachments/assets/f2053880-930f-4586-b416-045ed0d6d38f) | ![after](https://github.com/user-attachments/assets/3f045e47-1d4f-41b6-bbb7-1436c6b2374b) |
+| ![before](https://api.serversmp.xyz/upload/6a97302ef3a01ca6b2e9a729.jpg) | ![after](https://api.serversmp.xyz/upload/6a97302e4c30fc93eab5fce4.jpg) |
 
 As you see you cant spot the difference but there is an extra 100+ characters which embeds a JSON string including the album and track id.
 
