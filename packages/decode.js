@@ -6,7 +6,7 @@ function decode(id) {
 
         try {
             raw = decodeURIComponent(raw);
-        } catch { }
+        } catch {}
 
         raw = raw.replace(/ /g, "+");
 
