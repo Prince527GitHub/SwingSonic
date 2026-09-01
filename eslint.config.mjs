@@ -16,7 +16,8 @@ export default [
         },
         rules: {
             quotes: ["warn", "double", { avoidEscape: true, allowTemplateLiterals: false }],
-            "no-unneeded-ternary": ["warn", { defaultAssignment: false }]
+            "no-unneeded-ternary": ["warn", { defaultAssignment: false }],
+            "no-empty": "off"
         }
     }
 ];
