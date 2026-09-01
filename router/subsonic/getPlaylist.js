@@ -37,6 +37,7 @@ module.exports = async(req, res, proxy, respond) => {
     }));
 
     const info = playlist?.info || {};
+    const owner = req.query.u || req.query.username || "admin";
 
     respond(res, req, {
         "subsonic-response": {
@@ -44,7 +45,7 @@ module.exports = async(req, res, proxy, respond) => {
                 id: String(info?.id),
                 name: info?.name,
                 comment: "No comment",
-                owner: "admin",
+                owner: owner,
                 public: true,
                 songCount: info?.count || 0,
                 duration: info?.duration || 0,
