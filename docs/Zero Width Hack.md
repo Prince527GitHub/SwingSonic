@@ -6,7 +6,7 @@ The "Zero Width" hack is a feature that allows Subsonic clients to get the exact
 
 When a Subsonic client wants to get the lyrics of a song it will search for it by the title but what happens if I have 2 songs with the same name, it might get the wrong lyrics.
 
-![problem](https://api.serversmp.xyz/upload/6a972aa27ca54370e5681039.png)
+![problem](https://api.serversmp.xyz/upload/6a972fe180f3291c305ed1fe.jpg)
 
 ## "Solution"
 
@@ -20,4 +20,4 @@ As you see you cant spot the difference but there is an extra 100+ characters wh
 
 Then when you go to get the lyrics I extract the extra data and use it to get a more accurate result.
 
-![solution](https://api.serversmp.xyz/upload/6a972aa87ca54370e568103a.png)
+![solution](https://api.serversmp.xyz/upload/6a972fe180f3291c305ed1fc.jpg)
