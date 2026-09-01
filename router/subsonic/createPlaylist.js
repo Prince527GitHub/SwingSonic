@@ -55,13 +55,15 @@ module.exports = async(req, res, proxy, respond) => {
         ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
         : new Date();
 
+    const owner = req.query.u || req.query.username || "admin";
+
     respond(res, req, {
         "subsonic-response": {
             playlist: {
                 id: String(pl?.id),
                 name: pl?.name,
                 comment: "No comment",
-                owner: "admin",
+                owner: owner,
                 public: true,
                 songCount: pl?.count || 0,
                 duration: pl?.duration || 0,

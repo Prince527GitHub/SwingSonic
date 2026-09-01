@@ -5,6 +5,8 @@ module.exports = async(req, res, proxy, respond) => {
         }
     })).json();
 
+    const owner = req.query.u || req.query.username || "admin";
+
     const output = (playlists?.data || []).map(playlist => {
         const lastUpdated = playlist?.last_updated;
         const createdDate = lastUpdated
@@ -14,7 +16,7 @@ module.exports = async(req, res, proxy, respond) => {
             id: String(playlist?.id),
             name: playlist?.name,
             comment: "No comment",
-            owner: "admin",
+            owner: owner,
             public: true,
             songCount: playlist?.count || 0,
             duration: playlist?.duration || 0,
