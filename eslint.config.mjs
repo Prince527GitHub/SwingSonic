@@ -1,14 +1,14 @@
 import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath, URL } from "node:url";
-import pluginJs from "@eslint/js";
 import globals from "globals";
+import js from "@eslint/js";
 
 const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
 
 /** @type {import("eslint").Linter.Config[]} */
 export default [
     includeIgnoreFile(gitignorePath),
-    pluginJs.configs.recommended,
+    js.configs.recommended,
     {
         files: ["**/*.js"],
         languageOptions: {
