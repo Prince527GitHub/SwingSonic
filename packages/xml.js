@@ -31,5 +31,5 @@ module.exports = (object) => {
     const root = Object.keys(object)[0];
     if (!root) return "";
 
-    return XML.stringify({ [root]: build(object[root]) }, null, 2);
+    return `<?xml version="1.0" encoding="UTF-8"?>\n${XML.stringify({ [root]: build(object[root]) }, null, 2)}`;
 };
