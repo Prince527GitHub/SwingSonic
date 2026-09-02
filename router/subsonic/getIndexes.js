@@ -38,7 +38,7 @@ module.exports = async(req, res, proxy, respond) => {
         "subsonic-response": {
             indexes: {
                 ignoredArticles: "",
-                lastModified: new Date().getTime(),
+                lastModified: Date.now(),
                 index: organize,
                 child: children
             },

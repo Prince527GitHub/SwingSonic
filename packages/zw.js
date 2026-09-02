@@ -1,11 +1,6 @@
 function inject(visible, content) {
-    const bits = [...content]
-        .map(char => char.charCodeAt(0).toString(2).padStart(8, "0"))
-        .join("");
-
-    const hidden = [...bits]
-        .map(bit => (bit === "1" ? "\u200B" : "\u200C"))
-        .join("");
+    const bits = Array.from(content, char => char.charCodeAt(0).toString(2).padStart(8, "0")).join("");
+    const hidden = Array.from(bits, bit => (bit === "1" ? "\u200B" : "\u200C")).join("");
 
     return `${visible}${hidden}`;
 }
