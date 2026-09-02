@@ -1,7 +1,7 @@
 const { shuffleArray } = require("../../packages/array");
 
 module.exports = async(req, res, proxy, respond) => {
-    let { type, size, offset, genre } = req.query;
+    let { type, size, offset, genre, fromYear, toYear } = req.query;
 
     size = Math.min(parseInt(size) || 10, 500);
     offset = parseInt(offset) || 0;
@@ -51,7 +51,17 @@ module.exports = async(req, res, proxy, respond) => {
             break;
         }
         case "byYear": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            const from = parseInt(fromYear) || 0;
+            const to = parseInt(toYear) || 9999;
+
+            const [minYear, maxYear] = from <= to ? [from, to] : [to, from];
+
+            albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=500&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+
+            output = (albums?.items || [])
+                .filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear()))
+                .sort((a, b) => a.date - b.date)
+                .slice(offset, offset + size);
             break;
         }
         case "byGenre": {
@@ -64,7 +74,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     }
 
-    if (type !== "random") output = albums?.items || [];
+    if (type !== "random" && type !== "byYear") output = albums?.items || [];
 
     const items = output.map(item => ({
         id: item?.albumhash,
