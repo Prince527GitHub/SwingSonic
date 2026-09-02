@@ -90,7 +90,7 @@ module.exports = async(app) => {
         });
     });
 
-    app.use("/rest/*", checkAuth);
+    app.use("/rest", checkAuth);
 
     const routeFiles = await getFileList(`${process.cwd()}/router/subsonic`, { type: ".js", recursively: false });
 
@@ -104,7 +104,7 @@ module.exports = async(app) => {
         }
     });
 
-    app.use("/rest/*", (req, res) => {
+    app.use("/rest", (req, res) => {
         respond(res, req, {
             "subsonic-response": {
                 status: "ok",

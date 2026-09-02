@@ -11,28 +11,38 @@ module.exports = async(req, res, proxy, respond) => {
     let track;
 
     if (global?.config?.server?.api?.subsonic?.options?.zw) {
-        let info;
+        let info = null;
+
         try {
-            info = JSON.parse(Buffer.from(zw.extract(title), "base64").toString("utf-8"));
-        } catch {
-            info = null;
-        }
+            info = JSON.parse(Buffer.from(zw.extract(title), "base64").toString("utf8"));
+        } catch {}
 
         if (info?.album) {
-            const album = await (await fetch(`${global.config.music}/album`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ albumhash: info.album })
-            })).json();
+            let album = null;
+
+            try {
+                album = await (await fetch(`${global.config.music}/album`, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify({ albumhash: info.album })
+                })).json();
+            } catch {}
 
             track = (album?.tracks || []).find(t => t?.trackhash === info?.id);
         }
     } else {
         title = title
-            .replace(/[^a-zA-Z0-9 ]/g, "")
-            .replace(/[-_]/g, " ");
+            .replace(/[-_]/g, " ")
+            .replace(/[^\p{L}\p{N} ]/gu, "")
+            .trim();
 
-        const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(title)}&start=0&limit=1`, { headers })).json();
+        let search = null;
+
+        if (title) {
+            try {
+                search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(title)}&start=0&limit=1`, { headers })).json();
+            } catch {}
+        }
 
         track = search?.results?.[0];
     }
@@ -48,12 +58,21 @@ module.exports = async(req, res, proxy, respond) => {
             artist: track?.albumartists?.[0]?.name || track?.artists?.[0]?.name || ""
         };
 
-        let getLyrics = await (await fetch(`${global.config.music}/lyrics`, { method: "POST", headers, body: JSON.stringify(body) })).json();
-        if (getLyrics?.error) getLyrics = await (await fetch(`${global.config.music}/plugins/lyrics/search`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+        let getLyrics = null;
+        try {
+            getLyrics = await (await fetch(`${global.config.music}/lyrics`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+        } catch {}
+
+        if (!getLyrics || getLyrics?.error) {
+            try {
+                getLyrics = await (await fetch(`${global.config.music}/plugins/lyrics/search`, { method: "POST", headers, body: JSON.stringify(body) })).json();
+            } catch {}
+        }
 
         if (getLyrics?.lyrics) {
             lyrics.artist = body.artist;
             lyrics.title = body.title;
+
             try {
                 lyrics.value = (getLyrics.lyrics || []).map(line => line?.text).join("\n");
             } catch {

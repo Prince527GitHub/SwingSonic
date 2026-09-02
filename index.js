@@ -14,6 +14,8 @@ if (!global.config) {
 const express = require("express");
 const app = express();
 
+app.set("query parser", "extended");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

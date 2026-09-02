@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/info*", (req, res) => res.json({
+router.get(/^\/info.*/, (req, res) => res.json({
     LocalAddress: global.config.server.url,
     ServerName: "Swingfin",
     Version: "10.8.13",

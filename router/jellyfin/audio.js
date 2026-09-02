@@ -4,7 +4,7 @@ const router = express.Router();
 const decode = require("../../packages/decode");
 const proxy = require("../../packages/proxy");
 
-router.get("/:id/*", async(req, res) => {
+router.get("/:id/{*any}", async(req, res) => {
     const id = req.params.id;
 
     const decoded = decode.decode(id);

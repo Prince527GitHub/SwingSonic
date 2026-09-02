@@ -32,7 +32,7 @@ async function checkAuth(req, res, next) {
 }
 
 module.exports = async(app) => {
-    app.use("/v1/*", checkAuth);
+    app.use("/v1", checkAuth);
 
     const routeFiles = await getFileList(`${process.cwd()}/router/euterpe`, { type: ".js", recursively: false });
 
