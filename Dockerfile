@@ -1,17 +1,17 @@
-FROM node:lts-alpine
+FROM docker.io/oven/bun:alpine
 
 RUN apk update && apk add tini
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
-RUN mkdir /app && chown -R node:node /app
+RUN mkdir /app && chown -R bun:bun /app
 WORKDIR /app
-USER node
+USER bun
 
-COPY --chown=node:node . .
+COPY --chown=bun:bun . .
 
-RUN npm ci --omit=dev
+RUN bun install --production
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["bun", "start"]

@@ -2,8 +2,8 @@ const { getFileList } = require("../../packages/files");
 
 const { sanitizeCookie } = require("../../packages/cookie");
 const { hashPassword } = require("../../packages/crypto");
-const { convertToXml } = require("../../packages/xml");
 const proxy = require("../../packages/proxy");
+const xml = require("../../packages/xml");
 
 const path = require("path");
 
@@ -36,14 +36,11 @@ async function checkPassword(input, salt, user) {
     }
 }
 
-function getF(req) {
-    return [].concat(req.query.f).filter(Boolean)[0];
-}
-
 function respond(res, req, json) {
-    const f = getF(req);
-    if (f === "json") res.json(json);
-    else res.send(convertToXml(json));
+    const format = [].concat(req.query.f).find(Boolean);
+
+    if (format === "json") res.json(json);
+    else res.send(xml(json));
 }
 
 function error(status, code, message) {

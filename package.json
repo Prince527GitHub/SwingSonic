@@ -1,18 +1,17 @@
 {
   "name": "swingsonic",
   "version": "3.0.0",
-  "description": "",
+  "description": "Let's clients from other music servers work with Swing Music",
   "main": "index.js",
   "scripts": {
-    "start": "node --env-file-if-exists=.env index.js",
+    "start": "bun index.js",
     "lint": "eslint ."
   },
   "keywords": [],
   "author": "Prinky",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "express": "^4.22.2",
-    "xmlbuilder": "^15.1.1"
+    "express": "^4.22.2"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
