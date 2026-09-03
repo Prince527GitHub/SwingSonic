@@ -74,7 +74,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     }
 
-    if (type !== "random" && type !== "byYear") output = albums?.items || [];
+    if (!["random", "byYear"].includes(type)) output = albums?.items || [];
 
     const items = output.map(item => ({
         id: item?.albumhash,

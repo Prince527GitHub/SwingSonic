@@ -33,7 +33,8 @@ module.exports = async(req, res, proxy, respond) => {
         albumId: track?.albumhash,
         artistId: track?.artists?.[0]?.artisthash,
         albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
-        type: "music"
+        type: "music",
+        ...(track?.is_favorite ? { starred: new Date().toISOString() } : {})
     }));
 
     const info = playlist?.info || {};
