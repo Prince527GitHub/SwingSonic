@@ -1,16 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
+const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
 
-router.get("/:id/image", async(req, res) => {
+router.get("/:id/image", async (req, res) => {
     const size = req.query.size === "small" ? "small" : "medium";
 
-    proxy(res, req, `${global.config.music}/img/artist/${size}/${encodeURIComponent(req.params.id)}.webp`);
+    proxy(res, req, api.url(`/img/artist/${size}/${encodeURIComponent(req.params.id)}.webp`));
 });
 
-router.get("/:id", async(req, res) => {
-    const artist = await (await fetch(`${global.config.music}/artist/${req.params.id}`, { headers: { "Cookie": req.user } })).json();
+router.get("/:id", async (req, res) => {
+    const artist = await api.artist(req.user).getArtist(req.params.id);
     if (!artist?.artist) return res.sendStatus(404);
 
     const info = artist.artist;
@@ -24,6 +25,6 @@ router.get("/:id", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "artist"
-}
+};

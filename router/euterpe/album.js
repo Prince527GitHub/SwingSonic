@@ -1,25 +1,18 @@
 const express = require("express");
 const router = express.Router();
 
-const proxy = require("../../packages/proxy");
 const { mapTracks } = require("../../packages/track");
+const api = require("../../packages/swingmusic");
+const proxy = require("../../packages/proxy");
 
-router.get("/:id/artwork", async(req, res) => {
+router.get("/:id/artwork", async (req, res) => {
     const size = req.query.size === "small" ? "small" : "medium";
 
-    proxy(res, req, `${global.config.music}/img/thumbnail/${size}/${encodeURIComponent(req.params.id)}.webp`);
+    proxy(res, req, api.url(`/img/thumbnail/${size}/${encodeURIComponent(req.params.id)}.webp`));
 });
 
-router.get("/:id", async(req, res) => {
-    const album = await (await fetch(`${global.config.music}/album`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({ albumhash: req.params.id })
-    })).json();
-
+router.get("/:id", async (req, res) => {
+    const album = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: req.params.id });
     if (album?.error || !album?.info) return res.sendStatus(404);
 
     const info = album.info || {};
@@ -35,6 +28,6 @@ router.get("/:id", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "album"
-}
+};

@@ -1,8 +1,8 @@
 const { getFileList } = require("../../packages/files");
+const api = require("../../packages/swingmusic");
 
 async function checkAuth(req, res, next) {
-    const login = ["/branding/configuration", "/displaypreferences/usersettings", "/playback/bitratetest", "/quickconnect/enabled", "/sessions/capabilities/full", "/system/endpoint", "/system/info", "/system/info/public", "/users/authenticatebyname", "/users/public", "/users/user", "/userviews/","/branding/css"];
-
+    const login = ["/branding/configuration", "/displaypreferences/usersettings", "/playback/bitratetest", "/quickconnect/enabled", "/sessions/capabilities/full", "/system/endpoint", "/system/info", "/system/info/public", "/users/authenticatebyname", "/users/public", "/users/user", "/userviews/", "/branding/css"];
     if (!login.includes(`${req.baseUrl.toLowerCase()}${req.path.toLowerCase()}`)) {
         const tokenHeader = req.headers["x-emby-token"] || req.headers["x-emby-authorization"] || req.headers["x-mediabrowser-token"] || req.headers["authorization"] || req.query.api_key || req.query.ApiKey || req.query.apiKey;
         if (!tokenHeader) return res.sendStatus(401);
@@ -12,16 +12,7 @@ async function checkAuth(req, res, next) {
 
         const [username, password] = token.split("@");
 
-        const auth = await fetch(`${global.config.music}/auth/login`, {
-            method: "POST",
-            body: JSON.stringify({
-                username,
-                password
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+        const auth = await api.request("/auth/login", { method: "POST", body: { username, password }, raw: true });
         if (!auth.ok) return res.sendStatus(401);
 
         req.user = auth.headers.get("set-cookie");
@@ -30,10 +21,10 @@ async function checkAuth(req, res, next) {
     next();
 }
 
-module.exports = async(app) => {
-    const routeFiles = await getFileList(`${process.cwd()}/router/jellyfin`, { type: ".js", recursively: false });
+module.exports = async (app) => {
+    const routes = await getFileList(`${process.cwd()}/router/jellyfin`, { type: ".js", recursively: false });
 
-    routeFiles.map((value) => {
+    routes.map((value) => {
         if (!value.includes("index.js")) {
             const { name, router } = require(value);
 
@@ -43,4 +34,4 @@ module.exports = async(app) => {
             else app.use(`/${name}`, router);
         }
     });
-}
+};

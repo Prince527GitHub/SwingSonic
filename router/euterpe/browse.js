@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 
-router.get("/", async(req, res) => {
+// TODO: Cleanup this entire file. It's a mess.
+router.get("/", async (req, res) => {
     const { by = "album", order = "asc" } = req.query;
 
     const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
@@ -20,7 +22,7 @@ router.get("/", async(req, res) => {
 
     let results = [];
     if (by === "album") {
-        const albums = await (await fetch(`${global.config.music}/getall/albums?start=${start}&limit=${perPage}&sortby=${sortby}&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
+        const albums = await api.getAll(req.user).getAllItems("albums", { start, limit: perPage, sortby, reverse });
 
         results = albums.items.map(album => ({
             album: album.title && album.albumhash ? zw.inject(album.title, codecs.encode({ album: album.albumhash })) : album.title,
@@ -30,7 +32,7 @@ router.get("/", async(req, res) => {
 
         results.total = albums.total;
     } else if (by === "artist") {
-        const artists = await (await fetch(`${global.config.music}/getall/artists?start=${start}&limit=${perPage}&sortby=${sortby}&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
+        const artists = await api.getAll(req.user).getAllItems("artists", { start, limit: perPage, sortby, reverse });
 
         results = artists.items.map(artist => ({
             artist: artist.name && artist.artisthash ? zw.inject(artist.name, codecs.encode({ artist: artist.artisthash })) : artist.name,
@@ -52,6 +54,6 @@ router.get("/", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "browse"
-}
+};

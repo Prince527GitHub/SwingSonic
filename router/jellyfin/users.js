@@ -1,22 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
 router.get("/public", (req, res) => res.json([]));
 
 router.get("/user/views", async(req, res) => {
-    const folders = await (await fetch(`${global.config.music}/folder`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({
-            "folder": "$home",
-            "tracks_only": false
-        })
-    })).json();
+    const folders = await api.folder(req.user).getFolderTree({ folder: "$home", tracks_only: false });
 
     const items = (folders?.folders || []).map(folder => ({
         Name: folder.name,
@@ -147,21 +138,9 @@ router.get("/user/items", async(req, res) => {
     let { IncludeItemTypes, Limit, StartIndex, ParentId, AlbumArtistIds, Ids, MediaTypes } = req.query;
 
     if (ParentId && IncludeItemTypes === "Audio") {
-        const folders = await (await fetch(`${global.config.music}/folder`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({
-                "folder": "$home",
-                "tracks_only": false
-            })
-        })).json();
+        const folders = await api.folder(req.user).getFolderTree({ folder: "$home", tracks_only: false });
 
-        for (let index = 0; index < (folders?.folders || []).length; index++) {
-            const folder = folders.folders[index];
-
+        for (const folder of folders?.folders || []) {
             if (folder.path === ParentId) {
                 IncludeItemTypes = "AllTracks";
                 break;
@@ -173,11 +152,7 @@ router.get("/user/items", async(req, res) => {
     let albums = { items: [], total: 0 };
 
     if (!AlbumArtistIds && (IncludeItemTypes === "MusicAlbum" || (!IncludeItemTypes && !MediaTypes))) {
-        albums = await (await fetch(`${global.config.music}/getall/albums?start=${StartIndex || "0"}&limit=${Limit || "50"}&sortby=created_date&reverse=1`, {
-            headers: {
-                "Cookie": req.user
-            }
-        })).json() || { items: [], total: 0 };
+        albums = await api.getAll(req.user).getAllItems("albums", { start: StartIndex || "0", limit: Limit || "50", sortby: "created_date", reverse: 1 }) || { items: [], total: 0 };
 
         output = await Promise.all((albums?.items || []).map(async(album) => {
             const data = {
@@ -218,21 +193,13 @@ router.get("/user/items", async(req, res) => {
                 "LocationType": "FileSystem"
             }
 
-            const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${album.albumhash}&type=album`, {
-                headers: {
-                    "Cookie": req.user
-                }
-            })).json();
+            const favorite = await api.favorites(req.user).checkFavorite({ hash: album.albumhash, type: "album" });
             if (favorite?.is_favorite) data.UserData.IsFavorite = true;
 
             return data;
         }));
     } else if (IncludeItemTypes === "MusicAlbum" && AlbumArtistIds) {
-        albums = await (await fetch(`${global.config.music}/artist/${AlbumArtistIds}/albums?limit=7&all=false`, {
-            headers: {
-                "Cookie": req.user
-            }
-        })).json() || { appearances: [], albums: [], singles_and_eps: [], compilations: [] };
+        albums = await api.artist(req.user).getArtistAlbums(AlbumArtistIds, { limit: 7, all: false }) || { appearances: [], albums: [], singles_and_eps: [], compilations: [] };
 
         output = (albums?.appearances || []).map(album => ({
             "Name": album.title,
@@ -268,23 +235,10 @@ router.get("/user/items", async(req, res) => {
         }));
     } else if ((IncludeItemTypes === "Audio" || MediaTypes === "Audio,Video") && ParentId) {
         try {
-            const albumResp = await fetch(`${global.config.music}/album`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ albumhash: ParentId })
-            });
-            albums = await albumResp.json();
+            albums = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: ParentId });
 
             if (albums?.error) {
-                const playlistResp = await fetch(`${global.config.music}/playlists/${ParentId}?no_tracks=false`, {
-                    headers: {
-                        "Cookie": req.user
-                    }
-                });
-                albums = await playlistResp.json();
+                albums = await api.playlist(req.user).getPlaylist({ playlistid: ParentId }, { no_tracks: false });
             }
 
             const trackList = albums?.tracks || [];
@@ -397,11 +351,7 @@ router.get("/user/items", async(req, res) => {
             }
         } catch { albums = { items: [], total: 0 }; }
     } else if (IncludeItemTypes === "Playlist") {
-        const plResp = await (await fetch(`${global.config.music}/playlists`, {
-            headers: {
-                "Cookie": req.user
-            }
-        })).json();
+        const plResp = await api.playlist(req.user).sendAllPlaylists();
         const plData = plResp?.data || [];
         albums = { items: plData, total: plData.length };
 
@@ -436,30 +386,13 @@ router.get("/user/items", async(req, res) => {
     if (Ids) {
         const id = Ids.split(",")[0];
 
-        const sizeResp = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, {
-            headers: {
-                "Cookie": req.user
-            }
-        })).json();
+        const sizeResp = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 1, sortby: "created_date", reverse: 1 });
         const totalSize = sizeResp?.total || 50;
 
-        const allAlbums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${totalSize}&sortby=created_date&reverse=1`, {
-            headers: {
-                "Cookie": req.user
-            }
-        })).json();
+        const allAlbums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: totalSize, sortby: "created_date", reverse: 1 });
 
-        for (let index = 0; index < (allAlbums?.items || []).length; index++) {
-            const album = allAlbums.items[index];
-
-            const tracksResp = await (await fetch(`${global.config.music}/album`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ albumhash: album.albumhash })
-            })).json();
+        for (const album of allAlbums?.items || []) {
+            const tracksResp = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: album.albumhash });
 
             const trackList = tracksResp?.tracks || [];
             const albumMatch = trackList.find(track => track.trackhash === id);
@@ -532,21 +465,10 @@ router.get("/user/items/:id", async(req, res) => {
     const id = req.params.id;
 
     try {
-        const albums = await (await fetch(`${global.config.music}/album`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({ albumhash: id })
-        })).json();
+        const albums = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: id });
 
         if (albums?.error) {
-            const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
-                headers: {
-                    "Cookie": req.user
-                }
-            })).json();
+            const playlist = await api.playlist(req.user).getPlaylist({ playlistid: id }, { no_tracks: false });
 
             const items = (playlist?.tracks || []).map(track => ({
                 Album: track.album,
@@ -696,32 +618,11 @@ router.route("/user/favoriteitems/:id")
     .post(async(req, res) => {
         const id = req.params.id;
 
-        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`, {
-            headers: {
-                "Cookie": req.user
-            }
-        });
-        const album = await fetch(`${global.config.music}/album`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({ albumhash: id })
-        });
+        const artistRes = await api.request(`/artist/${id}/albums`, { method: "GET", auth: req.user, query: { limit: 1, all: false }, raw: true });
+        const albumRes = await api.request("/album", { method: "POST", auth: req.user, body: { albumhash: id }, raw: true });
 
-        const type = artist.ok ? "artist" : album.ok ? "album" : "track";
-        if (type) await fetch(`${global.config.music}/favorites/add`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({
-                type: type,
-                hash: id
-            })
-        });
+        const type = artistRes.ok ? "artist" : albumRes.ok ? "album" : "track";
+        if (type) await api.favorites(req.user).toggleFavorite({ type, hash: id });
 
         res.json({
             Rating: 0,
@@ -741,32 +642,11 @@ router.route("/user/favoriteitems/:id")
     .delete(async(req, res) => {
         const id = req.params.id;
 
-        const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`, {
-            headers: {
-                "Cookie": req.user
-            }
-        });
-        const album = await fetch(`${global.config.music}/album`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({ albumhash: id })
-        });
+        const artistRes = await api.request(`/artist/${id}/albums`, { method: "GET", auth: req.user, query: { limit: 1, all: false }, raw: true });
+        const albumRes = await api.request("/album", { method: "POST", auth: req.user, body: { albumhash: id }, raw: true });
 
-        const type = artist.ok ? "artist" : album.ok ? "album" : "track";
-        if (type) await fetch(`${global.config.music}/favorites/remove`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({
-                type: type,
-                hash: id
-            })
-        });
+        const type = artistRes.ok ? "artist" : albumRes.ok ? "album" : "track";
+        if (type) await api.favorites(req.user).removeFavorite({ type, hash: id });
 
         res.json({
             Rating: 0,
@@ -785,6 +665,6 @@ router.route("/user/favoriteitems/:id")
     });
 
 module.exports = {
-    router: router,
+    router,
     name: "users"
-}
+};

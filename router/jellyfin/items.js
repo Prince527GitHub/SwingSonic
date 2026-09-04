@@ -2,35 +2,25 @@ const express = require("express");
 const router = express.Router();
 
 const { sanitizeCookie } = require("../../packages/cookie");
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const proxy = require("../../packages/proxy");
 
 const { username, password } = global.config.server.users[0];
 
-router.get("/:id/images/primary", async(req, res) => {
+router.get("/:id/images/primary", async (req, res) => {
     const id = req.params.id;
 
     const decoded = codecs.decode(id);
 
-    // const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
-
-    const auth = await fetch(`${global.config.music}/auth/login`, {
-        method: "POST",
-        body: JSON.stringify({
-            username,
-            password
-        }),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
+    const auth = await api.request("/auth/login", { method: "POST", body: { username, password }, raw: true });
     if (!auth.ok) return res.sendStatus(401);
 
     req.user = sanitizeCookie(auth.headers.get("set-cookie"));
 
     const image = decoded?.album ?? decoded?.id ?? id;
 
-    proxy(res, req, `${global.config.music}/img/thumbnail/medium/${image}.webp`);
+    proxy(res, req, api.url(`/img/thumbnail/medium/${image}.webp`));
 });
 
 router.use("/:id/file", getFile);
@@ -42,32 +32,35 @@ async function getFile(req, res) {
     const decoded = codecs.decode(id);
     if (!decoded?.id || !decoded?.path) return res.sendStatus(404);
 
-    const auth = await fetch(`${global.config.music}/auth/login`, {
-        method: "POST",
-        body: JSON.stringify({
-            username,
-            password
-        }),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
+    const auth = await api.request("/auth/login", { method: "POST", body: { username, password }, raw: true });
     if (!auth.ok) return res.sendStatus(401);
 
     req.user = sanitizeCookie(auth.headers.get("set-cookie"));
 
-    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}&container=mp3&quality=original`);
+    proxy(res, req, api.url(`/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}&container=mp3&quality=original`));
 }
 
 router.get("/:id/thememedia", (req, res) => res.json({
-    ThemeVideosResult: { items: [], totalRecordCount: 0, startIndex: 0 },
-    ThemeSongsResult: { items: [], totalRecordCount: 0, startIndex: 0 },
-    SoundtrackSongsResult: { items: [], totalRecordCount: 0, startIndex: 0 }
+    ThemeVideosResult: {
+        items: [],
+        totalRecordCount: 0,
+        startIndex: 0
+    },
+    ThemeSongsResult: {
+        items: [],
+        totalRecordCount: 0,
+        startIndex: 0
+    },
+    SoundtrackSongsResult: {
+        items: [],
+        totalRecordCount: 0,
+        startIndex: 0
+    }
 }));
 
 router.route("/:id/playbackinfo")
     .post(playBackInfo)
-    .get(playBackInfo)
+    .get(playBackInfo);
 
 async function playBackInfo(req, res) {
     const { id } = req.params;
@@ -124,10 +117,19 @@ async function playBackInfo(req, res) {
     });
 }
 
-router.get("/", (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
-router.get("/:id/similar", (req, res) => res.json({ Items: [], TotalRecordCount: 0, StartIndex: 0 }));
+router.get("/", (req, res) => res.json({
+    Items: [],
+    TotalRecordCount: 0,
+    StartIndex: 0
+}));
+
+router.get("/:id/similar", (req, res) => res.json({
+    Items: [],
+    TotalRecordCount: 0,
+    StartIndex: 0
+}));
 
 module.exports = {
-    router: router,
+    router,
     name: "items"
-}
+};

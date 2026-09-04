@@ -1,5 +1,6 @@
 const { sanitizeCookie } = require("../../packages/cookie");
 const { getFileList } = require("../../packages/files");
+const api = require("../../packages/swingmusic");
 
 async function checkAuth(req, res, next) {
     if (["/login/token", "/login/token/"].includes(req.path)) return next();
@@ -20,13 +21,7 @@ async function checkAuth(req, res, next) {
         const username = credentials.slice(0, sep);
         const password = credentials.slice(sep + 1);
 
-        const response = await fetch(`${global.config.music}/auth/login`, {
-            method: "POST",
-            body: JSON.stringify({ username, password }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+        const response = await api.request("/auth/login", { method: "POST", body: { username, password }, raw: true });
 
         req.user = sanitizeCookie(response?.headers?.get("set-cookie")) || false;
     } catch {
@@ -41,12 +36,11 @@ async function checkAuth(req, res, next) {
 module.exports = async(app) => {
     app.use("/v1", checkAuth);
 
-    const routeFiles = await getFileList(`${process.cwd()}/router/euterpe`, { type: ".js", recursively: false });
+    const routes = await getFileList(`${process.cwd()}/router/euterpe`, { type: ".js", recursively: false });
 
-    routeFiles.map((value) => {
+    routes.map((value) => {
         if (!value.includes("index.js")) {
             const { name, router } = require(value);
-
             app.use(`/v1/${name}`, router);
         }
     });

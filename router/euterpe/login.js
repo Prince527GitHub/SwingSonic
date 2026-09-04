@@ -1,18 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-router.post("/token", async(req, res) => {
+const api = require("../../packages/swingmusic");
+
+router.post("/token", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const response = await fetch(`${global.config.music}/auth/login`, {
-            method: "POST",
-            body: JSON.stringify({ username, password }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
+        const response = await api.request("/auth/login", { method: "POST", body: { username, password }, raw: true });
         if (!response.ok) return res.sendStatus(401);
 
         res.json({ token: `${username}:${password}` });
@@ -22,6 +17,6 @@ router.post("/token", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "login"
-}
+};

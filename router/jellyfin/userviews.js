@@ -1,18 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/", async(req, res) => {
-    const folders = await (await fetch(`${global.config.music}/folder`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({
-            "folder": "$home",
-            "tracks_only": false
-        })
-    })).json();
+const api = require("../../packages/swingmusic");
+
+router.get("/", async (req, res) => {
+    const folders = await api.folder(req.user).getFolderTree({ folder: "$home", tracks_only: false });
 
     const items = folders.folders.map(folder => ({
         Name: folder.name,
@@ -56,6 +48,6 @@ router.get("/", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "userviews"
-}
+};

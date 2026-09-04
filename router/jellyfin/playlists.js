@@ -1,14 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
+const api = require("../../packages/swingmusic");
+
 router.get("/:id/items", async(req, res) => {
     const { id } = req.params;
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const playlist = await api.playlist(req.user).getPlaylist({ playlistid: id }, { no_tracks: false });
 
     const items = (playlist?.tracks || []).map(track => ({
         Name: track.title,
@@ -21,21 +19,20 @@ router.get("/:id/items", async(req, res) => {
         ParentIndexNumber: 1,
         IsFolder: false,
         Type: "Audio",
-        UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false },
+        UserData: {
+            PlaybackPositionTicks: 0,
+            PlayCount: 0,
+            IsFavorite: false,
+            Played: false
+        },
         PrimaryImageAspectRatio: 1,
         Artists: (track.artists || []).map(artist => artist.name),
-        ArtistItems: (track.artists || []).map(artist => ({
-            Name: artist.name,
-            Id: artist.artisthash
-        })),
+        ArtistItems: (track.artists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
         Album: track.album,
         AlbumId: track.albumhash,
         AlbumPrimaryImageTag: track.albumhash,
         AlbumArtist: track.albumartists?.[0]?.name,
-        AlbumArtists: (track.albumartists || []).map(artist => ({
-            Name: artist.name,
-            Id: artist.artisthash
-        })),
+        AlbumArtists: (track.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
         ImageTags: {
             Primary: track.albumhash
         },
@@ -52,6 +49,6 @@ router.get("/:id/items", async(req, res) => {
 });
 
 module.exports = {
-    router: router,
+    router,
     name: "playlists"
-}
+};
