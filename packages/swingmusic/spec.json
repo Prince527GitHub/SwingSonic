@@ -1,0 +1,1733 @@
+{
+  "auth": {
+    "prefix": "/auth",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/login",
+        "handler": "login",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "LoginBody",
+            "fields": {
+              "username": {
+                "type": "str",
+                "required": false,
+                "description": "The username"
+              },
+              "password": {
+                "type": "str",
+                "required": false,
+                "description": "The password"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/getpaircode",
+        "handler": "get_pair",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/pair",
+        "handler": "pair_with_code",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "PairDeviceQuery",
+            "fields": {
+              "code": {
+                "type": "str",
+                "required": false,
+                "description": "The code"
+              }
+            }
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/refresh",
+        "handler": "refresh",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/profile/update",
+        "handler": "update_profile",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "UpdateProfileBody",
+            "fields": {
+              "id": {
+                "type": "int",
+                "required": false,
+                "description": "The user id"
+              },
+              "email": {
+                "type": "str",
+                "required": false,
+                "description": "The email"
+              },
+              "username": {
+                "type": "str",
+                "required": false,
+                "description": "The username"
+              },
+              "password": {
+                "type": "str",
+                "required": false,
+                "description": "The password"
+              },
+              "roles": {
+                "type": "list[str]",
+                "required": false,
+                "description": "The roles"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/profile/create",
+        "handler": "create_user",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "UpdateProfileBody",
+            "fields": {
+              "id": {
+                "type": "int",
+                "required": false,
+                "description": "The user id"
+              },
+              "email": {
+                "type": "str",
+                "required": false,
+                "description": "The email"
+              },
+              "username": {
+                "type": "str",
+                "required": false,
+                "description": "The username"
+              },
+              "password": {
+                "type": "str",
+                "required": false,
+                "description": "The password"
+              },
+              "roles": {
+                "type": "list[str]",
+                "required": false,
+                "description": "The roles"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/profile/guest/create",
+        "handler": "create_guest_user",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/profile/delete",
+        "handler": "delete_user",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "DeleteUseBody",
+            "fields": {
+              "username": {
+                "type": "str",
+                "required": false,
+                "description": "The username"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/logout",
+        "handler": "logout",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/users",
+        "handler": "get_all_users",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetAllUsersQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/user",
+        "handler": "get_logged_in_user",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "backup_and_restore": {
+    "prefix": "/backup",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/create",
+        "handler": "backup",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/restore",
+        "handler": "restore",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "RestoreBackupBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/list",
+        "handler": "list_backups",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/delete",
+        "handler": "delete_backup",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "DeleteBackupBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "imgserver": {
+    "prefix": "/img",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/thumbnail/<imgpath>",
+        "handler": "send_thumbnail",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": {
+            "model": "ImageQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/artist/<imgpath>",
+        "handler": "send_lg_artist_image",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/artist/small/<imgpath>",
+        "handler": "send_sm_artist_image",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/artist/medium/<imgpath>",
+        "handler": "send_md_artist_image",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/playlist/<imgpath>",
+        "handler": "send_playlist_image",
+        "inputs": {
+          "path": {
+            "model": "PlaylistImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/mix/medium/<imgpath>",
+        "handler": "send_md_mix_image",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/mix/small/<imgpath>",
+        "handler": "send_sm_mix_image",
+        "inputs": {
+          "path": {
+            "model": "ImagePath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "track": {
+    "prefix": "/track",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/<trackhash>",
+        "handler": "get_track_by_hash",
+        "inputs": {
+          "path": {
+            "model": "TrackHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetTrackQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "folder": {
+    "prefix": "/folder",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "",
+        "handler": "get_folder_tree",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "FolderTree",
+            "fields": {
+              "folder": {
+                "type": "str",
+                "required": false,
+                "description": "The folder to things from"
+              },
+              "Options": {
+                "type": "[",
+                "required": false,
+                "description": ""
+              },
+              "start": {
+                "type": "int",
+                "required": false,
+                "description": "The start index"
+              },
+              "limit": {
+                "type": "int",
+                "required": false,
+                "description": "The max number of items to return"
+              },
+              "tracks_only": {
+                "type": "bool",
+                "required": false,
+                "description": "Whether to only get tracks"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/dir-browser",
+        "handler": "list_folders",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "DirBrowserBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/show-in-files",
+        "handler": "open_in_file_manager",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "FolderOpenInFileManagerQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/tracks/all",
+        "handler": "get_tracks_in_path",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetTracksInPathQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "lyrics": {
+    "prefix": "/lyrics",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "",
+        "handler": "send_lyrics",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "SendLyricsBody",
+            "fields": null
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/check",
+        "handler": "check_lyrics",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "SendLyricsBody",
+            "fields": null
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "sse": {
+    "prefix": "/events",
+    "routes": [
+      {
+        "method": "ROUTE",
+        "path": "/stream",
+        "handler": "stream_events",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "ROUTE",
+        "path": "/status",
+        "handler": "get_stats",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "stream": {
+    "prefix": "/file",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/<trackhash>/legacy",
+        "handler": "send_track_file_legacy",
+        "inputs": {
+          "path": {
+            "model": "TrackHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "SendTrackFileQuery",
+            "fields": {
+              "filepath": {
+                "type": "str",
+                "required": false,
+                "description": "The filepath to play (if available)"
+              }
+            }
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/silence",
+        "handler": "get_audio_silence",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "GetAudioSilenceBody",
+            "fields": {
+              "ending_file": {
+                "type": "str",
+                "required": false,
+                "description": "The ending file's path"
+              },
+              "starting_file": {
+                "type": "str",
+                "required": false,
+                "description": "The beginning file's path"
+              },
+              "ending_trackhash": {
+                "type": "str",
+                "required": false,
+                "description": "The ending file's trackhash"
+              },
+              "starting_trackhash": {
+                "type": "str",
+                "required": false,
+                "description": "The beginning file's trackhash"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "album": {
+    "prefix": "/album",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "",
+        "handler": "get_album_tracks_and_info",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "GetAlbumInfoBody",
+            "fields": null
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<albumhash>/tracks",
+        "handler": "get_album_tracks",
+        "inputs": {
+          "path": {
+            "model": "AlbumHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetAlbumTracksQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/from-artist",
+        "handler": "get_more_from_artist",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "GetMoreFromArtistsBody",
+            "fields": null
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/other-versions",
+        "handler": "get_album_versions",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "GetAlbumVersionsBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/similar",
+        "handler": "get_similar_albums",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetSimilarAlbumsQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "artist": {
+    "prefix": "/artist",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/<string:artisthash>",
+        "handler": "get_artist",
+        "inputs": {
+          "path": {
+            "model": "ArtistHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetArtistQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<artisthash>/albums",
+        "handler": "get_artist_albums",
+        "inputs": {
+          "path": {
+            "model": "ArtistHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetArtistAlbumsQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<artisthash>/tracks",
+        "handler": "get_all_artist_tracks",
+        "inputs": {
+          "path": {
+            "model": "ArtistHashSchema",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<artisthash>/similar",
+        "handler": "get_similar_artists",
+        "inputs": {
+          "path": {
+            "model": "ArtistHashSchema",
+            "fields": {}
+          },
+          "query": {
+            "model": "ArtistLimitSchema",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "classical": {
+    "prefix": "/classical",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/work/<token>",
+        "handler": "get_work",
+        "inputs": {
+          "path": {
+            "model": "GetWorkPath",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetWorkQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "collections": {
+    "prefix": "/collections",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "",
+        "handler": "create_collection",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "CreateCollectionBody",
+            "fields": {
+              "name": {
+                "type": "str",
+                "required": false,
+                "description": "The name of the collection"
+              },
+              "description": {
+                "type": "str",
+                "required": false,
+                "description": "The description of the collection"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "",
+        "handler": "get_collections",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/<int:collection_id>/items",
+        "handler": "add_collection_item",
+        "inputs": {
+          "path": {
+            "model": "AddCollectionItemPath",
+            "fields": {}
+          },
+          "query": null,
+          "body": {
+            "model": "AddCollectionItemBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/<int:collection_id>/items",
+        "handler": "remove_collection_item",
+        "inputs": {
+          "path": {
+            "model": "RemoveCollectionItemPath",
+            "fields": {}
+          },
+          "query": null,
+          "body": {
+            "model": "RemoveCollectionItemBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<int:collection_id>",
+        "handler": "get_collection",
+        "inputs": {
+          "path": {
+            "model": "GetCollectionBody",
+            "fields": {
+              "collection_id": {
+                "type": "int",
+                "required": false,
+                "description": "The ID of the collection to get"
+              }
+            }
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/<int:collection_id>",
+        "handler": "update_collection",
+        "inputs": {
+          "path": {
+            "model": "GetCollectionBody",
+            "fields": {
+              "collection_id": {
+                "type": "int",
+                "required": false,
+                "description": "The ID of the collection to get"
+              }
+            }
+          },
+          "query": null,
+          "body": {
+            "model": "UpdateCollectionBody",
+            "fields": {
+              "name": {
+                "type": "str",
+                "required": false,
+                "description": "The name of the collection"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/<int:collection_id>",
+        "handler": "delete_collection",
+        "inputs": {
+          "path": {
+            "model": "DeleteCollectionPath",
+            "fields": {
+              "collection_id": {
+                "type": "int",
+                "required": false,
+                "description": "The ID of the collection to delete"
+              }
+            }
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "playlist": {
+    "prefix": "/playlists",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "",
+        "handler": "send_all_playlists",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "SendAllPlaylistsQuery",
+            "fields": {
+              "no_images": {
+                "type": "bool",
+                "required": false,
+                "description": "Whether to include images"
+              }
+            }
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/new",
+        "handler": "create_playlist",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "CreatePlaylistBody",
+            "fields": {
+              "name": {
+                "type": "str",
+                "required": true,
+                "description": "The name of the playlist"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/<playlistid>/add",
+        "handler": "add_item_to_playlist",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": {
+            "model": "AddItemToPlaylistBody",
+            "fields": {
+              "itemhash": {
+                "type": "str",
+                "required": true,
+                "description": "The hash of the item to add"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/<playlistid>",
+        "handler": "get_playlist",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": {
+            "model": "GetPlaylistQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/<playlistid>/update",
+        "handler": "update_playlist_info",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": null,
+          "form": {
+            "model": "UpdatePlaylistForm",
+            "fields": {
+              "image": {
+                "type": "FileStorage",
+                "required": false,
+                "description": "The image file"
+              },
+              "name": {
+                "type": "str",
+                "required": true,
+                "description": "The name of the playlist"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/<playlistid>/pin_unpin",
+        "handler": "pin_unpin_playlist",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/<playlistid>/remove-img",
+        "handler": "remove_playlist_image",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/<playlistid>/delete",
+        "handler": "remove_playlist",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/<playlistid>/remove-tracks",
+        "handler": "remove_tracks_from_playlist",
+        "inputs": {
+          "path": {
+            "model": "PlaylistIDPath",
+            "fields": {
+              "playlistid": {
+                "type": "str",
+                "required": true,
+                "description": "The ID of the playlist"
+              }
+            }
+          },
+          "query": null,
+          "body": {
+            "model": "RemoveTracksFromPlaylistBody",
+            "fields": {
+              "tracks": {
+                "type": "list[dict]",
+                "required": true,
+                "description": "A list of trackhashes to remove"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/save-item",
+        "handler": "save_item_as_playlist",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "SavePlaylistAsItemBody",
+            "fields": {
+              "itemtype": {
+                "type": "str",
+                "required": true,
+                "description": "The type of item"
+              },
+              "playlist_name": {
+                "type": "str",
+                "required": true,
+                "description": "The name of the playlist"
+              },
+              "itemhash": {
+                "type": "str",
+                "required": true,
+                "description": "The hash of the item to save"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "favorites": {
+    "prefix": "/favorites",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/add",
+        "handler": "toggle_favorite",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "FavoritesAddBody",
+            "fields": {
+              "type": {
+                "type": "str",
+                "required": false,
+                "description": "The type of the item"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/remove",
+        "handler": "remove_favorite",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "FavoritesAddBody",
+            "fields": {
+              "type": {
+                "type": "str",
+                "required": false,
+                "description": "The type of the item"
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/albums",
+        "handler": "get_favorite_albums",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetAllOfTypeQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/tracks",
+        "handler": "get_favorite_tracks",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetAllOfTypeQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/artists",
+        "handler": "get_favorite_artists",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetAllOfTypeQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "",
+        "handler": "get_all_favorites",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "GetAllFavoritesQuery",
+            "fields": {}
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/check",
+        "handler": "check_favorite",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "FavoritesAddBody",
+            "fields": {
+              "type": {
+                "type": "str",
+                "required": false,
+                "description": "The type of the item"
+              }
+            }
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "prefix": "/notsettings",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/add-root-dirs",
+        "handler": "add_root_dirs",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "AddRootDirsBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/get-root-dirs",
+        "handler": "get_root_dirs",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "",
+        "handler": "get_all_settings",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/trigger-scan",
+        "handler": "trigger_scan_get",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/trigger-scan",
+        "handler": "trigger_scan",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "TriggerScanBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/update",
+        "handler": "update_config",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "UpdateConfigBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/license/register",
+        "handler": "register_license",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": {
+            "model": "RegisterLicenseBody",
+            "fields": {}
+          }
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/license/status",
+        "handler": "get_license_status",
+        "inputs": {
+          "path": null,
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/license/device/<device_id>",
+        "handler": "revoke_device",
+        "inputs": {
+          "path": {
+            "model": "DeviceIdPath",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "search": {
+    "prefix": "/search",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/top",
+        "handler": "get_top_results",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "TopResultsQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "handler": "search_items",
+        "inputs": {
+          "path": null,
+          "query": {
+            "model": "SearchLoadMoreQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "colors": {
+    "prefix": "/colors",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/album/<albumhash>",
+        "handler": "get_album_color",
+        "inputs": {
+          "path": {
+            "model": "AlbumHashSchema",
+            "fields": {}
+          },
+          "query": null,
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  },
+  "getall": {
+    "prefix": "/getall",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/<itemtype>",
+        "handler": "get_all_items",
+        "inputs": {
+          "path": {
+            "model": "GetAllItemsPath",
+            "fields": {}
+          },
+          "query": {
+            "model": "GetAllItemsQuery",
+            "fields": null
+          },
+          "body": null
+        },
+        "outputs": {
+          "type": "json",
+          "description": "JSON response"
+        }
+      }
+    ]
+  }
+}
