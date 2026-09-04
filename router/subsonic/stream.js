@@ -22,7 +22,7 @@ module.exports = async (req, res, proxy, respond) => {
         const source = decoded?.id || id;
 
         try {
-            const track = await api.search(req.user).searchItems({ itemtype: "tracks", q: source, start: 0, limit: 1 })?.results?.[0];
+            const track = (await api.search(req.user).searchItems({ itemtype: "tracks", q: source, start: 0, limit: 1 }))?.results?.[0];
 
             if (track?.trackhash && track?.filepath) decoded = { id: track.trackhash, path: track.filepath };
         } catch { }

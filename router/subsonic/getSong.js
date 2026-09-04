@@ -22,8 +22,8 @@ module.exports = async(req, res, proxy, respond) => {
 
     let track;
 
-    if (filepath) track = (await api.folder(req.user).getTracksInPath({ path: filepath })?.tracks || []).find(t => t?.trackhash === trackId);
-    if (!track) track = await api.search(req.user).searchItems({ itemtype: "tracks", q: trackId, start: 0, limit: 1 })?.results?.[0];
+    if (filepath) track = ((await api.folder(req.user).getTracksInPath({ path: filepath }))?.tracks || []).find(t => t?.trackhash === trackId);
+    if (!track) track = (await api.search(req.user).searchItems({ itemtype: "tracks", q: trackId, start: 0, limit: 1 }))?.results?.[0];
 
     if (!track) return respond(res, req, {
         "subsonic-response": {

@@ -16,7 +16,7 @@ module.exports = async (req, res, proxy, respond) => {
 
         if (info?.album) {
             try {
-                track = (await api.album(req.user).getAlbumTracksAndInfo({ albumhash: info.album })?.tracks || []).find(t => t?.trackhash === info?.id);
+                track = ((await api.album(req.user).getAlbumTracksAndInfo({ albumhash: info.album }))?.tracks || []).find(t => t?.trackhash === info?.id);
             } catch { }
         }
     } else {
@@ -24,7 +24,7 @@ module.exports = async (req, res, proxy, respond) => {
 
         if (title) {
             try {
-                track = await api.search(req.user).searchItems({ itemtype: "tracks", q: title, start: 0, limit: 1 })?.results?.[0];
+                track = (await api.search(req.user).searchItems({ itemtype: "tracks", q: title, start: 0, limit: 1 }))?.results?.[0];
             } catch { }
         }
     }
