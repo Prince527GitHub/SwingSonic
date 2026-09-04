@@ -104,6 +104,19 @@ module.exports = async(app) => {
         }
     });
 
+    const aliases = {
+        getStarred2: "getStarred",
+        getAlbumList2: "getAlbumList",
+        getArtistInfo2: "getArtistInfo",
+        search3: "search2"
+    };
+
+    for (const [alias, target] of Object.entries(aliases)) {
+        const route = require(`${process.cwd()}/router/subsonic/${target}.js`);
+
+        app.get(new RegExp(`^/rest/${alias}(\\.view)?$`), async(req, res) => route(req, res, proxy, respond));
+    }
+
     app.use("/rest", (req, res) => {
         respond(res, req, {
             "subsonic-response": {

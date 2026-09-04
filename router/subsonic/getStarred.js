@@ -5,8 +5,10 @@ module.exports = async(req, res, proxy, respond) => {
     const favorites = await (await fetch(`${global.config.music}/favorites`, { headers: { "Cookie": req.user } })).json();
 
     const artists = (favorites?.artists || []).map(artist => ({
-        name: artist?.name,
         id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
+        name: artist?.name,
+        coverArt: artist?.image ? codecs.encode({ type: "artist", id: artist.image }) : undefined,
+        albumCount: artist?.albumcount || 0,
         starred: artist?.date ? new Date(artist.date * 1000).toISOString() : undefined
     }));
 
@@ -14,9 +16,14 @@ module.exports = async(req, res, proxy, respond) => {
         id: album?.albumhash,
         parent: album?.albumhash,
         title: album?.title,
+        name: album?.title,
         album: album?.title,
+        artist: album?.albumartists?.[0]?.name,
+        artistId: album?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: album.albumartists[0].artisthash }) : undefined,
         isDir: "true",
         coverArt: album?.image ? codecs.encode({ type: "album", id: album.image }) : undefined,
+        songCount: album?.trackcount || 0,
+        duration: album?.duration || 0,
         created: album?.date ? new Date(album.date * 1000).toISOString() : undefined,
         starred: album?.date ? new Date(album.date * 1000).toISOString() : undefined
     }));
@@ -54,9 +61,11 @@ module.exports = async(req, res, proxy, respond) => {
         };
     });
 
+    const key = (req.path || req.url || "").includes("getStarred2") ? "starred2" : "starred";
+
     respond(res, req, {
         "subsonic-response": {
-            starred: {
+            [key]: {
                 artist: artists,
                 album: albums,
                 song: tracks
