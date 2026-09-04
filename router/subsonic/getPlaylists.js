@@ -1,4 +1,4 @@
-const { flexibleISOString, encodeId, firstProperty } = require("../../packages/utils");
+const { flexibleISOString, encodeId } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 

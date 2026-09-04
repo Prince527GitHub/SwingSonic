@@ -95,25 +95,19 @@ module.exports = async(app) => {
     routes.map((value) => {
         if (!value.includes("index.js")) {
             const route = require(value);
-            const name = path.basename(value).split(".js")[0];
 
-            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async (req, res) => route(req, res, proxy, respond));
+            const name = path.basename(value).split(".js")[0];
+            const handler = route.handler || route;
+
+            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async (req, res) => handler(req, res, proxy, respond));
+
+            if (route.aliases) {
+                for (const alias of route.aliases) {
+                    app.get(new RegExp(`^/rest/${alias}(\\.view)?$`), async (req, res) => handler(req, res, proxy, respond));
+                }
+            }
         }
     });
-
-    // TODO: Merge this with the above code, add an alias system to the routes, and remove the duplicate code.
-    const aliases = {
-        getStarred2: "getStarred",
-        getAlbumList2: "getAlbumList",
-        getArtistInfo2: "getArtistInfo",
-        search3: "search2"
-    }
-
-    for (const [alias, target] of Object.entries(aliases)) {
-        const route = require(`${process.cwd()}/router/subsonic/${target}.js`);
-
-        app.get(new RegExp(`^/rest/${alias}(\\.view)?$`), async(req, res) => route(req, res, proxy, respond));
-    }
 
     app.use("/rest", (req, res) =>
         respond(res, req, {

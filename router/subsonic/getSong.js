@@ -1,4 +1,4 @@
-const { ext, encodeId, firstProperty, audioFormat } = require("../../packages/utils");
+const { encodeId, firstProperty, audioFormat } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
