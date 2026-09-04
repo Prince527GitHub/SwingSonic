@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const { firstProperty, yearFromTimestamp, sortByProperty, ext } = require("../../packages/utils");
-const codecs = require("../../packages/codecs");
 const api = require("../../packages/swingmusic");
+const codecs = require("../../packages/codecs");
 const proxy = require("../../packages/proxy");
 
 router.get("/:id/artwork", async (req, res) => {
