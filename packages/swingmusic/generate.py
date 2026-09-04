@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 """
-Generates packages/swingmusic.spec.json from swingmusic Python API.
+Generates ./spec.json from swingmusic Python API.
 
 Usage:
     python packages/generate-spec.py
-    python packages/generate-spec.py --out packages/swingmusic.spec.json
+    python packages/generate-spec.py --out ./spec.json
     python packages/generate-spec.py --root ./swingmusic
 """
 
@@ -112,7 +112,7 @@ def generate(root: pathlib.Path):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default="./swingmusic")
-    ap.add_argument("--out", default="packages/swingmusic.spec.json")
+    ap.add_argument("--out", default="./spec.json")
     args = ap.parse_args()
 
     out = pathlib.Path(args.out)
