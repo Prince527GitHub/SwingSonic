@@ -1,4 +1,4 @@
-const { toISOString, encodeId } = require("../../packages/utils");
+const { toISOString, encodeId, groupByFirstLetter } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -21,19 +21,7 @@ module.exports = async(req, res, proxy, respond) => {
         return node;
     }));
 
-    const groupe = output.reduce((acc, artist) => {
-        const first = (artist.name || "")?.charAt(0)?.toUpperCase() || "#";
-
-        acc[first] = acc[first] || [];
-        acc[first].push(artist);
-
-        return acc;
-    }, {});
-
-    const organize = Object
-        .keys(groupe)
-        .sort()
-        .map(letter => ({ name: letter, artist: groupe[letter] }));
+    const organize = groupByFirstLetter(output);
 
     respond(res, req, {
         "subsonic-response": {

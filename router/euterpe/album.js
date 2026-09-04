@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { mapTracks } = require("../../packages/track");
-const { firstProperty } = require("../../packages/utils");
+const { firstProperty, yearFromTimestamp } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
 
@@ -23,7 +23,7 @@ router.get("/:id", async (req, res) => {
         title: info.title,
         artist: firstProperty(info.albumartists, "name"),
         artist_id: firstProperty(info.albumartists, "artisthash"),
-        year: info.date ? new Date(info.date * 1000).getFullYear() : undefined,
+        year: yearFromTimestamp(info.date),
         tracks: mapTracks(album.tracks)
     });
 });

@@ -81,6 +81,47 @@ function flexibleISOString(value, fallback) {
     return date.toISOString();
 }
 
+function audioFormat(filepath) {
+    const suffix = ext(filepath) || "mp3";
+
+    return {
+        suffix,
+        contentType: `audio/${suffix === "mp3" ? "mpeg" : suffix}`
+    };
+}
+
+function yearFromTimestamp(timestamp, fallback) {
+    return timestamp != null ? new Date(timestamp * 1000).getFullYear() : fallback;
+}
+
+function toJellyfinTicks(seconds) {
+    return Math.round((seconds || 0) * 9962075.847328244);
+}
+
+function groupByFirstLetter(items) {
+    const grouped = items.reduce((acc, item) => {
+        const letter = (item?.name || "")?.charAt(0)?.toUpperCase() || "#";
+
+        acc[letter] = acc[letter] || [];
+        acc[letter].push(item);
+
+        return acc;
+    }, {});
+
+    return Object
+        .keys(grouped)
+        .sort()
+        .map(letter => ({ name: letter, artist: grouped[letter] }));
+}
+
+function primaryArtistName(artists) {
+    return firstProperty(artists, "name");
+}
+
+function primaryArtistHash(artists) {
+    return firstProperty(artists, "artisthash");
+}
+
 module.exports = {
     toArray,
     first,
@@ -96,5 +137,11 @@ module.exports = {
     clampedSize,
     ext,
     toTicks,
-    flexibleISOString
+    flexibleISOString,
+    audioFormat,
+    yearFromTimestamp,
+    toJellyfinTicks,
+    groupByFirstLetter,
+    primaryArtistName,
+    primaryArtistHash
 };

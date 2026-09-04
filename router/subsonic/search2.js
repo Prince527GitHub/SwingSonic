@@ -1,4 +1,4 @@
-const { ext, toISOString, parseIntOr, encodeId, firstProperty } = require("../../packages/utils");
+const { toISOString, parseIntOr, encodeId, firstProperty, audioFormat } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
@@ -54,7 +54,6 @@ module.exports = async (req, res, proxy, respond) => {
 
         tracks = (response?.results || []).map(track => {
             const id = track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined;
-            const extension = ext(track?.filepath);
 
             return {
                 id,
@@ -69,8 +68,7 @@ module.exports = async (req, res, proxy, respond) => {
                 bitRate: track?.bitrate || 0,
                 track: track?.track || 0,
                 year: track?.year || new Date().getFullYear(),
-                suffix: extension || "mp3",
-                contentType: `audio/${extension || "mpeg"}`,
+                ...audioFormat(track?.filepath),
                 isVideo: false,
                 discNumber: track?.disc || 1,
                 size: track?.size || 1048576,

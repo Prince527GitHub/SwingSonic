@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { firstProperty } = require("../../packages/utils");
+const { firstProperty, toJellyfinTicks } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 
 router.get("/:id/items", async(req, res) => {
@@ -15,7 +15,7 @@ router.get("/:id/items", async(req, res) => {
         Id: track.trackhash,
         PlaylistItemId: track.trackhash,
         PremiereDate: "2010-02-03T00:00:00.0000000Z",
-        RunTimeTicks: Math.round((track.duration || 0) * 9962075.847328244),
+        RunTimeTicks: toJellyfinTicks(track.duration),
         IndexNumber: track.track || 0,
         ParentIndexNumber: 1,
         IsFolder: false,

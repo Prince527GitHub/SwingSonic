@@ -1,4 +1,4 @@
-const { createArray, shuffleArray, ext, clampedSize, encodeId, firstProperty } = require("../../packages/utils");
+const { createArray, shuffleArray, clampedSize, encodeId, firstProperty, audioFormat, yearFromTimestamp } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -16,8 +16,6 @@ module.exports = async (req, res, proxy, respond) => {
         const tracks = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: album?.albumhash });
 
         output.push(...(tracks?.tracks || []).map(track => {
-            const extension = ext(track?.filepath);
-
             return {
                 id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
                 parent: track?.albumhash,
@@ -26,10 +24,9 @@ module.exports = async (req, res, proxy, respond) => {
                 album: track?.album,
                 artist: firstProperty(track?.artists, "name"),
                 track: track?.track || 0,
-                year: tracks?.info?.date ? new Date(tracks.info.date * 1000).getFullYear() : new Date().getFullYear(),
+                year: yearFromTimestamp(tracks?.info?.date, new Date().getFullYear()),
                 coverArt: encodeId(track?.image, "album", codecs),
-                suffix: extension || "mp3",
-                contentType: `audio/${extension || "mpeg"}`,
+                ...audioFormat(track?.filepath),
                 duration: track?.duration || 0,
                 bitRate: track?.bitrate || 0,
                 path: track?.filepath,

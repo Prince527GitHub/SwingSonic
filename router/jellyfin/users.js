@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { sortByProperty, firstProperty } = require("../../packages/utils");
+const { sortByProperty, firstProperty, toJellyfinTicks } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -278,7 +278,7 @@ router.get("/user/items", async(req, res) => {
                     "PremiereDate": "2010-02-03T00:00:00.0000000Z",
                     "ProductionYear": albumInfo.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
+                    "RunTimeTicks": toJellyfinTicks(track.duration),
                     "ServerId": "server",
                     "SongCount": trackList.length,
                     "Tags": ["Unknown"],
@@ -330,7 +330,7 @@ router.get("/user/items", async(req, res) => {
                     "PremiereDate": "2010-02-03T00:00:00.0000000Z",
                     "ProductionYear": albumInfo.date || track.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
+                    "RunTimeTicks": toJellyfinTicks(track.duration),
                     "ServerId": "server",
                     "SongCount": trackList.length,
                     "Tags": ["Unknown"],
@@ -363,7 +363,7 @@ router.get("/user/items", async(req, res) => {
             "CanDelete": true,
             "SortName": playlist.name,
             "ChannelId": null,
-            "RunTimeTicks": Math.round((playlist.duration || 0) * 9962075.847328244),
+            "RunTimeTicks": toJellyfinTicks(playlist.duration),
             "IsFolder": true,
             "Type": "Playlist",
             "UserData": {
@@ -432,7 +432,7 @@ router.get("/user/items", async(req, res) => {
                     "PremiereDate": "2010-02-03T00:00:00.0000000Z",
                     "ProductionYear": tracksResp?.info?.date,
                     "ProviderIds": {},
-                    "RunTimeTicks": Math.round((track.duration || 0) * 9962075.847328244),
+                    "RunTimeTicks": toJellyfinTicks(track.duration),
                     "ServerId": "server",
                     "SongCount": trackList.length,
                     "Tags": ["Unknown"],
@@ -570,8 +570,8 @@ router.get("/user/items/:id", async(req, res) => {
             ChannelId: null,
             Taglines: [],
             Genres: albumInfo.genres || [],
-            CumulativeRunTimeTicks: Math.round((albumInfo.duration || 0) * 9962075.847328244),
-            RunTimeTicks: Math.round((albumInfo.duration || 0) * 9962075.847328244),
+            CumulativeRunTimeTicks: toJellyfinTicks(albumInfo.duration),
+            RunTimeTicks: toJellyfinTicks(albumInfo.duration),
             PlayAccess: "Full",
             ProductionYear: albumInfo.date,
             RemoteTrailers: [],

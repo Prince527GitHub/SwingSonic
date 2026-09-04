@@ -1,6 +1,6 @@
 {
   "name": "swingsonic",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Let's clients from other music servers work with Swing Music",
   "main": "index.js",
   "scripts": {
