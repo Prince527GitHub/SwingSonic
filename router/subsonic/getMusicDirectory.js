@@ -1,8 +1,9 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 const path = require("path");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     const id = req.query.id;
     if (!id) return respond(res, req, {
         "subsonic-response": {
@@ -11,29 +12,24 @@ module.exports = async(req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 10, message: "Required parameter 'id' is missing" }
+            error: {
+                code: 10,
+                message: "Required parameter 'id' is missing"
+            }
         }
     });
 
     const decoded = codecs.decode(id);
-
+    // TODO: Cleanup this, I don't like it.
     const effectiveId = decoded?.id || id;
 
-    const album = await (await fetch(`${global.config.music}/album`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({ albumhash: effectiveId })
-    })).json();
-
+    const album = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: effectiveId });
     if (album?.error || !album?.info) {
-        const artist = await (await fetch(`${global.config.music}/artist/${effectiveId}`, { headers: { "Cookie": req.user } })).json();
-
+        const artist = await api.artist(req.user).getArtist(effectiveId);
         if (artist?.artist) {
-            const albumList = await (await fetch(`${global.config.music}/artist/${effectiveId}/albums?all=false`, { headers: { "Cookie": req.user }})).json();
+            const albumList = await api.artist(req.user).getArtistAlbums(effectiveId, { all: false });
 
+            // TODO: Cleanup this, I don't like it.
             const allAlbums = [
                 ...(albumList?.albums?.albums || []),
                 ...(albumList?.albums?.appearances || []),
@@ -54,12 +50,7 @@ module.exports = async(req, res, proxy, respond) => {
 
             return respond(res, req, {
                 "subsonic-response": {
-                    directory: {
-                        id: effectiveId,
-                        name: artist.artist.name,
-                        parent: undefined,
-                        child: children
-                    },
+                    directory: { id: effectiveId, name: artist.artist.name, parent: undefined, child: children },
                     status: "ok",
                     version: "1.16.1",
                     type: "swingsonic",
@@ -76,13 +67,17 @@ module.exports = async(req, res, proxy, respond) => {
                 type: "swingsonic",
                 serverVersion: "unknown",
                 openSubsonic: true,
-                error: { code: 70, message: "Directory not found" }
+                error: {
+                    code: 70,
+                    message: "Directory not found"
+                }
             }
         });
     }
 
     const info = album.info || {};
     const tracks = album.tracks || [];
+    // TODO: Cleanup this, I don't like it.
     const albumReleaseDate = info.date ? new Date(info.date * 1000) : new Date();
 
     const children = tracks.map(track => {
@@ -112,8 +107,8 @@ module.exports = async(req, res, proxy, respond) => {
             type: "music",
             artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
             albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
-            displayArtist: track?.artists?.[0]?.name,
-        };
+            displayArtist: track?.artists?.[0]?.name
+        }
     });
 
     respond(res, req, {
@@ -132,4 +127,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

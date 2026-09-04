@@ -1,39 +1,24 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
 module.exports = async (req, res, proxy, respond) => {
     let { id, time, submission } = req.query;
 
     if (submission !== "false") {
+        // TODO: Cleanup this, I don't like it.
         const ids = (Array.isArray(id) ? id : id ? [id] : []).map(raw => ({ raw, decoded: codecs.decode(raw) }));
         const times = Array.isArray(time) ? time : time ? [time] : [];
 
-        for (let i = 0; i < ids.length; i++) {
-            const { raw, decoded } = ids[i];
+        for (const [i, { raw, decoded }] of ids.entries()) {
             const trackhash = decoded?.id || raw;
 
-            let duration = 240;
-            if (decoded?.path) {
-                const response = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, { headers: { "Cookie": req.user } })).json();
-
-                duration = (response?.tracks || []).find(track => track?.trackhash === trackhash)?.duration ?? 240;
-            }
+            // TODO: Cleanup this, I don't like it.
+            const duration = decoded?.path ? (await api.folder(req.user).getTracksInPath({ path: decoded.path }))?.tracks?.find(track => track?.trackhash === trackhash)?.duration ?? 240 : 240;
 
             const value = parseInt(times[i] || time);
             const timestamp = value > 10_000_000_000 ? Math.floor(value / 1000) : (value || Math.floor(Date.now() / 1000));
 
-            await fetch(`${global.config.music}/logger/track/log`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({
-                    "timestamp": timestamp,
-                    "trackhash": trackhash,
-                    "duration": duration,
-                    "source": "swingsonic",
-                })
-            });
+            await api.request("/logger/track/log", { method: "POST", auth: req.user, body: { timestamp, trackhash, duration, source: "swingsonic" } });
         }
     }
 
@@ -46,4 +31,4 @@ module.exports = async (req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

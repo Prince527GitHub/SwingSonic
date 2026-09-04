@@ -1,9 +1,11 @@
+const api = require("../../packages/swingmusic");
+
 module.exports = async (req, res, proxy, respond) => {
     let { username } = req.query;
 
-    const users = await (await fetch(`${global.config.music}/auth/users?simplified=true`)).json();
-    const user = users.users.find(u => u.username === username);
+    const users = await api.auth().getAllUsers({ simplified: true });
 
+    const user = users.users.find(u => u.username === username);
     if (!user) return respond(res, req, {
         "subsonic-response": {
             status: "failed",
@@ -11,7 +13,10 @@ module.exports = async (req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 70, message: "User not found" }
+            error: {
+                code: 70,
+                message: "User not found"
+            }
         }
     });
 

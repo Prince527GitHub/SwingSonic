@@ -1,8 +1,8 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     let { playlistId, name, songIdToAdd = [], songIdToRemove = [], songIndexToRemove = [] } = req.query;
-
     if (!playlistId) return respond(res, req, {
         "subsonic-response": {
             status: "failed",
@@ -14,46 +14,18 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    if (songIdToAdd)
-        for (const sid of [].concat(songIdToAdd))
-            await fetch(`${global.config.music}/playlists/${playlistId}/add`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: codecs.id(sid) })
-            });
+    // TODO: Cleanup these, I don't like it.
+    if (songIdToAdd) for (const sid of [].concat(songIdToAdd))
+        await api.playlist(req.user).addItemToPlaylist({ playlistid: playlistId }, { itemtype: "tracks", itemhash: codecs.id(sid) });
 
-    if (songIdToRemove)
-        for (const sid of [].concat(songIdToRemove))
-            await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ tracks: [{ trackhash: codecs.id(sid), index: 0 }] })
-            });
+    if (songIdToRemove) for (const sid of [].concat(songIdToRemove))
+        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ trackhash: codecs.id(sid), index: 0 }] });
 
-    if (songIndexToRemove)
-        for (const idx of [].concat(songIndexToRemove)) {
-            await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ tracks: [{ index: parseInt(idx), trackhash: "" }] })
-            });
-        }
+    if (songIndexToRemove) for (const idx of [].concat(songIndexToRemove))
+        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ index: parseInt(idx), trackhash: "" }] });
 
     if (name)
-        await fetch(`${global.config.music}/playlists/${playlistId}/update`, {
-            method: "PUT",
-            headers: { "Cookie": req.user },
-            body: new URLSearchParams({ name })
-        });
+        await api.playlist(req.user).updatePlaylistInfo({ playlistid: playlistId }, new URLSearchParams({ name }));
 
     respond(res, req, {
         "subsonic-response": {
@@ -64,4 +36,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

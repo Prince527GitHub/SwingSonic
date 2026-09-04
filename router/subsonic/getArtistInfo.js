@@ -1,14 +1,18 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-module.exports = async(req, res, proxy, respond) => {
+// TODO: Cleanup the entire thing, I don't like it.
+module.exports = async (req, res, proxy, respond) => {
     const id = req.query.id;
 
     let { u, t, s } = req.query;
 
-    const artist = await (await fetch(`${global.config.music}/artist/${id}`, { headers: { "Cookie": req.user } })).json();
+    const artist = await api.artist(req.user).getArtist(id);
 
     const artistImage = artist?.artist?.image;
+
     const image = artistImage ? codecs.encode({ type: "artist", id: artistImage }) : undefined;
+
     const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
 
     const key = (req.path || req.url || "").includes("getArtistInfo2") ? "artistInfo2" : "artistInfo";
@@ -30,4 +34,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

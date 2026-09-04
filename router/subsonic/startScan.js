@@ -1,25 +1,14 @@
+const api = require("../../packages/swingmusic");
+
 module.exports = async(req, res, proxy, respond) => {
-    const scan = await (await fetch(`${global.config.music}/notsettings/trigger-scan`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const scan = await api.settings(req.user).triggerScanGet();
 
-    const tracks = await (await fetch(`${global.config.music}/folder`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({ folder: "$home", tracks_only: false })
-    })).json();
-
-    const status = scan?.msg === "Scan triggered!";
+    const tracks = await api.folder(req.user).getFolderTree({ folder: "$home", tracks_only: false });
 
     respond(res, req, {
         "subsonic-response": {
             scanStatus: {
-                scanning: status,
+                scanning: scan?.msg === "Scan triggered!",
                 count: tracks?.folders?.[0]?.count ?? 0
             },
             status: "ok",
@@ -29,4 +18,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

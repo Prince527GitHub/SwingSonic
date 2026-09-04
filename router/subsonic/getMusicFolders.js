@@ -1,20 +1,7 @@
-module.exports = async(req, res, proxy, respond) => {
-    const folders = await (await fetch(`${global.config.music}/folder`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({
-            "folder": "$home",
-            "tracks_only": false
-        })
-    })).json();
+const api = require("../../packages/swingmusic");
 
-    const output = (folders?.folders || []).map((folder, index) => ({
-        id: index,
-        name: folder?.name
-    }));
+module.exports = async (req, res, proxy, respond) => {
+    const output = (await api.folder(req.user).getFolderTree({ folder: "$home", tracks_only: false })?.folders || []).map((folder, index) => ({ id: index, name: folder?.name }));
 
     respond(res, req, {
         "subsonic-response": {
@@ -28,4 +15,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

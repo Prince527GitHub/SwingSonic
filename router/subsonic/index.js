@@ -2,35 +2,32 @@ const { getFileList } = require("../../packages/files");
 
 const { sanitizeCookie } = require("../../packages/cookie");
 const { hashPassword } = require("../../packages/crypto");
+
+const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
 const xml = require("../../packages/xml");
 
 const path = require("path");
 
 async function checkPassword(input, salt, user) {
-    if (!input || !user?.username) return false;
-
+    if (!input || !user?.username) return false
     try {
-        let password;
+        let password
 
-        if (input.startsWith("enc:")) password = Buffer.from(input.substring(4), "hex").toString("utf-8");
+        if (input.startsWith("enc:")) password = Buffer.from(input.substring(4), "hex").toString("utf-8")
         else if (salt) {
-            const getUser = global.config.server.users.find(u => u.username === user.username);
-            if (!getUser?.password) return false;
+            const getUser = global.config.server.users.find(u => u.username === user.username)
+            if (!getUser?.password) return false
 
-            const expectedHash = hashPassword(getUser.password, salt);
-            if (expectedHash !== input) return false;
+            const hash = hashPassword(getUser.password, salt)
+            if (hash !== input) return false
 
-            password = getUser.password;
-        } else password = input;
+            password = getUser.password
+        } else password = input
 
-        const auth = await fetch(`${global.config.music}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: user.username, password })
-        });
+        const response = await api.request("/auth/login", { method: "POST", body: { username: user.username, password }, raw: true });
 
-        return sanitizeCookie(auth?.headers?.get("set-cookie")) || false;
+        return sanitizeCookie(response?.headers?.get("set-cookie")) || false;
     } catch {
         return false;
     }
@@ -53,7 +50,7 @@ function error(status, code, message) {
             openSubsonic: true,
             ...(code ? { error: { code, message } } : {})
         }
-    };
+    }
 }
 
 async function checkAuth(req, res, next) {
@@ -61,7 +58,7 @@ async function checkAuth(req, res, next) {
 
     if (!u || (!p && (!t || !s))) return respond(res, req, error("unauthorized"));
 
-    const users = await (await fetch(`${global.config.music}/auth/users?simplified=true`)).json();
+    const users = await api.auth().getAllUsers({ simplified: true })
 
     const user = users.users.find(user => user.username === u);
     if (!user) return respond(res, req, error("unauthorized"));
@@ -77,7 +74,7 @@ async function checkAuth(req, res, next) {
 }
 
 module.exports = async(app) => {
-    app.use("/rest/getOpenSubsonicExtensions.view", (req, res) => {
+    app.use("/rest/getOpenSubsonicExtensions.view", (req, res) =>
         respond(res, req, {
             "subsonic-response": {
                 "openSubsonicExtensions": [],
@@ -87,29 +84,29 @@ module.exports = async(app) => {
                 serverVersion: "unknown",
                 openSubsonic: true
             }
-        });
-    });
+        })
+    );
 
     app.use("/rest", checkAuth);
 
-    const routeFiles = await getFileList(`${process.cwd()}/router/subsonic`, { type: ".js", recursively: false });
+    const routes = await getFileList(`${process.cwd()}/router/subsonic`, { type: ".js", recursively: false });
 
-    routeFiles.map((value) => {
+    routes.map((value) => {
         if (!value.includes("index.js")) {
             const route = require(value);
-
             const name = path.basename(value).split(".js")[0];
 
-            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async(req, res) => route(req, res, proxy, respond));
+            app.get(new RegExp(`^/rest/${name}(\\.view)?$`), async (req, res) => route(req, res, proxy, respond));
         }
     });
 
+    // TODO: Merge this with the above code, add an alias system to the routes, and remove the duplicate code.
     const aliases = {
         getStarred2: "getStarred",
         getAlbumList2: "getAlbumList",
         getArtistInfo2: "getArtistInfo",
         search3: "search2"
-    };
+    }
 
     for (const [alias, target] of Object.entries(aliases)) {
         const route = require(`${process.cwd()}/router/subsonic/${target}.js`);
@@ -117,7 +114,7 @@ module.exports = async(app) => {
         app.get(new RegExp(`^/rest/${alias}(\\.view)?$`), async(req, res) => route(req, res, proxy, respond));
     }
 
-    app.use("/rest", (req, res) => {
+    app.use("/rest", (req, res) =>
         respond(res, req, {
             "subsonic-response": {
                 status: "ok",
@@ -126,6 +123,6 @@ module.exports = async(app) => {
                 serverVersion: "unknown",
                 openSubsonic: true
             }
-        });
-    });
-}
+        })
+    );
+};

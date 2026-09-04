@@ -1,18 +1,11 @@
-module.exports = async(req, res, proxy, respond) => {
+const api = require("../../packages/swingmusic");
+
+module.exports = async (req, res, proxy, respond) => {
     let { id, albumId, artistId } = req.query;
 
+    // TODO: Cleanup this, I don't like it.
     const type = id ? "track" : albumId ? "album" : artistId ? "artist" : null;
-    if (type) await fetch(`${global.config.music}/favorites/remove`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({
-            "type": type,
-            "hash": id || albumId || artistId
-        })
-    });
+    if (type) await api.favorites(req.user).removeFavorite({ type, hash: id || albumId || artistId });
 
     respond(res, req, {
         "subsonic-response": {
@@ -23,4 +16,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

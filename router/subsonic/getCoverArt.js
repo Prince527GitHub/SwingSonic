@@ -1,3 +1,4 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy) => {
@@ -5,6 +6,6 @@ module.exports = async(req, res, proxy) => {
 
     const decoded = codecs.decode(id);
 
-    if (decoded?.id) proxy(res, req, `${global.config.music}/img/${decoded.type === "artist" ? "artist" : "thumbnail"}/medium/${decoded.id}`);
-    else proxy(res, req, `${global.config.music}/img/thumbnail/medium/${encodeURIComponent(id)}.webp`);
-}
+    if (decoded?.id) proxy(res, req, api.url(`/img/${decoded.type === "artist" ? "artist" : "thumbnail"}/medium/${decoded.id}`));
+    else proxy(res, req, api.url(`/img/thumbnail/medium/${encodeURIComponent(id)}.webp`));
+};

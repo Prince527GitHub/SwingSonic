@@ -1,9 +1,9 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
-    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json())?.total ?? 50;
-
-    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+    const size = (await api.getAll(req.user).getAllItems("artists", { start: 0, limit: 1, sortby: "created_date", reverse: 1 }))?.total ?? 50;
+    const artists = await api.getAll(req.user).getAllItems("artists", { start: 0, limit: size, sortby: "created_date", reverse: 1 });
 
     const output = (artists?.items || []).map(item => ({
         id: item?.artisthash ? codecs.encode({ type: "artist", id: item.artisthash }) : undefined,
@@ -30,10 +30,7 @@ module.exports = async(req, res, proxy, respond) => {
     const organize = Object
         .keys(groupe)
         .sort()
-        .map(letter => ({
-            name: letter,
-            artist: groupe[letter]
-        }));
+        .map(letter => ({ name: letter, artist: groupe[letter] }));
 
     respond(res, req, {
         "subsonic-response": {
@@ -50,4 +47,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

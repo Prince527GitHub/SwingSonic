@@ -1,32 +1,23 @@
 const { shuffleArray } = require("../../packages/array");
-const path = require("path");
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
+const path = require("path");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     let { size } = req.query;
 
     size = Math.min(parseInt(size) || 10, 500);
 
-    const total = (await (await fetch(`${global.config.music}/getall/albums?start=0&limit=1&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json())?.total ?? 50;
-    const albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${total}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+    const total = (await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 1, sortby: "created_date", reverse: 1 }))?.total ?? 50;
+    const albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: total, sortby: "created_date", reverse: 1 });
 
+    // TODO: Simplify this, I don't like it.
     let output = [];
-    const albumItems = albums?.items || [];
-    for (let index = 0; index < albumItems.length; index++) {
-        const album = albumItems[index];
-
-        const tracks = await (await fetch(`${global.config.music}/album`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Cookie": req.user
-            },
-            body: JSON.stringify({ albumhash: album?.albumhash })
-        })).json();
+    for (const album of albums?.items || []) {
+        const tracks = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: album?.albumhash });
 
         output.push(...(tracks?.tracks || []).map(track => {
-            const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
-
+            const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined
             return {
                 id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
                 parent: track?.albumhash,
@@ -50,19 +41,15 @@ module.exports = async(req, res, proxy, respond) => {
                 artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
                 albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
                 type: "music"
-            };
+            }
         }));
     }
 
-    output = shuffleArray(output);
-
-    output = output.slice(0, size);
+    output = shuffleArray(output).slice(0, size);
 
     respond(res, req, {
         "subsonic-response": {
-            randomSongs: {
-                song: output
-            },
+            randomSongs: { song: output },
             status: "ok",
             version: "1.16.1",
             type: "swingsonic",
@@ -70,4 +57,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

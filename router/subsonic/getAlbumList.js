@@ -1,58 +1,53 @@
-const { shuffleArray } = require("../../packages/array");
-const codecs = require("../../packages/codecs");
+const { shuffleArray } = require("../../packages/array")
+const codecs = require("../../packages/codecs")
+const api = require("../../packages/swingmusic")
 
-module.exports = async(req, res, proxy, respond) => {
-    let { type, size, offset, genre, fromYear, toYear } = req.query;
+module.exports = async (req, res, proxy, respond) => {
+    let { type, size, offset, genre, fromYear, toYear } = req.query
 
-    size = Math.min(parseInt(size) || 10, 500);
-    offset = parseInt(offset) || 0;
+    // TODO: Cleanup these, I don't like it.
+    size = Math.min(parseInt(size) || 10, 500)
+    offset = parseInt(offset) || 0
 
-    let albums;
-    let output = [];
+    let albums, output = [];
 
     switch (type) {
         case "newest": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "created_date", reverse: 1 });
             break;
         }
         case "random": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: size, sortby: "created_date", reverse: 1 });
 
             output = shuffleArray(albums?.items || []);
             break;
         }
         case "alphabeticalByName": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=title&reverse=`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "title", reverse: "" });
             break;
         }
         case "alphabeticalByArtist": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=albumartists&reverse=`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "albumartists", reverse: "" });
             break;
         }
         case "starred": {
-            const favorite = await (await fetch(`${global.config.music}/favorites/albums?start=${offset}&limit=${size}`, { headers: { "Cookie": req.user } })).json();
+            const favorite = await api.favorites(req.user).getFavoriteAlbums({ start: offset, limit: size });
 
-            albums = {
-                items: (favorite?.albums || []).map(a => ({
-                albumhash: a?.albumhash,
-                title: a?.title,
-                image: a?.image,
-                date: a?.date,
-                duration: a?.duration,
-                albumartists: a?.albumartists
-            }))};
+            // TODO: Simplify this, I don't like it.
+            albums = { items: (favorite?.albums || []).map(a => ({ albumhash: a?.albumhash, title: a?.title, image: a?.image, date: a?.date, duration: a?.duration, albumartists: a?.albumartists })) }
+
             break;
         }
         case "recent": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=lastplayed&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "lastplayed", reverse: 1 });
             break;
         }
         case "frequent": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=playcount&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "playcount", reverse: 1 });
             break;
         }
         case "highest": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=playduration&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "playduration", reverse: 1 });
             break;
         }
         case "byYear": {
@@ -61,27 +56,24 @@ module.exports = async(req, res, proxy, respond) => {
 
             const [minYear, maxYear] = from <= to ? [from, to] : [to, from];
 
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=0&limit=500&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 500, sortby: "created_date", reverse: 1 });
 
-            output = (albums?.items || [])
-                .filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear()))
-                .sort((a, b) => a.date - b.date)
-                .slice(offset, offset + size);
+            output = (albums?.items || []).filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear())).sort((a, b) => a.date - b.date).slice(offset, offset + size);
             break;
         }
         case "byGenre": {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=created_date&reverse=1&genre=${encodeURIComponent(genre || "")}`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "created_date", reverse: 1, genre: genre || "" });
             break;
         }
         default: {
-            albums = await (await fetch(`${global.config.music}/getall/albums?start=${offset}&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
+            albums = await api.getAll(req.user).getAllItems("albums", { start: offset, limit: size, sortby: "created_date", reverse: 1 });
             break;
         }
     }
 
     if (!["random", "byYear"].includes(type)) output = albums?.items || [];
 
-    const items = await Promise.all((output || []).map(async(item) => {
+    const items = await Promise.all((output || []).map(async (item) => {
         const id = item?.albumhash;
 
         const album = {
@@ -102,7 +94,7 @@ module.exports = async(req, res, proxy, respond) => {
             albumArtists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined }))
         }
 
-        const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${id}&type=album`, { headers: { "Cookie": req.user } })).json();
+        const favorite = await api.favorites(req.user).checkFavorite({ hash: id, type: "album" });
         if (favorite?.is_favorite) album.starred = favorite?.date ? new Date(favorite.date * 1000).toISOString() : new Date(0).toISOString();
 
         return album;
@@ -122,4 +114,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

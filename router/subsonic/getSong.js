@@ -1,3 +1,4 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const path = require("path");
 
@@ -20,17 +21,9 @@ module.exports = async(req, res, proxy, respond) => {
     const filepath = decoded?.path;
 
     let track;
-    if (filepath) {
-        const response = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(filepath)}`, { headers: { "Cookie": req.user } })).json();
 
-        track = (response?.tracks || []).find(t => t?.trackhash === trackId);
-    }
-
-    if (!track) {
-        const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${trackId}&start=0&limit=1`, { headers: { "Cookie": req.user } })).json();
-
-        track = search?.results?.[0];
-    }
+    if (filepath) track = (await api.folder(req.user).getTracksInPath({ path: filepath })?.tracks || []).find(t => t?.trackhash === trackId);
+    if (!track) track = await api.search(req.user).searchItems({ itemtype: "tracks", q: trackId, start: 0, limit: 1 })?.results?.[0];
 
     if (!track) return respond(res, req, {
         "subsonic-response": {
@@ -39,7 +32,10 @@ module.exports = async(req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 70, message: "Song not found" }
+            error: {
+                code: 70,
+                message: "Song not found"
+            }
         }
     });
 
@@ -70,7 +66,7 @@ module.exports = async(req, res, proxy, respond) => {
         artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
         albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
         displayArtist: track?.artists?.[0]?.name,
-    };
+    }
 
     respond(res, req, {
         "subsonic-response": {

@@ -6,14 +6,14 @@ function decode(id) {
 
         try {
             raw = decodeURIComponent(raw);
-        } catch {}
+        } catch { }
 
         raw = raw.replace(/ /g, "+");
 
         try {
             const decoded = decodeURIComponent(raw);
             if (decoded !== raw && /^[A-Za-z0-9+/=]+$/.test(decoded.replace(/\s/g, ""))) raw = decoded;
-        } catch {}
+        } catch { }
 
         return JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
     } catch {

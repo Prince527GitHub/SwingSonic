@@ -1,4 +1,4 @@
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     respond(res, req, {
         "subsonic-response": {
             scanStatus: {
@@ -12,4 +12,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

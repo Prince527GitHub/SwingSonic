@@ -1,12 +1,14 @@
-const zw = require("../../packages/zw");
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
+const zw = require("../../packages/zw");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
+    // TODO: Simplify, I don't like it, why do we have two req.query.
     const id = req.query.id;
 
     let { size, offset } = req.query;
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || "0"}&limit=${size || "50"}`, { headers: { "Cookie": req.user } })).json();
+    const playlist = await api.playlist(req.user).getPlaylist({ playlistid: id }, { no_tracks: false, start: offset || "0", limit: size || "50" });
 
     const output = (playlist?.tracks || []).map(track => ({
         id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
@@ -59,4 +61,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

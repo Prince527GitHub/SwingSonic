@@ -1,8 +1,9 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const path = require("path");
 
-module.exports = async(req, res, proxy, respond) => {
-    const favorites = await (await fetch(`${global.config.music}/favorites`, { headers: { "Cookie": req.user } })).json();
+module.exports = async (req, res, proxy, respond) => {
+    const favorites = await api.favorites(req.user).getAllFavorites();
 
     const artists = (favorites?.artists || []).map(artist => ({
         id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
@@ -57,19 +58,15 @@ module.exports = async(req, res, proxy, respond) => {
             albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
             displayArtist: track?.artists?.[0]?.name,
             explicitStatus: track?.explicit ? "explicit" : "clean",
-            starred: new Date(0).toISOString(),
-        };
+            starred: new Date(0).toISOString()
+        }
     });
 
     const key = (req.path || req.url || "").includes("getStarred2") ? "starred2" : "starred";
 
     respond(res, req, {
         "subsonic-response": {
-            [key]: {
-                artist: artists,
-                album: albums,
-                song: tracks
-            },
+            [key]: { artist: artists, album: albums, song: tracks },
             status: "ok",
             version: "1.16.1",
             type: "swingsonic",
@@ -77,4 +74,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

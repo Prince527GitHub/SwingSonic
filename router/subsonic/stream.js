@@ -1,7 +1,8 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-module.exports = async(req, res, proxy, respond) => {
-    const id = req.query.id;
+module.exports = async (req, res, proxy, respond) => {
+    const id = req.query.id
     if (!id) return respond(res, req, {
         "subsonic-response": {
             status: "failed",
@@ -9,7 +10,10 @@ module.exports = async(req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 10, message: "Required parameter 'id' is missing" }
+            error: {
+                code: 10,
+                message: "Required parameter 'id' is missing"
+            }
         }
     });
 
@@ -18,13 +22,10 @@ module.exports = async(req, res, proxy, respond) => {
         const source = decoded?.id || id;
 
         try {
-            const cookie = req.user;
+            const track = await api.search(req.user).searchItems({ itemtype: "tracks", q: source, start: 0, limit: 1 })?.results?.[0];
 
-            const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(source)}&start=0&limit=1`, { headers: { Cookie: cookie } })).json();
-
-            const track = search?.results?.[0];
             if (track?.trackhash && track?.filepath) decoded = { id: track.trackhash, path: track.filepath };
-        } catch {}
+        } catch { }
     }
 
     if (!decoded?.id || !decoded?.path) return respond(res, req, {
@@ -34,9 +35,12 @@ module.exports = async(req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 70, message: "Media file not found" }
+            error: {
+                code: 70,
+                message: "Media file not found"
+            }
         }
     });
 
-    proxy(res, req, `${global.config.music}/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}`);
-}
+    proxy(res, req, api.url(`/file/${decoded.id}/legacy?filepath=${encodeURIComponent(decoded.path)}`));
+};

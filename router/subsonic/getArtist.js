@@ -1,13 +1,17 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
+// TODO: Cleanup this, I don't like it.
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
 
     const decoded = codecs.decode(id);
+
     const effectiveId = decoded?.id || id;
 
-    const getAlbums = await (await fetch(`${global.config.music}/artist/${effectiveId}/albums?limit=7&all=false`, { headers: { "Cookie": req.user } })).json();
-    const artist = await (await fetch(`${global.config.music}/artist/${effectiveId}`, { headers: { "Cookie": req.user } })).json();
+    const getAlbums = await api.artist(req.user).getArtistAlbums(effectiveId, { limit: 7, all: false });
+
+    const artist = await api.artist(req.user).getArtist(effectiveId);
 
     const encodedArtistId = artist?.artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artist.artisthash }) : id;
 
@@ -41,4 +45,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

@@ -1,12 +1,8 @@
+const api = require("../../packages/swingmusic");
 const zw = require("../../packages/zw");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     let { title } = req.query;
-
-    const headers = {
-        "Content-Type": "application/json",
-        "Cookie": req.user
-    };
 
     let track;
 
@@ -15,36 +11,21 @@ module.exports = async(req, res, proxy, respond) => {
 
         try {
             info = JSON.parse(Buffer.from(zw.extract(title), "base64").toString("utf8"));
-        } catch {}
+        } catch { }
 
         if (info?.album) {
-            let album = null;
-
             try {
-                album = await (await fetch(`${global.config.music}/album`, {
-                    method: "POST",
-                    headers,
-                    body: JSON.stringify({ albumhash: info.album })
-                })).json();
-            } catch {}
-
-            track = (album?.tracks || []).find(t => t?.trackhash === info?.id);
+                track = (await api.album(req.user).getAlbumTracksAndInfo({ albumhash: info.album })?.tracks || []).find(t => t?.trackhash === info?.id);
+            } catch { }
         }
     } else {
-        title = title
-            .replace(/[-_]/g, " ")
-            .replace(/[^\p{L}\p{N} ]/gu, "")
-            .trim();
-
-        let search = null;
+        title = title.replace(/[-_]/g, " ").replace(/[^\p{L}\p{N} ]/gu, "").trim();
 
         if (title) {
             try {
-                search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(title)}&start=0&limit=1`, { headers })).json();
-            } catch {}
+                track = await api.search(req.user).searchItems({ itemtype: "tracks", q: title, start: 0, limit: 1 })?.results?.[0];
+            } catch { }
         }
-
-        track = search?.results?.[0];
     }
 
     const lyrics = {};
@@ -56,17 +37,18 @@ module.exports = async(req, res, proxy, respond) => {
             album: track?.album,
             title: global?.config?.server?.api?.subsonic?.options?.zw ? zw.filter(track?.title) : track?.title,
             artist: track?.albumartists?.[0]?.name || track?.artists?.[0]?.name || ""
-        };
+        }
 
         let getLyrics = null;
+
         try {
-            getLyrics = await (await fetch(`${global.config.music}/lyrics`, { method: "POST", headers, body: JSON.stringify(body) })).json();
-        } catch {}
+            getLyrics = await api.lyrics(req.user).sendLyrics(body);
+        } catch { }
 
         if (!getLyrics || getLyrics?.error) {
             try {
-                getLyrics = await (await fetch(`${global.config.music}/plugins/lyrics/search`, { method: "POST", headers, body: JSON.stringify(body) })).json();
-            } catch {}
+                getLyrics = await api.request("/plugins/lyrics/search", { method: "POST", auth: req.user, body });
+            } catch { }
         }
 
         if (getLyrics?.lyrics) {
@@ -91,4 +73,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

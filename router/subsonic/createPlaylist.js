@@ -1,8 +1,8 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     let { playlistId, name, songId } = req.query;
-
     if (playlistId) return res.json({
         "subsonic-response": {
             status: "ok",
@@ -20,36 +20,21 @@ module.exports = async(req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 10, message: "Required parameter 'name' is missing" }
+            error: {
+                code: 10,
+                message: "Required parameter 'name' is missing"
+            }
         }
     });
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/new`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Cookie": req.user
-        },
-        body: JSON.stringify({ name: name })
-    })).json();
-
+    // TODO: Cleanup this, I don't like it.
+    const playlist = await api.playlist(req.user).createPlaylist({ name });
     const pl = playlist?.playlist || {};
 
-    if (songId) {
-        const songIds = Array.isArray(songId) ? songId : [songId];
-        for (const sid of songIds) {
-            const trackId = codecs.id(sid);
-            await fetch(`${global.config.music}/playlists/${pl?.id}/add`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cookie": req.user
-                },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: trackId })
-            });
-        }
-    }
+    if (songId) for (const sid of [].concat(songId))
+        await api.playlist(req.user).addItemToPlaylist({ playlistid: pl?.id }, { itemtype: "tracks", itemhash: codecs.id(sid) });
 
+    // TODO: Cleanup this, I don't like it.
     const lastUpdated = pl?.last_updated;
     const createdDate = lastUpdated ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated)) : new Date();
 
@@ -76,4 +61,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};

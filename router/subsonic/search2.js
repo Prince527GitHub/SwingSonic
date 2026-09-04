@@ -1,14 +1,14 @@
+const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 const path = require("path");
 
-module.exports = async(req, res, proxy, respond) => {
-    const args = { headers: { "Cookie": req.user } };
-
+module.exports = async (req, res, proxy, respond) => {
     const query = (req.query.query || "").replace(/[-_]/g, " ");
 
     let { artistCount, artistOffset, albumCount, albumOffset, songCount, songOffset } = req.query;
 
+    // TODO: Cleanup these, I don't like it.
     artistCount = parseInt(artistCount) || 20;
     albumCount = parseInt(albumCount) || 20;
     songCount = parseInt(songCount) || 20;
@@ -17,9 +17,9 @@ module.exports = async(req, res, proxy, respond) => {
     songOffset = parseInt(songOffset) || 0;
 
     let artists = [];
-
     if (artistCount >= 1 && query) {
-        const response = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${encodeURIComponent(query)}&start=${artistOffset}&limit=${artistCount}`, args)).json();
+        // TODO: Merge response with artists
+        const response = await api.search(req.user).searchItems({ itemtype: "artists", q: query, start: artistOffset, limit: artistCount });
 
         artists = (response?.results || []).map(artist => ({
             id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
@@ -31,9 +31,9 @@ module.exports = async(req, res, proxy, respond) => {
     }
 
     let albums = [];
-
     if (albumCount >= 1 && query) {
-        const response = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${encodeURIComponent(query)}&start=${albumOffset}&limit=${albumCount}`, args)).json();
+        // TODO: Merge response with albums
+        const response = await api.search(req.user).searchItems({ itemtype: "albums", q: query, start: albumOffset, limit: albumCount });
 
         albums = (response?.results || []).map(album => ({
             id: album?.albumhash,
@@ -48,13 +48,12 @@ module.exports = async(req, res, proxy, respond) => {
     }
 
     let tracks = [];
-
     if (songCount >= 1 && query) {
-        const response = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=${songOffset}&limit=${songCount}`, args)).json();
+        // TODO: Merge response with tracks
+        const response = await api.search(req.user).searchItems({ itemtype: "tracks", q: query, start: songOffset, limit: songCount });
 
         tracks = (response?.results || []).map(track => {
             const id = track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined;
-
             const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
             return {
@@ -80,7 +79,7 @@ module.exports = async(req, res, proxy, respond) => {
                 artistId: track?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.albumartists[0].artisthash }) : undefined,
                 albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
                 type: "music"
-            };
+            }
         });
     }
 
@@ -88,11 +87,7 @@ module.exports = async(req, res, proxy, respond) => {
 
     respond(res, req, {
         "subsonic-response": {
-            [key]: {
-                artist: artists,
-                album: albums,
-                song: tracks
-            },
+            [key]: { artist: artists, album: albums, song: tracks },
             status: "ok",
             version: "1.16.1",
             type: "swingsonic",
@@ -100,4 +95,4 @@ module.exports = async(req, res, proxy, respond) => {
             openSubsonic: true
         }
     });
-}
+};
