@@ -45,6 +45,7 @@ router.get("/", async (req, res) => {
                 })), "track");
             })
         );
+
         const combined = batches.flat();
         if (combined.length > 0) return res.json(combined);
     }
