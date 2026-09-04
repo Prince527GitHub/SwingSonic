@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { sortByProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -245,7 +246,7 @@ router.get("/user/items", async(req, res) => {
             const albumInfo = albums?.info || {};
 
             if (albumInfo?.albumartists) {
-                output = trackList.map(track => ({
+                output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
                     "AlbumArtist": track.albumartists?.[0]?.name,
                     "AlbumArtists": (albumInfo.albumartists || []).map(artist => ({
@@ -295,9 +296,9 @@ router.get("/user/items", async(req, res) => {
                         "Key": track.albumhash
                     },
                     "track": track.track || 0
-                })).sort((a, b) => a.track - b.track);
+                })), "track");
             } else {
-                output = trackList.map(track => ({
+                output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
                     "AlbumArtist": track.albumartists?.[0]?.name,
                     "AlbumArtists": (track.albumartists || []).map(artist => ({
@@ -347,7 +348,7 @@ router.get("/user/items", async(req, res) => {
                         "Key": track.albumhash
                     },
                     "track": track.track || 0
-                })).sort((a, b) => a.track - b.track);
+                })), "track");
             }
         } catch { albums = { items: [], total: 0 }; }
     } else if (IncludeItemTypes === "Playlist") {
@@ -399,7 +400,7 @@ router.get("/user/items", async(req, res) => {
 
             if (albumMatch) {
                 albums = tracksResp;
-                output = trackList.map(track => ({
+                output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
                     "AlbumArtist": track.albumartists?.[0]?.name,
                     "AlbumArtists": (tracksResp?.info?.albumartists || []).map(artist => ({
@@ -448,7 +449,7 @@ router.get("/user/items", async(req, res) => {
                         "UnplayedItemCount": 0
                     },
                     "track": track.track || 0
-                })).sort((a, b) => a.track - b.track);
+                })), "track");
                 break;
             }
         }
@@ -515,7 +516,7 @@ router.get("/user/items/:id", async(req, res) => {
         const trackList = albums?.tracks || [];
         const albumInfo = albums?.info || {};
 
-        const items = trackList.map(track => ({
+        const items = sortByProperty(trackList.map(track => ({
             Album: track.album,
             AlbumArtist: track.albumartists?.[0]?.name,
             AlbumArtists: (albumInfo.albumartists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
@@ -548,7 +549,7 @@ router.get("/user/items/:id", async(req, res) => {
             Type: "Audio",
             UserData: { PlaybackPositionTicks: 0, PlayCount: 0, IsFavorite: false, Played: false, PlayedPercentage: 0, Rating: 0, UnplayedItemCount: 0, Key: track.albumhash },
             track: track.track || 0
-        })).sort((a, b) => a.track - b.track);
+        })), "track");
 
         res.json({
             Items: items,

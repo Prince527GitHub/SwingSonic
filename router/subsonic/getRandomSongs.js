@@ -1,4 +1,4 @@
-const { shuffleArray } = require("../../packages/utils");
+const { createArray, shuffleArray } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const path = require("path");
@@ -45,7 +45,7 @@ module.exports = async (req, res, proxy, respond) => {
         }));
     }
 
-    output = shuffleArray(output).slice(0, size);
+    output = createArray(shuffleArray(output), size);
 
     respond(res, req, {
         "subsonic-response": {

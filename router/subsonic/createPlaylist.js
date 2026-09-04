@@ -1,3 +1,4 @@
+const { toArray } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -31,8 +32,9 @@ module.exports = async (req, res, proxy, respond) => {
     const playlist = await api.playlist(req.user).createPlaylist({ name });
     const pl = playlist?.playlist || {};
 
-    if (songId) for (const sid of [].concat(songId))
-        await api.playlist(req.user).addItemToPlaylist({ playlistid: pl?.id }, { itemtype: "tracks", itemhash: codecs.id(sid) });
+    if (songId)
+        for (const sid of toArray(songId))
+            await api.playlist(req.user).addItemToPlaylist({ playlistid: pl?.id }, { itemtype: "tracks", itemhash: codecs.id(sid) });
 
     // TODO: Cleanup this, I don't like it.
     const lastUpdated = pl?.last_updated;

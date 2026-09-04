@@ -1,3 +1,4 @@
+const { sortByProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
@@ -69,8 +70,8 @@ module.exports = async (req, res, proxy, respond) => {
                 month: albumReleaseDate.getMonth() + 1,
                 day: albumReleaseDate.getDate()
             },
-            song: tracks
-                .map(track => {
+            song: sortByProperty(
+                tracks.map(track => {
                     const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
                     const song = {
@@ -104,8 +105,9 @@ module.exports = async (req, res, proxy, respond) => {
                     if (track?.is_favorite) song.starred = new Date().toISOString();
 
                     return song;
-                })
-                .sort((a, b) => (a?.track ?? 0) - (b?.track ?? 0))
+                }),
+                "track"
+            )
         }
     }
 

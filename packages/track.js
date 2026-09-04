@@ -1,6 +1,7 @@
 // TODO: Remove this file.
-const path = require("path");
+const { sortByProperty } = require("./utils");
 const codecs = require("./codecs");
+const path = require("path");
 
 function encodeTrackId(track) {
     if (!track?.trackhash || !track?.filepath) return undefined;
@@ -23,7 +24,7 @@ function mapTrack(track) {
 }
 
 function mapTracks(tracks) {
-    return (tracks || []).map(mapTrack).sort((a, b) => (a.track || 0) - (b.track || 0));
+    return sortByProperty((tracks || []).map(mapTrack), "track");
 }
 
 module.exports = {

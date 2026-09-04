@@ -1,4 +1,4 @@
-const { shuffleArray } = require("../../packages/utils")
+const { createArray, shuffleArray, sortByProperty } = require("../../packages/utils")
 const codecs = require("../../packages/codecs")
 const api = require("../../packages/swingmusic")
 
@@ -58,7 +58,7 @@ module.exports = async (req, res, proxy, respond) => {
 
             albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 500, sortby: "created_date", reverse: 1 });
 
-            output = (albums?.items || []).filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear())).sort((a, b) => a.date - b.date).slice(offset, offset + size);
+            output = createArray(sortByProperty((albums?.items || []).filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear())), "date"), size, offset);
             break;
         }
         case "byGenre": {

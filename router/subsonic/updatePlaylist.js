@@ -18,13 +18,17 @@ module.exports = async (req, res, proxy, respond) => {
         }
     });
 
-    for (const sid of toArray(songIdToAdd)) await api.playlist(req.user).addItemToPlaylist({ playlistid: playlistId }, { itemtype: "tracks", itemhash: codecs.id(sid) });
+    for (const sid of toArray(songIdToAdd))
+        await api.playlist(req.user).addItemToPlaylist({ playlistid: playlistId }, { itemtype: "tracks", itemhash: codecs.id(sid) });
 
-    for (const sid of toArray(songIdToRemove)) await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ trackhash: codecs.id(sid), index: 0 }] });
+    for (const sid of toArray(songIdToRemove))
+        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ trackhash: codecs.id(sid), index: 0 }] });
 
-    for (const idx of toArray(songIndexToRemove)) await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ index: parseInt(idx, 10), trackhash: "" }] });
+    for (const idx of toArray(songIndexToRemove))
+        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ index: parseInt(idx, 10), trackhash: "" }] });
 
-    if (name) await api.playlist(req.user).updatePlaylistInfo({ playlistid: playlistId }, new URLSearchParams({ name }));
+    if (name)
+        await api.playlist(req.user).updatePlaylistInfo({ playlistid: playlistId }, new URLSearchParams({ name }));
 
     respond(res, req, {
         "subsonic-response": {

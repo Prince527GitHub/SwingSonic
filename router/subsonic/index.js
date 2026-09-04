@@ -2,6 +2,7 @@ const { getFileList } = require("../../packages/files");
 
 const { sanitizeCookie } = require("../../packages/cookie");
 const { hashPassword } = require("../../packages/crypto");
+const { toArray } = require("../../packages/utils");
 
 const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
@@ -34,7 +35,7 @@ async function checkPassword(input, salt, user) {
 }
 
 function respond(res, req, json) {
-    const format = [].concat(req.query.f).find(Boolean);
+    const format = toArray(req.query.f).find(Boolean);
 
     if (format === "json") res.json(json);
     else res.send(xml(json));

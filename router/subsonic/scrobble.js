@@ -1,3 +1,4 @@
+const { toArray } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -6,8 +7,8 @@ module.exports = async (req, res, proxy, respond) => {
 
     if (submission !== "false") {
         // TODO: Cleanup this, I don't like it.
-        const ids = (Array.isArray(id) ? id : id ? [id] : []).map(raw => ({ raw, decoded: codecs.decode(raw) }));
-        const times = Array.isArray(time) ? time : time ? [time] : [];
+        const ids = toArray(id).filter(Boolean).map(raw => ({ raw, decoded: codecs.decode(raw) }));
+        const times = toArray(time).filter(Boolean);
 
         for (const [i, { raw, decoded }] of ids.entries()) {
             const trackhash = decoded?.id || raw;

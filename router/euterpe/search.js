@@ -3,6 +3,7 @@ const router = express.Router();
 
 // TODO: Cleanup this entire file.
 const { mapTrack, mapTracks } = require("../../packages/track");
+const { createArray } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const zw = require("../../packages/zw");
 
@@ -38,7 +39,7 @@ router.get("/", async (req, res) => {
     }
 
     if (albumHashes.size > 0) {
-        const albumTracks = await Promise.all([...albumHashes].slice(0, Math.ceil(limit / 10)).map(hash => getAlbumTracks(hash, req.user)));
+        const albumTracks = await Promise.all(createArray([...albumHashes], Math.ceil(limit / 10)).map(hash => getAlbumTracks(hash, req.user)));
         const allTracks = albumTracks.flat();
         if (allTracks.length > 0) return res.json(allTracks);
     }
