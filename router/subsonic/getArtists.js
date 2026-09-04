@@ -6,19 +6,16 @@ module.exports = async(req, res, proxy, respond) => {
     const size = (await api.getAll(req.user).getAllItems("artists", { start: 0, limit: 1, sortby: "created_date", reverse: 1 }))?.total ?? 50;
     const artists = await api.getAll(req.user).getAllItems("artists", { start: 0, limit: size, sortby: "created_date", reverse: 1 });
 
-    // TODO: Simplify this, I don't like it.
-    const output = await Promise.all((artists?.items || []).map(async(item) => {
-        const node = {
+    const output = await Promise.all((artists?.items || []).map(async (item) => {
+        const favorite = await api.favorites(req.user).checkFavorite({ hash: item?.artisthash, type: "artist" });
+
+        return {
             id: encodeId(item?.artisthash, "artist", codecs),
             name: item?.name,
             coverArt: encodeId(item?.image, "artist", codecs),
-            albumCount: item?.albumcount || 0
-        }
-
-        const favorite = await api.favorites(req.user).checkFavorite({ hash: item?.artisthash, type: "artist" });
-        if (favorite?.is_favorite) node.starred = toISOString(favorite?.date) || toISOString(0);
-
-        return node;
+            albumCount: item?.albumcount || 0,
+            ...(favorite?.is_favorite ? { starred: toISOString(favorite?.date) || toISOString(0) } : {})
+        };
     }));
 
     const organize = groupByFirstLetter(output);

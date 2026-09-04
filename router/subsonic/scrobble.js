@@ -6,15 +6,18 @@ module.exports = async (req, res, proxy, respond) => {
     let { id, time, submission } = req.query;
 
     if (submission !== "false") {
-        // TODO: Cleanup this, I don't like it.
         const ids = toArray(id).filter(Boolean).map(raw => ({ raw, decoded: codecs.decode(raw) }));
         const times = toArray(time).filter(Boolean);
 
         for (const [i, { raw, decoded }] of ids.entries()) {
             const trackhash = decoded?.id || raw;
 
-            // TODO: Cleanup this, I don't like it.
-            const duration = decoded?.path ? (await api.folder(req.user).getTracksInPath({ path: decoded.path }))?.tracks?.find(track => track?.trackhash === trackhash)?.duration ?? 240 : 240;
+            let duration = 240;
+            if (decoded?.path) {
+                const { tracks } = await api.folder(req.user).getTracksInPath({ path: decoded.path }) ?? {};
+
+                duration = tracks?.find(t => t?.trackhash === trackhash)?.duration ?? 240;
+            }
 
             const value = parseIntOr(times[i] || time);
             const timestamp = value > 10_000_000_000 ? Math.floor(value / 1000) : (value || Math.floor(Date.now() / 1000));

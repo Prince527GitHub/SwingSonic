@@ -6,7 +6,6 @@ const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 
-// TODO: Cleanup this entire file. It's a mess.
 router.get("/", async (req, res) => {
     const { by = "album", order = "asc" } = req.query;
 
@@ -21,38 +20,40 @@ router.get("/", async (req, res) => {
     const reverse = order === "desc" ? 1 : 0;
     const start = (page - 1) * perPage;
 
-    let results = [];
-    if (by === "album") {
-        const albums = await api.getAll(req.user).getAllItems("albums", { start, limit: perPage, sortby, reverse });
+    const category = {
+        album: {
+            type: "albums",
+            map: album => ({
+                album: album.title && album.albumhash ? zw.inject(album.title, codecs.encode({ album: album.albumhash })) : album.title,
+                artist: firstProperty(album.albumartists, "name") || "",
+                album_id: album.albumhash
+            })
+        },
+        artist: {
+            type: "artists",
+            map: artist => ({
+                artist: artist.name && artist.artisthash ? zw.inject(artist.name, codecs.encode({ artist: artist.artisthash })) : artist.name,
+                artist_id: artist.artisthash
+            })
+        }
+    }[by];
 
-        results = albums.items.map(album => ({
-            album: album.title && album.albumhash ? zw.inject(album.title, codecs.encode({ album: album.albumhash })) : album.title,
-            artist: firstProperty(album.albumartists, "name") || "",
-            album_id: album.albumhash
-        }));
+    const page_data = await api.getAll(req.user).getAllItems(category.type, { start, limit: perPage, sortby, reverse });
 
-        results.total = albums.total;
-    } else if (by === "artist") {
-        const artists = await api.getAll(req.user).getAllItems("artists", { start, limit: perPage, sortby, reverse });
+    const data = (page_data.items || []).map(category.map);
+    const total = page_data.total || 0;
 
-        results = artists.items.map(artist => ({
-            artist: artist.name && artist.artisthash ? zw.inject(artist.name, codecs.encode({ artist: artist.artisthash })) : artist.name,
-            artist_id: artist.artisthash
-        }));
-
-        results.total = artists.total;
-    }
-
-    const max = Math.ceil((results.total || 0) / perPage);
-    const link = (target) => `/v1/browse/?by=${by}&page=${target}&per-page=${perPage}&order-by=${orderBy}&order=${order}`;
+    const pages_count = Math.ceil(total / perPage);
+    const link = target => `/v1/browse/?by=${by}&page=${target}&per-page=${perPage}&order-by=${orderBy}&order=${order}`;
 
     res.json({
-        pages_count: max,
-        next: page < max ? link(page + 1) : null,
-        previous: page > 1 && page <= max ? link(page - 1) : null,
-        data: results
+        pages_count,
+        next: page < pages_count ? link(page + 1) : null,
+        previous: page > 1 && page <= pages_count ? link(page - 1) : null,
+        data
     });
 });
+
 
 module.exports = {
     router,

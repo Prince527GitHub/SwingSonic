@@ -2,21 +2,16 @@ const { encodeId } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-// TODO: Cleanup the entire thing, I don't like it.
 module.exports = {
     aliases: ["getArtistInfo2"],
     handler: async (req, res, proxy, respond) => {
-        const id = req.query.id;
-
-        let { u, t, s } = req.query;
+        const { id, u, t, s } = req.query;
 
         const artist = await api.artist(req.user).getArtist(id);
 
-        const artistImage = artist?.artist?.image;
+        const image = encodeId(artist?.artist?.image, "artist", codecs);
 
-        const image = encodeId(artistImage, "artist", codecs);
-
-        const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
+        const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?${new URLSearchParams({ id: image, u: u || "", t: t || "", s: s || "" })}` : undefined;
 
         const key = (req.path || req.url || "").includes("getArtistInfo2") ? "artistInfo2" : "artistInfo";
 
@@ -28,7 +23,7 @@ module.exports = {
                     lastFmUrl: artist?.artist?.lastfm_url || "",
                     smallImageUrl: link,
                     mediumImageUrl: link,
-                    largeImageUrl: link,
+                    largeImageUrl: link
                 },
                 status: "ok",
                 version: "1.16.1",

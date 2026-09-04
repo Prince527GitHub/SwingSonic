@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { mapTracks } = require("../../packages/track");
-const { firstProperty, yearFromTimestamp } = require("../../packages/utils");
+const { firstProperty, yearFromTimestamp, sortByProperty, ext } = require("../../packages/utils");
+const codecs = require("../../packages/codecs");
 const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
 
@@ -24,7 +24,17 @@ router.get("/:id", async (req, res) => {
         artist: firstProperty(info.albumartists, "name"),
         artist_id: firstProperty(info.albumartists, "artisthash"),
         year: yearFromTimestamp(info.date),
-        tracks: mapTracks(album.tracks)
+        tracks: sortByProperty((album.tracks || []).map(track => ({
+            id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
+            album: track?.album,
+            title: track?.title,
+            track: track?.track || 0,
+            artist: firstProperty(track?.artists, "name"),
+            artist_id: firstProperty(track?.artists, "artisthash"),
+            album_id: track?.albumhash,
+            format: ext(track?.filepath),
+            duration: (track?.duration || 0) * 1000,
+        })), "track")
     });
 });
 

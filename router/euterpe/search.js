@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 // TODO: Cleanup this entire file.
-const { mapTrack, mapTracks } = require("../../packages/track");
-const { createArray, clampedSize, parseIntOr } = require("../../packages/utils");
+const { createArray, clampedSize, parseIntOr, sortByProperty, ext, firstProperty } = require("../../packages/utils");
+const codecs = require("../../packages/codecs");
 const api = require("../../packages/swingmusic");
 const zw = require("../../packages/zw");
 
@@ -11,7 +11,17 @@ async function getAlbumTracks(albumhash, user) {
     const album = await api.album(user).getAlbumTracksAndInfo({ albumhash });
     if (album?.error || !album?.info) return [];
 
-    return mapTracks(album.tracks);
+    return sortByProperty((album.tracks || []).map(track => ({
+        id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
+        album: track?.album,
+        title: track?.title,
+        track: track?.track || 0,
+        artist: firstProperty(track?.artists, "name"),
+        artist_id: firstProperty(track?.artists, "artisthash"),
+        album_id: track?.albumhash,
+        format: ext(track?.filepath),
+        duration: (track?.duration || 0) * 1000,
+    })), "track");
 }
 
 router.get("/", async (req, res) => {
@@ -44,7 +54,17 @@ router.get("/", async (req, res) => {
         if (allTracks.length > 0) return res.json(allTracks);
     }
 
-    const result = tracks.map(mapTrack);
+    const result = tracks.map(track => ({
+        id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
+        album: track?.album,
+        title: track?.title,
+        track: track?.track || 0,
+        artist: firstProperty(track?.artists, "name"),
+        artist_id: firstProperty(track?.artists, "artisthash"),
+        album_id: track?.albumhash,
+        format: ext(track?.filepath),
+        duration: (track?.duration || 0) * 1000,
+    }));
 
     res.json(result);
 });

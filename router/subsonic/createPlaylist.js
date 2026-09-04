@@ -3,7 +3,7 @@ const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
 module.exports = async (req, res, proxy, respond) => {
-    let { playlistId, name, songId } = req.query;
+    const { playlistId, name, songId, u, username } = req.query;
     if (playlistId) return res.json({
         "subsonic-response": {
             status: "ok",
@@ -28,33 +28,27 @@ module.exports = async (req, res, proxy, respond) => {
         }
     });
 
-    // TODO: Cleanup this, I don't like it.
-    const playlist = await api.playlist(req.user).createPlaylist({ name });
-    const pl = playlist?.playlist || {};
+    const playlist = (await api.playlist(req.user).createPlaylist({ name }))?.playlist ?? {};
 
-    if (songId)
-        for (const sid of toArray(songId))
-            await api.playlist(req.user).addItemToPlaylist({ playlistid: pl?.id }, { itemtype: "tracks", itemhash: codecs.id(sid) });
+    for (const song of toArray(songId || []))
+        await api.playlist(req.user).addItemToPlaylist({ playlistid: playlist?.id }, { itemtype: "tracks", itemhash: codecs.id(song) });
 
-    // TODO: Cleanup this, I don't like it.
-    const lastUpdated = pl?.last_updated;
-    const createdDate = lastUpdated ? new Date(flexibleISOString(lastUpdated)) : new Date();
-
-    const owner = req.query.u || req.query.username || "admin";
+    const created = playlist?.last_updated ? new Date(flexibleISOString(playlist.last_updated)) : new Date();
+    const owner = u || username || "admin";
 
     respond(res, req, {
         "subsonic-response": {
             playlist: {
-                id: String(pl?.id),
-                name: pl?.name,
+                id: String(playlist?.id),
+                name: playlist?.name,
                 comment: "No comment",
                 owner: owner,
                 public: true,
-                songCount: pl?.count || 0,
-                duration: pl?.duration || 0,
-                created: createdDate.toISOString(),
-                changed: createdDate.toISOString(),
-                coverArt: encodeId(pl?.image, "playlist", codecs)
+                songCount: playlist?.count || 0,
+                duration: playlist?.duration || 0,
+                created: created.toISOString(),
+                changed: created.toISOString(),
+                coverArt: encodeId(playlist?.image, "playlist", codecs)
             },
             status: "ok",
             version: "1.16.1",

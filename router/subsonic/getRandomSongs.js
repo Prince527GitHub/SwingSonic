@@ -10,7 +10,6 @@ module.exports = async (req, res, proxy, respond) => {
     const total = (await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 1, sortby: "created_date", reverse: 1 }))?.total ?? 50;
     const albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: total, sortby: "created_date", reverse: 1 });
 
-    // TODO: Simplify this, I don't like it.
     let output = [];
     for (const album of albums?.items || []) {
         const tracks = await api.album(req.user).getAlbumTracksAndInfo({ albumhash: album?.albumhash });

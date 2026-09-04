@@ -2,21 +2,20 @@ const { toISOString, encodeId, firstProperty } = require("../../packages/utils")
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
-// TODO: Cleanup this, I don't like it.
-module.exports = async(req, res, proxy, respond) => {
-    const id = req.query.id;
+module.exports = async (req, res, proxy, respond) => {
+    const { id } = req.query;
 
-    const decoded = codecs.decode(id);
+    const hash = codecs.decode(id)?.id || id;
 
-    const effectiveId = decoded?.id || id;
+    const [albumData, artistData] = await Promise.all([
+        api.artist(req.user).getArtistAlbums(hash, { limit: 7, all: false }),
+        api.artist(req.user).getArtist(hash)
+    ]);
 
-    const getAlbums = await api.artist(req.user).getArtistAlbums(effectiveId, { limit: 7, all: false });
+    const artist = artistData?.artist;
+    const artistId = encodeId(artist?.artisthash, "artist", codecs) || id;
 
-    const artist = await api.artist(req.user).getArtist(effectiveId);
-
-    const encodedArtistId = encodeId(artist?.artist?.artisthash, "artist", codecs) || id;
-
-    const albums = (getAlbums?.albums || []).map(album => ({
+    const albums = (albumData?.albums || []).map(album => ({
         id: album?.albumhash,
         name: album?.title,
         coverArt: encodeId(album?.image, "album", codecs),
@@ -30,13 +29,13 @@ module.exports = async(req, res, proxy, respond) => {
     respond(res, req, {
         "subsonic-response": {
             artist: {
-                id: encodedArtistId,
-                name: artist?.artist?.name,
-                coverArt: encodeId(artist?.artist?.image, "artist", codecs),
-                albumCount: artist?.artist?.albumcount || 0,
-                songCount: artist?.artist?.trackcount || 0,
+                id: artistId,
+                name: artist?.name,
+                coverArt: encodeId(artist?.image, "artist", codecs),
+                albumCount: artist?.albumcount || 0,
+                songCount: artist?.trackcount || 0,
                 created: new Date().toISOString(),
-                duration: artist?.artist?.duration || 0,
+                duration: artist?.duration || 0,
                 album: albums
             },
             status: "ok",

@@ -6,9 +6,7 @@ module.exports = async (req, res, proxy, respond) => {
     const owner = req.query.u || req.query.username || "admin";
 
     const output = ((await api.playlist(req.user).sendAllPlaylists())?.data || []).map(playlist => {
-        // TODO: Simplify this, I don't like it.
-        const lastUpdated = playlist?.last_updated;
-        const createdDate = lastUpdated ? new Date(flexibleISOString(lastUpdated)) : new Date();
+        const createdDate = playlist?.last_updated ? new Date(flexibleISOString(playlist.last_updated)) : new Date();
 
         return {
             id: String(playlist?.id),

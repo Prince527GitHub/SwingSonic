@@ -34,9 +34,7 @@ module.exports = {
             case "starred": {
                 const favorite = await api.favorites(req.user).getFavoriteAlbums({ start: offset, limit: size });
 
-                // TODO: Simplify this, I don't like it.
-                albums = { items: (favorite?.albums || []).map(a => ({ albumhash: a?.albumhash, title: a?.title, image: a?.image, date: a?.date, duration: a?.duration, albumartists: a?.albumartists })) }
-
+                albums = { items: favorite?.albums || [] };
                 break;
             }
             case "recent": {
@@ -59,7 +57,14 @@ module.exports = {
 
                 albums = await api.getAll(req.user).getAllItems("albums", { start: 0, limit: 500, sortby: "created_date", reverse: 1 });
 
-                output = createArray(sortByProperty((albums?.items || []).filter(item => item.date && (year => year >= minYear && year <= maxYear)(new Date(item.date * 1000).getFullYear())), "date"), size, offset);
+                const filtered = (albums?.items || []).filter(item => {
+                    if (!item.date) return false;
+
+                    const year = new Date(item.date * 1000).getFullYear();
+                    return year >= minYear && year <= maxYear;
+                });
+
+                output = createArray(sortByProperty(filtered, "date"), size, offset);
                 break;
             }
             case "byGenre": {

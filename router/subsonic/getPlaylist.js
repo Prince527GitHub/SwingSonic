@@ -4,10 +4,7 @@ const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 
 module.exports = async (req, res, proxy, respond) => {
-    // TODO: Simplify, I don't like it, why do we have two req.query.
-    const id = req.query.id;
-
-    let { size, offset } = req.query;
+    const { id, size, offset, u, username } = req.query;
 
     const playlist = await api.playlist(req.user).getPlaylist({ playlistid: id }, { no_tracks: false, start: offset || "0", limit: size || "50" });
 
@@ -38,7 +35,7 @@ module.exports = async (req, res, proxy, respond) => {
     }));
 
     const info = playlist?.info || {};
-    const owner = req.query.u || req.query.username || "admin";
+    const owner = u || username || "admin";
 
     respond(res, req, {
         "subsonic-response": {
