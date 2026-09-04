@@ -1,5 +1,11 @@
+function toArray(value) {
+    return [].concat(value);
+}
+
 function createArray(array, size, offset = 0) {
-    return offset >= 0 && offset < array.length ? array.slice(offset, offset + size) : [];
+    return offset >= 0 && offset < array.length
+        ? array.slice(offset, offset + size)
+        : [];
 }
 
 function shuffleArray(array) {
@@ -13,6 +19,7 @@ function shuffleArray(array) {
 
 function sortByProperty(array, property) {
     if (!array.length) return [];
+
     if (!(property in array[0])) throw new Error(`Property '${property}' not found`);
 
     return array.sort((a, b) =>
@@ -22,6 +29,7 @@ function sortByProperty(array, property) {
 }
 
 module.exports = {
+    toArray,
     createArray,
     shuffleArray,
     sortByProperty

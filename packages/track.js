@@ -1,3 +1,4 @@
+// TODO: Remove this file.
 const path = require("path");
 const codecs = require("./codecs");
 

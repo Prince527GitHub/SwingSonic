@@ -1,4 +1,4 @@
-const { shuffleArray } = require("../../packages/array")
+const { shuffleArray } = require("../../packages/utils")
 const codecs = require("../../packages/codecs")
 const api = require("../../packages/swingmusic")
 

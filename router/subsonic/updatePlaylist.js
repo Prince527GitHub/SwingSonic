@@ -1,3 +1,4 @@
+const { toArray } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -10,22 +11,20 @@ module.exports = async (req, res, proxy, respond) => {
             type: "swingsonic",
             serverVersion: "unknown",
             openSubsonic: true,
-            error: { code: 10, message: "Required parameter 'playlistId' is missing" }
+            error: {
+                code: 10,
+                message: "Required parameter 'playlistId' is missing"
+            }
         }
     });
 
-    // TODO: Cleanup these, I don't like it.
-    if (songIdToAdd) for (const sid of [].concat(songIdToAdd))
-        await api.playlist(req.user).addItemToPlaylist({ playlistid: playlistId }, { itemtype: "tracks", itemhash: codecs.id(sid) });
+    for (const sid of toArray(songIdToAdd)) await api.playlist(req.user).addItemToPlaylist({ playlistid: playlistId }, { itemtype: "tracks", itemhash: codecs.id(sid) });
 
-    if (songIdToRemove) for (const sid of [].concat(songIdToRemove))
-        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ trackhash: codecs.id(sid), index: 0 }] });
+    for (const sid of toArray(songIdToRemove)) await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ trackhash: codecs.id(sid), index: 0 }] });
 
-    if (songIndexToRemove) for (const idx of [].concat(songIndexToRemove))
-        await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ index: parseInt(idx), trackhash: "" }] });
+    for (const idx of toArray(songIndexToRemove)) await api.playlist(req.user).removeTracksFromPlaylist({ playlistid: playlistId }, { tracks: [{ index: parseInt(idx, 10), trackhash: "" }] });
 
-    if (name)
-        await api.playlist(req.user).updatePlaylistInfo({ playlistid: playlistId }, new URLSearchParams({ name }));
+    if (name) await api.playlist(req.user).updatePlaylistInfo({ playlistid: playlistId }, new URLSearchParams({ name }));
 
     respond(res, req, {
         "subsonic-response": {
