@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { sortByProperty } = require("../../packages/utils");
+const { sortByProperty, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -171,7 +171,7 @@ router.get("/user/items", async(req, res) => {
                     "Id": artist.artisthash,
                     "Name": artist.name
                 })),
-                "AlbumArtist": album.albumartists?.[0]?.name,
+"AlbumArtist": firstProperty(album.albumartists, "name"),
                 "AlbumArtists": (album.albumartists || []).map(artist => ({
                     "Id": artist.artisthash,
                     "Name": artist.name
@@ -223,7 +223,7 @@ router.get("/user/items", async(req, res) => {
                 "Id": artist.artisthash,
                 "Name": artist.name
             })),
-            "AlbumArtist": album.albumartists?.[0]?.name,
+            "AlbumArtist": firstProperty(album.albumartists, "name"),
             "AlbumArtists": (album.albumartists || []).map(artist => ({
                 "Id": artist.artisthash,
                 "Name": artist.name
@@ -248,7 +248,7 @@ router.get("/user/items", async(req, res) => {
             if (albumInfo?.albumartists) {
                 output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtist": firstProperty(track.albumartists, "name"),
                     "AlbumArtists": (albumInfo.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
@@ -300,7 +300,7 @@ router.get("/user/items", async(req, res) => {
             } else {
                 output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtist": firstProperty(track.albumartists, "name"),
                     "AlbumArtists": (track.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
@@ -402,7 +402,7 @@ router.get("/user/items", async(req, res) => {
                 albums = tracksResp;
                 output = sortByProperty(trackList.map(track => ({
                     "Album": track.album,
-                    "AlbumArtist": track.albumartists?.[0]?.name,
+                    "AlbumArtist": firstProperty(track.albumartists, "name"),
                     "AlbumArtists": (tracksResp?.info?.albumartists || []).map(artist => ({
                         "Id": artist.artisthash,
                         "Name": artist.name
@@ -473,7 +473,7 @@ router.get("/user/items/:id", async(req, res) => {
 
             const items = (playlist?.tracks || []).map(track => ({
                 Album: track.album,
-                AlbumArtist: track.artists?.[0]?.name,
+                AlbumArtist: firstProperty(track.artists, "name"),
                 AlbumArtists: (track.artists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
                 AlbumId: track.albumhash,
                 AlbumPrimaryImageTag: track.trackhash,
@@ -518,7 +518,7 @@ router.get("/user/items/:id", async(req, res) => {
 
         const items = sortByProperty(trackList.map(track => ({
             Album: track.album,
-            AlbumArtist: track.albumartists?.[0]?.name,
+            AlbumArtist: firstProperty(track.albumartists, "name"),
             AlbumArtists: (albumInfo.albumartists || []).map(artist => ({ Id: artist.artisthash, Name: artist.name })),
             AlbumId: track.albumhash,
             AlbumPrimaryImageTag: track.trackhash,
@@ -597,7 +597,7 @@ router.get("/user/items/:id", async(req, res) => {
             PrimaryImageAspectRatio: 1,
             Artists: (albumInfo.albumartists || []).map(artist => artist.name),
             ArtistItems: (albumInfo.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
-            AlbumArtist: albumInfo.albumartists?.[0]?.name,
+            AlbumArtist: firstProperty(albumInfo.albumartists, "name"),
             AlbumArtists: (albumInfo.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
             ImageTags: { Primary: albumInfo.albumhash },
             BackdropImageTags: [],

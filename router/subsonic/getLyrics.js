@@ -1,3 +1,4 @@
+const { firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const zw = require("../../packages/zw");
 
@@ -36,7 +37,7 @@ module.exports = async (req, res, proxy, respond) => {
             filepath: track?.filepath,
             album: track?.album,
             title: global?.config?.server?.api?.subsonic?.options?.zw ? zw.filter(track?.title) : track?.title,
-            artist: track?.albumartists?.[0]?.name || track?.artists?.[0]?.name || ""
+            artist: firstProperty(track?.albumartists, "name") || firstProperty(track?.artists, "name") || ""
         }
 
         let getLyrics = null;

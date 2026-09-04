@@ -1,4 +1,4 @@
-const { createArray, shuffleArray, sortByProperty } = require("../../packages/utils")
+const { createArray, shuffleArray, sortByProperty, toISOString, parseIntOr, clampedSize, encodeId, firstProperty } = require("../../packages/utils")
 const codecs = require("../../packages/codecs")
 const api = require("../../packages/swingmusic")
 
@@ -6,8 +6,8 @@ module.exports = async (req, res, proxy, respond) => {
     let { type, size, offset, genre, fromYear, toYear } = req.query
 
     // TODO: Cleanup these, I don't like it.
-    size = Math.min(parseInt(size) || 10, 500)
-    offset = parseInt(offset) || 0
+    size = clampedSize(size, 10, 500)
+    offset = parseIntOr(offset)
 
     let albums, output = [];
 
@@ -51,8 +51,8 @@ module.exports = async (req, res, proxy, respond) => {
             break;
         }
         case "byYear": {
-            const from = parseInt(fromYear) || 0;
-            const to = parseInt(toYear) || 9999;
+            const from = parseIntOr(fromYear);
+            const to = parseIntOr(toYear, 9999);
 
             const [minYear, maxYear] = from <= to ? [from, to] : [to, from];
 
@@ -84,18 +84,18 @@ module.exports = async (req, res, proxy, respond) => {
             parent: id,
             isDir: true,
             isVideo: false,
-            coverArt: item?.image ? codecs.encode({ type: "album", id: item.image }) : undefined,
+            coverArt: encodeId(item?.image, "album", codecs),
             songCount: item?.trackcount || 0,
-            created: item?.date ? new Date(item.date * 1000).toISOString() : new Date().toISOString(),
+            created: toISOString(item?.date) || toISOString(Date.now() / 1000),
             duration: item?.duration || 0,
-            artist: item?.albumartists?.[0]?.name,
-            artistId: item?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: item.albumartists[0].artisthash }) : undefined,
-            artists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
-            albumArtists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined }))
+            artist: firstProperty(item?.albumartists, "name"),
+            artistId: encodeId(item?.albumartists?.[0]?.artisthash, "artist", codecs),
+            artists: (item?.albumartists || []).map(a => ({ name: a?.name, id: encodeId(a?.artisthash, "artist", codecs) })),
+            albumArtists: (item?.albumartists || []).map(a => ({ name: a?.name, id: encodeId(a?.artisthash, "artist", codecs) }))
         }
 
         const favorite = await api.favorites(req.user).checkFavorite({ hash: id, type: "album" });
-        if (favorite?.is_favorite) album.starred = favorite?.date ? new Date(favorite.date * 1000).toISOString() : new Date(0).toISOString();
+        if (favorite?.is_favorite) album.starred = toISOString(favorite?.date) || toISOString(0);
 
         return album;
     }));

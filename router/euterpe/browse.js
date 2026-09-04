@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { clampedSize, parseIntOr, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
@@ -9,8 +10,8 @@ const zw = require("../../packages/zw");
 router.get("/", async (req, res) => {
     const { by = "album", order = "asc" } = req.query;
 
-    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
-    const perPage = Math.min(Math.max(Number.parseInt(req.query["per-page"], 10) || 10, 1), 100);
+    const page = Math.max(parseIntOr(req.query.page, 1), 1);
+    const perPage = clampedSize(req.query["per-page"], 10, 100);
     const orderBy = req.query["order-by"] || "name";
 
     if (!["album", "artist"].includes(by)) return res.sendStatus(400);
@@ -26,7 +27,7 @@ router.get("/", async (req, res) => {
 
         results = albums.items.map(album => ({
             album: album.title && album.albumhash ? zw.inject(album.title, codecs.encode({ album: album.albumhash })) : album.title,
-            artist: album.albumartists?.[0]?.name || "",
+            artist: firstProperty(album.albumartists, "name") || "",
             album_id: album.albumhash
         }));
 

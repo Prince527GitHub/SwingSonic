@@ -1,6 +1,6 @@
+const { ext, encodeId, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
-const path = require("path");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
@@ -39,7 +39,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
+    const extension = ext(track?.filepath);
 
     const song = {
         id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : track?.trackhash,
@@ -47,10 +47,10 @@ module.exports = async(req, res, proxy, respond) => {
         isDir: false,
         title: track?.title,
         album: track?.album,
-        artist: track?.artists?.[0]?.name,
+        artist: firstProperty(track?.artists, "name"),
         track: track?.track || 0,
         year: track?.year || new Date().getFullYear(),
-        coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
+        coverArt: encodeId(track?.image, "album", codecs),
         suffix: extension || "mp3",
         contentType: `audio/${extension || "mpeg"}`,
         duration: track?.duration || 0,
@@ -61,11 +61,11 @@ module.exports = async(req, res, proxy, respond) => {
         created: new Date().toISOString(),
         size: track?.size || 1048576,
         albumId: track?.albumhash,
-        artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
+        artistId: encodeId(track?.artists?.[0]?.artisthash, "artist", codecs),
         type: "music",
-        artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
-        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
-        displayArtist: track?.artists?.[0]?.name,
+        artists: (track?.artists || []).map(a => ({ name: a?.name, id: encodeId(a?.artisthash, "artist", codecs) })),
+        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: encodeId(a?.artisthash, "artist", codecs) })),
+        displayArtist: firstProperty(track?.artists, "name"),
     }
 
     respond(res, req, {

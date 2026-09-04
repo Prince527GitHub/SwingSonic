@@ -1,3 +1,4 @@
+const { flexibleISOString, encodeId, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
@@ -15,9 +16,9 @@ module.exports = async (req, res, proxy, respond) => {
         parent: track?.albumhash || "0",
         title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, codecs.encode({ album: track.albumhash, id: track.trackhash })) : track?.title,
         album: track?.album,
-        artist: track?.artists?.[0]?.name,
+        artist: firstProperty(track?.artists, "name"),
         isDir: false,
-        coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
+        coverArt: encodeId(track?.image, "album", codecs),
         created: new Date().toISOString(),
         duration: track?.duration || 0,
         bitRate: track?.bitrate || 0,
@@ -30,8 +31,8 @@ module.exports = async (req, res, proxy, respond) => {
         size: track?.size || 1048576,
         path: track?.filepath,
         albumId: track?.albumhash,
-        artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
-        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
+        artistId: encodeId(track?.artists?.[0]?.artisthash, "artist", codecs),
+        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: encodeId(a?.artisthash, "artist", codecs) })),
         type: "music",
         ...(track?.is_favorite ? { starred: new Date().toISOString() } : {})
     }));
@@ -49,9 +50,9 @@ module.exports = async (req, res, proxy, respond) => {
                 public: true,
                 songCount: info?.count || 0,
                 duration: info?.duration || 0,
-                created: info?.last_updated ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString() : new Date().toISOString(),
-                changed: info?.last_updated ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString() : new Date().toISOString(),
-                coverArt: info?.image ? codecs.encode({ type: "playlist", id: info.image }) : undefined,
+                created: flexibleISOString(info?.last_updated, new Date().toISOString()),
+                changed: flexibleISOString(info?.last_updated, new Date().toISOString()),
+                coverArt: encodeId(info?.image, "playlist", codecs),
                 entry: output
             },
             status: "ok",

@@ -1,3 +1,4 @@
+const { toISOString, encodeId, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -13,17 +14,17 @@ module.exports = async(req, res, proxy, respond) => {
 
     const artist = await api.artist(req.user).getArtist(effectiveId);
 
-    const encodedArtistId = artist?.artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artist.artisthash }) : id;
+    const encodedArtistId = encodeId(artist?.artist?.artisthash, "artist", codecs) || id;
 
     const albums = (getAlbums?.albums || []).map(album => ({
         id: album?.albumhash,
         name: album?.title,
-        coverArt: album?.image ? codecs.encode({ type: "album", id: album.image }) : undefined,
+        coverArt: encodeId(album?.image, "album", codecs),
         songCount: album?.trackcount || 0,
-        created: album?.date ? new Date(album.date * 1000).toISOString() : undefined,
+        created: toISOString(album?.date),
         duration: album?.duration || 0,
-        artist: album?.albumartists?.[0]?.name,
-        artistId: album?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: album.albumartists[0].artisthash }) : undefined
+        artist: firstProperty(album?.albumartists, "name"),
+        artistId: encodeId(album?.albumartists?.[0]?.artisthash, "artist", codecs)
     }));
 
     respond(res, req, {
@@ -31,7 +32,7 @@ module.exports = async(req, res, proxy, respond) => {
             artist: {
                 id: encodedArtistId,
                 name: artist?.artist?.name,
-                coverArt: artist?.artist?.image ? codecs.encode({ type: "artist", id: artist.artist.image }) : undefined,
+                coverArt: encodeId(artist?.artist?.image, "artist", codecs),
                 albumCount: artist?.artist?.albumcount || 0,
                 songCount: artist?.artist?.trackcount || 0,
                 created: new Date().toISOString(),

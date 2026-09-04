@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { mapTracks } = require("../../packages/track");
+const { firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const proxy = require("../../packages/proxy");
 
@@ -20,8 +21,8 @@ router.get("/:id", async (req, res) => {
     res.json({
         id: info.albumhash,
         title: info.title,
-        artist: info.albumartists?.[0]?.name,
-        artist_id: info.albumartists?.[0]?.artisthash,
+        artist: firstProperty(info.albumartists, "name"),
+        artist_id: firstProperty(info.albumartists, "artisthash"),
         year: info.date ? new Date(info.date * 1000).getFullYear() : undefined,
         tracks: mapTracks(album.tracks)
     });

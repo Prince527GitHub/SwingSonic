@@ -1,3 +1,4 @@
+const { encodeId } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -11,7 +12,7 @@ module.exports = async (req, res, proxy, respond) => {
 
     const artistImage = artist?.artist?.image;
 
-    const image = artistImage ? codecs.encode({ type: "artist", id: artistImage }) : undefined;
+    const image = encodeId(artistImage, "artist", codecs);
 
     const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
 

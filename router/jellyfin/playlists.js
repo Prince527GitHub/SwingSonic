@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 
 router.get("/:id/items", async(req, res) => {
@@ -31,7 +32,7 @@ router.get("/:id/items", async(req, res) => {
         Album: track.album,
         AlbumId: track.albumhash,
         AlbumPrimaryImageTag: track.albumhash,
-        AlbumArtist: track.albumartists?.[0]?.name,
+        AlbumArtist: firstProperty(track.albumartists, "name"),
         AlbumArtists: (track.albumartists || []).map(artist => ({ Name: artist.name, Id: artist.artisthash })),
         ImageTags: {
             Primary: track.albumhash

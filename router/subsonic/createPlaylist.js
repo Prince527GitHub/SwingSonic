@@ -1,4 +1,4 @@
-const { toArray } = require("../../packages/utils");
+const { toArray, flexibleISOString, encodeId } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -38,7 +38,7 @@ module.exports = async (req, res, proxy, respond) => {
 
     // TODO: Cleanup this, I don't like it.
     const lastUpdated = pl?.last_updated;
-    const createdDate = lastUpdated ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated)) : new Date();
+    const createdDate = lastUpdated ? new Date(flexibleISOString(lastUpdated)) : new Date();
 
     const owner = req.query.u || req.query.username || "admin";
 
@@ -54,7 +54,7 @@ module.exports = async (req, res, proxy, respond) => {
                 duration: pl?.duration || 0,
                 created: createdDate.toISOString(),
                 changed: createdDate.toISOString(),
-                coverArt: pl?.image ? codecs.encode({ type: "playlist", id: pl.image }) : undefined
+                coverArt: encodeId(pl?.image, "playlist", codecs)
             },
             status: "ok",
             version: "1.16.1",

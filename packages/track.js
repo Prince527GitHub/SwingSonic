@@ -1,7 +1,6 @@
 // TODO: Remove this file.
-const { sortByProperty } = require("./utils");
+const { sortByProperty, ext, firstProperty } = require("./utils");
 const codecs = require("./codecs");
-const path = require("path");
 
 function encodeTrackId(track) {
     if (!track?.trackhash || !track?.filepath) return undefined;
@@ -15,10 +14,10 @@ function mapTrack(track) {
         album: track?.album,
         title: track?.title,
         track: track?.track || 0,
-        artist: track?.artists?.[0]?.name,
-        artist_id: track?.artists?.[0]?.artisthash,
+        artist: firstProperty(track?.artists, "name"),
+        artist_id: firstProperty(track?.artists, "artisthash"),
         album_id: track?.albumhash,
-        format: track?.filepath ? path.extname(track.filepath).slice(1) : undefined,
+        format: ext(track?.filepath),
         duration: (track?.duration || 0) * 1000,
     };
 }

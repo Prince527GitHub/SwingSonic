@@ -1,3 +1,4 @@
+const { firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 
 module.exports = async(req, res, proxy, respond) => {
@@ -9,7 +10,7 @@ module.exports = async(req, res, proxy, respond) => {
         "subsonic-response": {
             scanStatus: {
                 scanning: scan?.msg === "Scan triggered!",
-                count: tracks?.folders?.[0]?.count ?? 0
+                count: firstProperty(tracks?.folders, "count") ?? 0
             },
             status: "ok",
             version: "1.16.1",

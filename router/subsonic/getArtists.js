@@ -1,3 +1,4 @@
+const { toISOString, encodeId } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 
@@ -8,14 +9,14 @@ module.exports = async(req, res, proxy, respond) => {
     // TODO: Simplify this, I don't like it.
     const output = await Promise.all((artists?.items || []).map(async(item) => {
         const node = {
-            id: item?.artisthash ? codecs.encode({ type: "artist", id: item.artisthash }) : undefined,
+            id: encodeId(item?.artisthash, "artist", codecs),
             name: item?.name,
-            coverArt: item?.image ? codecs.encode({ type: "artist", id: item.image }) : undefined,
+            coverArt: encodeId(item?.image, "artist", codecs),
             albumCount: item?.albumcount || 0
         }
 
         const favorite = await api.favorites(req.user).checkFavorite({ hash: item?.artisthash, type: "artist" });
-        if (favorite?.is_favorite) node.starred = favorite?.date ? new Date(favorite.date * 1000).toISOString() : new Date(0).toISOString();
+        if (favorite?.is_favorite) node.starred = toISOString(favorite?.date) || toISOString(0);
 
         return node;
     }));

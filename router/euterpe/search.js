@@ -3,7 +3,7 @@ const router = express.Router();
 
 // TODO: Cleanup this entire file.
 const { mapTrack, mapTracks } = require("../../packages/track");
-const { createArray } = require("../../packages/utils");
+const { createArray, clampedSize, parseIntOr } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const zw = require("../../packages/zw");
 
@@ -18,8 +18,8 @@ router.get("/", async (req, res) => {
     const query = req.query.q;
     if (!query) return res.json([]);
 
-    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 50, 1), 100);
-    const start = Math.max(Number.parseInt(req.query.start, 10) || 0, 0);
+    const limit = clampedSize(req.query.limit, 50, 100);
+    const start = Math.max(parseIntOr(req.query.start), 0);
 
     const search = await api.search(req.user).searchItems({ itemtype: "tracks", q: query, start, limit });
 

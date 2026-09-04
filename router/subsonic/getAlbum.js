@@ -1,8 +1,7 @@
-const { sortByProperty } = require("../../packages/utils");
+const { sortByProperty, ext, toISOString, encodeId, firstProperty } = require("../../packages/utils");
 const api = require("../../packages/swingmusic");
 const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
-const path = require("path");
 
 module.exports = async (req, res, proxy, respond) => {
     const id = req.query.id;
@@ -43,27 +42,27 @@ module.exports = async (req, res, proxy, respond) => {
             name: info.title,
             title: info.title,
             album: info.title,
-            parent: info.albumartists?.[0]?.artisthash || info.albumhash,
+            parent: firstProperty(info.albumartists, "artisthash") || info.albumhash,
             isDir: true,
             isVideo: false,
             version: info.versions?.[0],
-            artist: info.albumartists?.[0]?.name,
-            artistId: info.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: info.albumartists[0].artisthash }) : undefined,
-            coverArt: info.image ? codecs.encode({ type: "album", id: info.image }) : codecs.encode({ type: "album", id: info.albumhash }),
+            artist: firstProperty(info.albumartists, "name"),
+            artistId: encodeId(info.albumartists?.[0]?.artisthash, "artist", codecs),
+            coverArt: encodeId(info.image, "album", codecs) || encodeId(info.albumhash, "album", codecs),
             songCount: info.trackcount || 0,
             duration: info.duration || 0,
             playCount: info.playcount || 0,
-            created: info.created_date ? new Date(info.created_date * 1000).toISOString() : new Date().toISOString(),
+            created: toISOString(info.created_date) || toISOString(Date.now() / 1000),
             year: albumReleaseDate.getFullYear(),
             genre: (info.genres || []).map(g => g?.name).join(", "),
-            played: info.playcount > 0 && info.lastplayed ? new Date(info.lastplayed * 1000).toISOString() : undefined,
+            played: info.playcount > 0 && info.lastplayed ? toISOString(info.lastplayed) : undefined,
             genres: (info.genres || []).map(g => ({ name: g?.name })),
             artists: (info.albumartists || []).map(artist => ({
-                id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
+                id: encodeId(artist?.artisthash, "artist", codecs),
                 name: artist?.name,
-                coverArt: artist?.image ? codecs.encode({ type: "artist", id: artist.image }) : undefined,
+                coverArt: encodeId(artist?.image, "artist", codecs),
             })),
-            displayArtist: info.albumartists?.[0]?.name,
+            displayArtist: firstProperty(info.albumartists, "name"),
             releaseTypes: info.type ? [info.type] : [],
             originalReleaseDate: {
                 year: albumReleaseDate.getFullYear(),
@@ -72,7 +71,7 @@ module.exports = async (req, res, proxy, respond) => {
             },
             song: sortByProperty(
                 tracks.map(track => {
-                    const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
+                    const extension = ext(track?.filepath);
 
                     const song = {
                         id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
@@ -80,10 +79,10 @@ module.exports = async (req, res, proxy, respond) => {
                         isDir: false,
                         title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, codecs.encode({ album: track.albumhash, id: track.trackhash })) : track?.title,
                         album: track?.album,
-                        artist: track?.artists?.[0]?.name,
+                        artist: firstProperty(track?.artists, "name"),
                         track: track?.track || 0,
                         year: albumReleaseDate.getFullYear(),
-                        coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
+                        coverArt: encodeId(track?.image, "album", codecs),
                         suffix: extension || "mp3",
                         contentType: `audio/${extension || "mpeg"}`,
                         duration: track?.duration || 0,
@@ -91,14 +90,14 @@ module.exports = async (req, res, proxy, respond) => {
                         path: track?.filepath,
                         isVideo: false,
                         discNumber: track?.disc || 1,
-                        created: info.created_date ? new Date(info.created_date * 1000).toISOString() : new Date().toISOString(),
+                        created: toISOString(info.created_date) || toISOString(Date.now() / 1000),
                         size: track?.size || 1048576,
                         albumId: track?.albumhash,
-                        artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
+                        artistId: encodeId(track?.artists?.[0]?.artisthash, "artist", codecs),
                         type: "music",
-                        artists: (track?.artists || []).map(a => ({ id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : "unknown", name: a?.name })),
-                        albumArtists: (track?.albumartists || track?.artists || info.albumartists || []).map(a => ({ id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : "unknown", name: a?.name })),
-                        displayArtist: track?.artists?.[0]?.name,
+                        artists: (track?.artists || []).map(a => ({ id: encodeId(a?.artisthash, "artist", codecs) || "unknown", name: a?.name })),
+                        albumArtists: (track?.albumartists || track?.artists || info.albumartists || []).map(a => ({ id: encodeId(a?.artisthash, "artist", codecs) || "unknown", name: a?.name })),
+                        displayArtist: firstProperty(track?.artists, "name"),
                         explicitStatus: track?.explicit ? "explicit" : "clean",
                     }
 
