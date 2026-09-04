@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const codecs = require("../../packages/codecs");
+
 router.get("/public", (req, res) => res.json([]));
 
 router.get("/user/views", async(req, res) => {
@@ -306,9 +308,9 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Etag": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "Genres": ["Unknown"],
-                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Id": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "ImageTags": { "Primary": track.albumhash },
                     "IndexNumber": track.track || 0,
                     "IndexNumberEnd": trackList.length,
@@ -358,9 +360,9 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Etag": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "Genres": ["Unknown"],
-                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Id": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "ImageTags": { "Primary": track.albumhash },
                     "IndexNumber": track.track || 0,
                     "IndexNumberEnd": trackList.length,
@@ -481,9 +483,9 @@ router.get("/user/items", async(req, res) => {
                     "BackdropImageTags": [],
                     "ChannelId": null,
                     "ChildCount": 0,
-                    "Etag": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Etag": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "Genres": ["Unknown"],
-                    "Id": encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                    "Id": encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                     "ImageTags": { "Primary": track.albumhash },
                     "IndexNumber": track.track || 0,
                     "IndexNumberEnd": trackList.length,
@@ -557,9 +559,9 @@ router.get("/user/items/:id", async(req, res) => {
                 BackdropImageTags: [],
                 ChannelId: null,
                 ChildCount: 0,
-                Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                Etag: encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                 Genres: ["Unknown"],
-                Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+                Id: encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
                 ImageTags: { Primary: track.albumhash },
                 IndexNumber: track.track || 0,
                 IndexNumberEnd: (playlist?.tracks || []).length,
@@ -602,9 +604,9 @@ router.get("/user/items/:id", async(req, res) => {
             BackdropImageTags: [],
             ChannelId: null,
             ChildCount: 0,
-            Etag: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+            Etag: encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
             Genres: ["Unknown"],
-            Id: encodeURIComponent(Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash, path: track.filepath })).toString("base64")),
+            Id: encodeURIComponent(codecs.encode({ album: track.albumhash, id: track.trackhash, path: track.filepath })),
             ImageTags: { Primary: track.albumhash },
             IndexNumber: track.track || 0,
             IndexNumberEnd: trackList.length,

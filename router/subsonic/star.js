@@ -1,9 +1,9 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     let { id, albumId, artistId } = req.query;
 
-    const decoded = decode.decode(id || albumId || artistId);
+    const decoded = codecs.decode(id || albumId || artistId);
     if (decoded) {
         id = decoded?.id;
         albumId = decoded?.albumId;

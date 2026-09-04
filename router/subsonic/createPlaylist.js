@@ -1,4 +1,4 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     let { playlistId, name, songId } = req.query;
@@ -38,22 +38,20 @@ module.exports = async(req, res, proxy, respond) => {
     if (songId) {
         const songIds = Array.isArray(songId) ? songId : [songId];
         for (const sid of songIds) {
-            const trackhash = decode.trackhash(sid);
+            const trackId = codecs.id(sid);
             await fetch(`${global.config.music}/playlists/${pl?.id}/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: trackhash })
+                body: JSON.stringify({ itemtype: "tracks", itemhash: trackId })
             });
         }
     }
 
     const lastUpdated = pl?.last_updated;
-    const createdDate = lastUpdated
-        ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
-        : new Date();
+    const createdDate = lastUpdated ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated)) : new Date();
 
     const owner = req.query.u || req.query.username || "admin";
 
@@ -69,7 +67,7 @@ module.exports = async(req, res, proxy, respond) => {
                 duration: pl?.duration || 0,
                 created: createdDate.toISOString(),
                 changed: createdDate.toISOString(),
-                coverArt: pl?.image ? Buffer.from(JSON.stringify({ type: "playlist", id: pl.image })).toString("base64") : undefined
+                coverArt: pl?.image ? codecs.encode({ type: "playlist", id: pl.image }) : undefined
             },
             status: "ok",
             version: "1.16.1",

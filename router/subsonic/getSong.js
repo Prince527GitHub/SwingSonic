@@ -1,9 +1,8 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 const path = require("path");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
-
     if (!id) return respond(res, req, {
         "subsonic-response": {
             status: "failed",
@@ -15,19 +14,21 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    const decoded = decode.decode(id);
+    const decoded = codecs.decode(id);
 
     const trackId = decoded?.id || id;
     const filepath = decoded?.path;
 
     let track;
     if (filepath) {
-        const trackInfo = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(filepath)}`, { headers: { "Cookie": req.user } })).json();
-        track = (trackInfo?.tracks || []).find(t => t?.trackhash === trackId);
+        const response = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(filepath)}`, { headers: { "Cookie": req.user } })).json();
+
+        track = (response?.tracks || []).find(t => t?.trackhash === trackId);
     }
 
     if (!track) {
         const search = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${trackId}&start=0&limit=1`, { headers: { "Cookie": req.user } })).json();
+
         track = search?.results?.[0];
     }
 
@@ -45,7 +46,7 @@ module.exports = async(req, res, proxy, respond) => {
     const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
     const song = {
-        id: track?.trackhash && track?.filepath ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")) : track?.trackhash,
+        id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : track?.trackhash,
         parent: track?.albumhash,
         isDir: false,
         title: track?.title,
@@ -53,7 +54,7 @@ module.exports = async(req, res, proxy, respond) => {
         artist: track?.artists?.[0]?.name,
         track: track?.track || 0,
         year: track?.year || new Date().getFullYear(),
-        coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
+        coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
         suffix: extension || "mp3",
         contentType: `audio/${extension || "mpeg"}`,
         duration: track?.duration || 0,
@@ -64,10 +65,10 @@ module.exports = async(req, res, proxy, respond) => {
         created: new Date().toISOString(),
         size: track?.size || 1048576,
         albumId: track?.albumhash,
-        artistId: track?.artists?.[0]?.artisthash,
+        artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
         type: "music",
-        artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
-        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
+        artists: (track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
+        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
         displayArtist: track?.artists?.[0]?.name,
     };
 

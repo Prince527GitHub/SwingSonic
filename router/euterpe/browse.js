@@ -1,49 +1,52 @@
 const express = require("express");
 const router = express.Router();
 
-const { sortByProperty } = require("../../packages/array");
+const codecs = require("../../packages/codecs");
+const zw = require("../../packages/zw");
 
 router.get("/", async(req, res) => {
-    const { by = "album", page = 1, order } = req.query;
+    const { by = "album", order = "asc" } = req.query;
 
-    const perPage = req.query["per-page"];
-    const orderBy = req.query["order-by"];
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
+    const perPage = Math.min(Math.max(Number.parseInt(req.query["per-page"], 10) || 10, 1), 100);
+    const orderBy = req.query["order-by"] || "name";
 
-    const reverse = order === "asc" ? 1 : 0;
+    if (!["album", "artist"].includes(by)) return res.sendStatus(400);
+    if (!["asc", "desc"].includes(order) || !["id", "name"].includes(orderBy)) return res.sendStatus(400);
+
+    const sortby = orderBy === "id" ? "created_date" : (by === "album" ? "title" : "name");
+    const reverse = order === "desc" ? 1 : 0;
     const start = (page - 1) * perPage;
 
     let results = [];
     if (by === "album") {
-        const albums = await (await fetch(`${global.config.music}/getall/albums?start=${start}&limit=${perPage}&sortby=title&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
+        const albums = await (await fetch(`${global.config.music}/getall/albums?start=${start}&limit=${perPage}&sortby=${sortby}&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
 
         results = albums.items.map(album => ({
-            album: album.title,
-            artist: album.albumartists[0].name,
+            album: album.title && album.albumhash ? zw.inject(album.title, codecs.encode({ album: album.albumhash })) : album.title,
+            artist: album.albumartists?.[0]?.name || "",
             album_id: album.albumhash
         }));
 
-        if (orderBy === "id") results = sortByProperty(results, "album_id");
-
         results.total = albums.total;
     } else if (by === "artist") {
-        const artists = await (await fetch(`${global.config.music}/getall/artists?start=${start}&limit=${perPage}&sortby=name&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
+        const artists = await (await fetch(`${global.config.music}/getall/artists?start=${start}&limit=${perPage}&sortby=${sortby}&reverse=${reverse}`, { headers: { "Cookie": req.user } })).json();
 
         results = artists.items.map(artist => ({
-            artist: artist.name,
+            artist: artist.name && artist.artisthash ? zw.inject(artist.name, codecs.encode({ artist: artist.artisthash })) : artist.name,
             artist_id: artist.artisthash
         }));
-
-        if (orderBy === "id") results = sortByProperty(results, "artist_id");
 
         results.total = artists.total;
     }
 
-    const max = Math.round(results.total / perPage) || 0;
+    const max = Math.ceil((results.total || 0) / perPage);
+    const link = (target) => `/v1/browse/?by=${by}&page=${target}&per-page=${perPage}&order-by=${orderBy}&order=${order}`;
 
     res.json({
         pages_count: max,
-        next: max > page ? `/v1/browse/?page=${Number(page) + 1}&per-page=${perPage}` : null,
-        previous: max > page ? `/v1/browse/?page=${Number(page) - 1}&per-page=${perPage}` : null,
+        next: page < max ? link(page + 1) : null,
+        previous: page > 1 && page <= max ? link(page - 1) : null,
         data: results
     });
 });

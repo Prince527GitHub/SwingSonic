@@ -1,4 +1,4 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
@@ -13,7 +13,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    let decoded = decode.decode(id);
+    let decoded = codecs.decode(id);
     if (!decoded?.id || !decoded?.path) {
         const source = decoded?.id || id;
 

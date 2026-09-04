@@ -21,11 +21,16 @@ function decode(id) {
     }
 }
 
-function trackhash(id) {
-    return decode(id)?.id || id;
+function id(decoded) {
+    return decode(decoded)?.id || decoded;
+}
+
+function encode(data) {
+    return Buffer.from(JSON.stringify(data)).toString("base64");
 }
 
 module.exports = {
+    encode,
     decode,
-    trackhash
+    id
 };

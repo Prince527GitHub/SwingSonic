@@ -1,32 +1,39 @@
+const { sanitizeCookie } = require("../../packages/cookie");
 const { getFileList } = require("../../packages/files");
 
 async function checkAuth(req, res, next) {
-    const login = ["/v1/login/token/", "/v1/register/token/"];
+    if (["/login/token", "/login/token/"].includes(req.path)) return next();
 
-    if (!login.includes(req.originalUrl)) {
-        try {
-            const auth = req.headers["authorization"] || `Bearer ${req.query.token}`;
+    try {
+        const auth = req.headers.authorization || (req.query.token && `Bearer ${req.query.token}`);
+        if (!auth) return res.sendStatus(401);
 
-            const credentials = auth.split(" ")[1];
-            const [username, password] = credentials.split(":");
+        let credentials;
 
-            const user = await fetch(`${global.config.music}/auth/login`, {
-                method: "POST",
-                body: JSON.stringify({
-                    username,
-                    password
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-            if (!user.ok) return res.sendStatus(401);
+        if (auth.startsWith("Basic ")) credentials = Buffer.from(auth.slice(6), "base64").toString("utf8");
+        else if (auth.startsWith("Bearer ")) credentials = auth.slice(7);
+        else return res.sendStatus(401);
 
-            req.user = user.headers.get("set-cookie");
-        } catch {
-            return res.sendStatus(401);
-        }
+        const sep = credentials.indexOf(":");
+        if (sep < 1) return res.sendStatus(401);
+
+        const username = credentials.slice(0, sep);
+        const password = credentials.slice(sep + 1);
+
+        const response = await fetch(`${global.config.music}/auth/login`, {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        req.user = sanitizeCookie(response?.headers?.get("set-cookie")) || false;
+    } catch {
+        return res.sendStatus(401);
     }
+
+    if (!req.user) return res.sendStatus(401);
 
     next();
 }

@@ -1,7 +1,7 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
-    let { playlistId, name, songIdToAdd, songIdToRemove, songIndexToRemove } = req.query;
+    let { playlistId, name, songIdToAdd = [], songIdToRemove = [], songIndexToRemove = [] } = req.query;
 
     if (!playlistId) return respond(res, req, {
         "subsonic-response": {
@@ -14,39 +14,30 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    if (songIdToAdd) {
-        const idsToAdd = Array.isArray(songIdToAdd) ? songIdToAdd : [songIdToAdd];
-        for (const sid of idsToAdd) {
-            const trackhash = decode.trackhash(sid);
+    if (songIdToAdd)
+        for (const sid of [].concat(songIdToAdd))
             await fetch(`${global.config.music}/playlists/${playlistId}/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ itemtype: "tracks", itemhash: trackhash })
+                body: JSON.stringify({ itemtype: "tracks", itemhash: codecs.id(sid) })
             });
-        }
-    }
 
-    if (songIdToRemove) {
-        const idsToRemove = Array.isArray(songIdToRemove) ? songIdToRemove : [songIdToRemove];
-        for (const sid of idsToRemove) {
-            const trackhash = decode.trackhash(sid);
+    if (songIdToRemove)
+        for (const sid of [].concat(songIdToRemove))
             await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Cookie": req.user
                 },
-                body: JSON.stringify({ tracks: [{ trackhash, index: 0 }] })
+                body: JSON.stringify({ tracks: [{ trackhash: codecs.id(sid), index: 0 }] })
             });
-        }
-    }
 
-    if (songIndexToRemove) {
-        const indices = Array.isArray(songIndexToRemove) ? songIndexToRemove : [songIndexToRemove];
-        for (const idx of indices) {
+    if (songIndexToRemove)
+        for (const idx of [].concat(songIndexToRemove)) {
             await fetch(`${global.config.music}/playlists/${playlistId}/remove-tracks`, {
                 method: "POST",
                 headers: {
@@ -56,20 +47,13 @@ module.exports = async(req, res, proxy, respond) => {
                 body: JSON.stringify({ tracks: [{ index: parseInt(idx), trackhash: "" }] })
             });
         }
-    }
 
-    if (name) {
-        const formData = new FormData();
-        formData.append("name", name);
-
+    if (name)
         await fetch(`${global.config.music}/playlists/${playlistId}/update`, {
             method: "PUT",
-            headers: {
-                "Cookie": req.user
-            },
-            body: formData
+            headers: { "Cookie": req.user },
+            body: new URLSearchParams({ name })
         });
-    }
 
     respond(res, req, {
         "subsonic-response": {

@@ -1,4 +1,5 @@
 const { shuffleArray } = require("../../packages/array");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     let { type, size, offset, genre, fromYear, toYear } = req.query;
@@ -84,14 +85,14 @@ module.exports = async(req, res, proxy, respond) => {
             parent: id,
             isDir: true,
             isVideo: false,
-            coverArt: item?.image ? Buffer.from(JSON.stringify({ type: "album", id: item.image })).toString("base64") : undefined,
+            coverArt: item?.image ? codecs.encode({ type: "album", id: item.image }) : undefined,
             songCount: item?.trackcount || 0,
             created: item?.date ? new Date(item.date * 1000).toISOString() : new Date().toISOString(),
             duration: item?.duration || 0,
             artist: item?.albumartists?.[0]?.name,
-            artistId: item?.albumartists?.[0]?.artisthash,
-            artists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
-            albumArtists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash }))
+            artistId: item?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: item.albumartists[0].artisthash }) : undefined,
+            artists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
+            albumArtists: (item?.albumartists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined }))
         }
 
         const favorite = await (await fetch(`${global.config.music}/favorites/check?hash=${id}&type=album`, { headers: { "Cookie": req.user } })).json();

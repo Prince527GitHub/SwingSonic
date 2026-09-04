@@ -1,20 +1,18 @@
-module.exports = async(req, res, proxy, respond) => {
-    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, {
-        headers: { "Cookie": req.user }
-    })).json())?.total ?? 50;
+const codecs = require("../../packages/codecs");
 
-    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, {
-        headers: { "Cookie": req.user }
-    })).json();
+module.exports = async(req, res, proxy, respond) => {
+    const size = (await (await fetch(`${global.config.music}/getall/artists?start=0&limit=1&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json())?.total ?? 50;
+
+    const artists = await (await fetch(`${global.config.music}/getall/artists?start=0&limit=${size}&sortby=created_date&reverse=1`, { headers: { "Cookie": req.user } })).json();
 
     const output = (artists?.items || []).map(item => ({
-        id: item?.artisthash,
+        id: item?.artisthash ? codecs.encode({ type: "artist", id: item.artisthash }) : undefined,
         name: item?.name,
-        artistImageUrl: item?.image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64"))}` : undefined
+        artistImageUrl: item?.image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(codecs.encode({ type: "artist", id: item.image }))}` : undefined
     }));
 
     const children = (artists?.items || []).map(item => ({
-        id: item?.artisthash,
+        id: item?.artisthash ? codecs.encode({ type: "artist", id: item.artisthash }) : undefined,
         title: item?.name,
         isDir: true,
         parent: "0"
@@ -29,10 +27,13 @@ module.exports = async(req, res, proxy, respond) => {
         return acc;
     }, {});
 
-    const organize = Object.keys(groupe).sort().map(letter => ({
-        name: letter,
-        artist: groupe[letter]
-    }));
+    const organize = Object
+        .keys(groupe)
+        .sort()
+        .map(letter => ({
+            name: letter,
+            artist: groupe[letter]
+        }));
 
     respond(res, req, {
         "subsonic-response": {

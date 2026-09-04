@@ -1,3 +1,5 @@
+const codecs = require("../../packages/codecs");
+
 module.exports = async(req, res, proxy, respond) => {
     const playlists = await (await fetch(`${global.config.music}/playlists`, {
         headers: {
@@ -9,9 +11,8 @@ module.exports = async(req, res, proxy, respond) => {
 
     const output = (playlists?.data || []).map(playlist => {
         const lastUpdated = playlist?.last_updated;
-        const createdDate = lastUpdated
-            ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated))
-            : new Date();
+        const createdDate = lastUpdated ? (typeof lastUpdated === "number" ? new Date(lastUpdated * 1000) : new Date(lastUpdated)) : new Date();
+
         return {
             id: String(playlist?.id),
             name: playlist?.name,
@@ -22,7 +23,7 @@ module.exports = async(req, res, proxy, respond) => {
             duration: playlist?.duration || 0,
             created: createdDate.toISOString(),
             changed: createdDate.toISOString(),
-            coverArt: playlist?.image ? Buffer.from(JSON.stringify({ type: "playlist", id: playlist.image })).toString("base64") : undefined
+            coverArt: playlist?.image ? codecs.encode({ type: "playlist", id: playlist.image }) : undefined
         };
     });
 

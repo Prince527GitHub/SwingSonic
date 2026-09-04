@@ -1,3 +1,4 @@
+const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 const path = require("path");
 
@@ -18,11 +19,12 @@ module.exports = async(req, res, proxy, respond) => {
     let artists = [];
 
     if (artistCount >= 1 && query) {
-        const artistResults = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${encodeURIComponent(query)}&start=${artistOffset}&limit=${artistCount}`, args)).json();
-        artists = (artistResults?.results || []).map(artist => ({
-            id: artist?.artisthash,
+        const response = await (await fetch(`${global.config.music}/search/?itemtype=artists&q=${encodeURIComponent(query)}&start=${artistOffset}&limit=${artistCount}`, args)).json();
+
+        artists = (response?.results || []).map(artist => ({
+            id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
             name: artist?.name,
-            coverArt: artist?.image ? Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64") : undefined,
+            coverArt: artist?.image ? codecs.encode({ type: "artist", id: artist.image }) : undefined,
             albumCount: artist?.albumcount || 0,
             starred: undefined
         }));
@@ -31,40 +33,38 @@ module.exports = async(req, res, proxy, respond) => {
     let albums = [];
 
     if (albumCount >= 1 && query) {
-        const albumResults = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${encodeURIComponent(query)}&start=${albumOffset}&limit=${albumCount}`, args)).json();
-        albums = (albumResults?.results || []).map(album => ({
+        const response = await (await fetch(`${global.config.music}/search/?itemtype=albums&q=${encodeURIComponent(query)}&start=${albumOffset}&limit=${albumCount}`, args)).json();
+
+        albums = (response?.results || []).map(album => ({
             id: album?.albumhash,
             name: album?.title,
-            coverArt: album?.image ? Buffer.from(JSON.stringify({ type: "album", id: album.image })).toString("base64") : undefined,
+            coverArt: album?.image ? codecs.encode({ type: "album", id: album.image }) : undefined,
             songCount: album?.trackcount || 0,
             created: album?.date ? new Date(album.date * 1000).toISOString() : undefined,
             duration: album?.duration || 0,
             artist: album?.albumartists?.[0]?.name,
-            artistId: album?.albumartists?.[0]?.artisthash
+            artistId: album?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: album.albumartists[0].artisthash }) : undefined
         }));
     }
 
     let tracks = [];
 
     if (songCount >= 1 && query) {
-        const trackResults = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=${songOffset}&limit=${songCount}`, args)).json();
-        tracks = (trackResults?.results || []).map(track => {
-            const id = track?.trackhash && track?.filepath
-                ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64"))
-                : undefined;
+        const response = await (await fetch(`${global.config.music}/search/?itemtype=tracks&q=${encodeURIComponent(query)}&start=${songOffset}&limit=${songCount}`, args)).json();
+
+        tracks = (response?.results || []).map(track => {
+            const id = track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined;
 
             const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
             return {
                 id,
                 parent: track?.albumhash,
-                title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash
-                    ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64"))
-                    : track?.title,
+                title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, codecs.encode({ album: track.albumhash, id: track.trackhash })) : track?.title,
                 album: track?.album,
                 artist: track?.albumartists?.[0]?.name,
                 isDir: false,
-                coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
+                coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
                 created: new Date().toISOString(),
                 duration: track?.duration || 0,
                 bitRate: track?.bitrate || 0,
@@ -77,8 +77,8 @@ module.exports = async(req, res, proxy, respond) => {
                 size: track?.size || 1048576,
                 path: track?.filepath,
                 albumId: track?.albumhash,
-                artistId: track?.albumartists?.[0]?.artisthash,
-                albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
+                artistId: track?.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.albumartists[0].artisthash }) : undefined,
+                albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
                 type: "music"
             };
         });

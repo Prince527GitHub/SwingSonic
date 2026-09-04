@@ -1,6 +1,6 @@
+const codecs = require("../../packages/codecs");
 const zw = require("../../packages/zw");
 const path = require("path");
-const decode = require("../../packages/decode");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
@@ -15,7 +15,7 @@ module.exports = async(req, res, proxy, respond) => {
         }
     });
 
-    const decoded = decode.decode(id);
+    const decoded = codecs.decode(id);
 
     const album = await (await fetch(`${global.config.music}/album`, {
         method: "POST",
@@ -51,8 +51,8 @@ module.exports = async(req, res, proxy, respond) => {
             isVideo: false,
             version: info.versions?.[0],
             artist: info.albumartists?.[0]?.name,
-            artistId: info.albumartists?.[0]?.artisthash,
-            coverArt: info.image ? Buffer.from(JSON.stringify({ type: "album", id: info.image })).toString("base64") : Buffer.from(JSON.stringify({ type: "album", id: info.albumhash })).toString("base64"),
+            artistId: info.albumartists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: info.albumartists[0].artisthash }) : undefined,
+            coverArt: info.image ? codecs.encode({ type: "album", id: info.image }) : codecs.encode({ type: "album", id: info.albumhash }),
             songCount: info.trackcount || 0,
             duration: info.duration || 0,
             playCount: info.playcount || 0,
@@ -62,9 +62,9 @@ module.exports = async(req, res, proxy, respond) => {
             played: info.playcount > 0 && info.lastplayed ? new Date(info.lastplayed * 1000).toISOString() : undefined,
             genres: (info.genres || []).map(g => ({ name: g?.name })),
             artists: (info.albumartists || []).map(artist => ({
-                id: artist?.artisthash,
+                id: artist?.artisthash ? codecs.encode({ type: "artist", id: artist.artisthash }) : undefined,
                 name: artist?.name,
-                coverArt: artist?.image ? Buffer.from(JSON.stringify({ type: "artist", id: artist.image })).toString("base64") : undefined,
+                coverArt: artist?.image ? codecs.encode({ type: "artist", id: artist.image }) : undefined,
             })),
             displayArtist: info.albumartists?.[0]?.name,
             releaseTypes: info.type ? [info.type] : [],
@@ -77,17 +77,15 @@ module.exports = async(req, res, proxy, respond) => {
                 const extension = track?.filepath ? path.extname(track.filepath).slice(1) : undefined;
 
                 const song = {
-                    id: track?.trackhash && track?.filepath ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")) : undefined,
+                    id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
                     parent: track?.albumhash,
                     isDir: false,
-                    title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash
-                        ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64"))
-                        : track?.title,
+                    title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, codecs.encode({ album: track.albumhash, id: track.trackhash })) : track?.title,
                     album: track?.album,
                     artist: track?.artists?.[0]?.name,
                     track: track?.track || 0,
                     year: albumReleaseDate.getFullYear(),
-                    coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
+                    coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
                     suffix: extension || "mp3",
                     contentType: `audio/${extension || "mpeg"}`,
                     duration: track?.duration || 0,
@@ -98,17 +96,15 @@ module.exports = async(req, res, proxy, respond) => {
                     created: info.created_date ? new Date(info.created_date * 1000).toISOString() : new Date().toISOString(),
                     size: track?.size || 1048576,
                     albumId: track?.albumhash,
-                    artistId: track?.artists?.[0]?.artisthash,
+                    artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
                     type: "music",
-                    artists: (track?.artists || []).map(a => ({ id: a?.artisthash || track?.artists?.[0]?.artisthash || info.albumartists?.[0]?.artisthash || "unknown", name: a?.name })),
-                    albumArtists: (track?.albumartists || track?.artists || info.albumartists || []).map(a => ({ id: a?.artisthash || "unknown", name: a?.name })),
+                    artists: (track?.artists || []).map(a => ({ id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : "unknown", name: a?.name })),
+                    albumArtists: (track?.albumartists || track?.artists || info.albumartists || []).map(a => ({ id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : "unknown", name: a?.name })),
                     displayArtist: track?.artists?.[0]?.name,
                     explicitStatus: track?.explicit ? "explicit" : "clean",
                 };
 
-                if (track?.is_favorite) {
-                    song.starred = new Date().toISOString();
-                }
+                if (track?.is_favorite) song.starred = new Date().toISOString();
 
                 return song;
             }).sort((a, b) => (a?.track ?? 0) - (b?.track ?? 0))

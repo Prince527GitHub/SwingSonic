@@ -1,16 +1,14 @@
+const codecs = require("../../packages/codecs");
+
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
 
     let { u, t, s } = req.query;
 
-    const artist = await (await fetch(`${global.config.music}/artist/${id}`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const artist = await (await fetch(`${global.config.music}/artist/${id}`, { headers: { "Cookie": req.user } })).json();
 
     const artistImage = artist?.artist?.image;
-    const image = artistImage ? Buffer.from(JSON.stringify({ type: "artist", id: artistImage })).toString("base64") : undefined;
+    const image = artistImage ? codecs.encode({ type: "artist", id: artistImage }) : undefined;
     const link = image ? `${global?.config?.server?.url}/rest/getCoverArt.view?id=${encodeURIComponent(image)}&u=${encodeURIComponent(u || "")}&t=${encodeURIComponent(t || "")}&s=${encodeURIComponent(s || "")}` : undefined;
 
     respond(res, req, {

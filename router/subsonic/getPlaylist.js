@@ -1,24 +1,21 @@
 const zw = require("../../packages/zw");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     const id = req.query.id;
 
     let { size, offset } = req.query;
 
-    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || "0"}&limit=${size || "50"}`, {
-        headers: {
-            "Cookie": req.user
-        }
-    })).json();
+    const playlist = await (await fetch(`${global.config.music}/playlists/${id}?no_tracks=false&start=${offset || "0"}&limit=${size || "50"}`, { headers: { "Cookie": req.user } })).json();
 
     const output = (playlist?.tracks || []).map(track => ({
-        id: track?.trackhash && track?.filepath ? encodeURIComponent(Buffer.from(JSON.stringify({ id: track.trackhash, path: track.filepath })).toString("base64")) : undefined,
+        id: track?.trackhash && track?.filepath ? encodeURIComponent(codecs.encode({ id: track.trackhash, path: track.filepath })) : undefined,
         parent: track?.albumhash || "0",
-        title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, Buffer.from(JSON.stringify({ album: track.albumhash, id: track.trackhash })).toString("base64")) : track?.title,
+        title: global?.config?.server?.api?.subsonic?.options?.zw && track?.title && track?.albumhash && track?.trackhash ? zw.inject(track.title, codecs.encode({ album: track.albumhash, id: track.trackhash })) : track?.title,
         album: track?.album,
         artist: track?.artists?.[0]?.name,
         isDir: false,
-        coverArt: track?.image ? Buffer.from(JSON.stringify({ type: "album", id: track.image })).toString("base64") : undefined,
+        coverArt: track?.image ? codecs.encode({ type: "album", id: track.image }) : undefined,
         created: new Date().toISOString(),
         duration: track?.duration || 0,
         bitRate: track?.bitrate || 0,
@@ -31,8 +28,8 @@ module.exports = async(req, res, proxy, respond) => {
         size: track?.size || 1048576,
         path: track?.filepath,
         albumId: track?.albumhash,
-        artistId: track?.artists?.[0]?.artisthash,
-        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash })),
+        artistId: track?.artists?.[0]?.artisthash ? codecs.encode({ type: "artist", id: track.artists[0].artisthash }) : undefined,
+        albumArtists: (track?.albumartists || track?.artists || []).map(a => ({ name: a?.name, id: a?.artisthash ? codecs.encode({ type: "artist", id: a.artisthash }) : undefined })),
         type: "music",
         ...(track?.is_favorite ? { starred: new Date().toISOString() } : {})
     }));
@@ -50,13 +47,9 @@ module.exports = async(req, res, proxy, respond) => {
                 public: true,
                 songCount: info?.count || 0,
                 duration: info?.duration || 0,
-                created: info?.last_updated
-                    ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString()
-                    : new Date().toISOString(),
-                changed: info?.last_updated
-                    ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString()
-                    : new Date().toISOString(),
-                coverArt: info?.image ? Buffer.from(JSON.stringify({ type: "playlist", id: info.image })).toString("base64") : undefined,
+                created: info?.last_updated ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString() : new Date().toISOString(),
+                changed: info?.last_updated ? (typeof info.last_updated === "number" ? new Date(info.last_updated * 1000) : new Date(info.last_updated)).toISOString() : new Date().toISOString(),
+                coverArt: info?.image ? codecs.encode({ type: "playlist", id: info.image }) : undefined,
                 entry: output
             },
             status: "ok",

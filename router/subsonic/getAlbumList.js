@@ -1,4 +1,5 @@
 const { shuffleArray } = require("../../packages/array");
+const codecs = require("../../packages/codecs");
 
 module.exports = async(req, res, proxy, respond) => {
     let { type, size, offset, genre, fromYear, toYear } = req.query;
@@ -84,7 +85,7 @@ module.exports = async(req, res, proxy, respond) => {
         artist: item?.albumartists?.[0]?.name,
         isDir: true,
         isVideo: false,
-        coverArt: item?.image ? Buffer.from(JSON.stringify({ type: "album", id: item.image })).toString("base64") : undefined,
+        coverArt: item?.image ? codecs.encode({ type: "album", id: item.image }) : undefined,
         created: item?.date ? new Date(item.date * 1000).toISOString() : new Date().toISOString(),
         duration: item?.duration || 0,
         userRating: 0,

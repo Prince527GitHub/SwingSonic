@@ -1,42 +1,25 @@
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 
-module.exports = async(req, res, proxy, respond) => {
+module.exports = async (req, res, proxy, respond) => {
     let { id, time, submission } = req.query;
 
-    let ids = [];
-    let times = [];
+    if (submission !== "false") {
+        const ids = (Array.isArray(id) ? id : id ? [id] : []).map(raw => ({ raw, decoded: codecs.decode(raw) }));
+        const times = Array.isArray(time) ? time : time ? [time] : [];
 
-    if (id) {
-        const idList = Array.isArray(id) ? id : [id];
-        for (const singleId of idList) {
-            ids.push({ raw: singleId, decoded: decode.decode(singleId) });
-        }
-    }
+        for (let i = 0; i < ids.length; i++) {
+            const { raw, decoded } = ids[i];
+            const trackhash = decoded?.id || raw;
 
-    if (time) {
-        times = Array.isArray(time) ? time : [time];
-    }
+            let duration = 240;
+            if (decoded?.path) {
+                const response = await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, { headers: { "Cookie": req.user } })).json();
 
-    const isSubmission = submission !== "false";
-
-    for (let i = 0; i < ids.length; i++) {
-        const item = ids[i];
-        const decoded = item.decoded;
-        const trackId = decoded?.id || item.raw;
-
-        if (isSubmission) {
-            let trackInfo = decoded?.path ? await (await fetch(`${global.config.music}/folder/tracks/all?path=${encodeURIComponent(decoded.path)}`, { headers: { "Cookie": req.user } })).json() : { tracks: [] };
-
-            let track;
-            try {
-                track = (trackInfo?.tracks || []).find(t => t?.trackhash === trackId);
-            } catch {
-                track = null;
+                duration = (response?.tracks || []).find(track => track?.trackhash === trackhash)?.duration ?? 240;
             }
 
-            const duration = track?.duration ?? 240;
-            const ts = times[i] || time;
-            const timestamp = ts > 10_000_000_000 ? Math.floor(parseInt(ts) / 1000) : (parseInt(ts) || Math.floor(Date.now() / 1000));
+            const value = parseInt(times[i] || time);
+            const timestamp = value > 10_000_000_000 ? Math.floor(value / 1000) : (value || Math.floor(Date.now() / 1000));
 
             await fetch(`${global.config.music}/logger/track/log`, {
                 method: "POST",
@@ -46,7 +29,7 @@ module.exports = async(req, res, proxy, respond) => {
                 },
                 body: JSON.stringify({
                     "timestamp": timestamp,
-                    "trackhash": trackId,
+                    "trackhash": trackhash,
                     "duration": duration,
                     "source": "swingsonic",
                 })

@@ -7,7 +7,7 @@
 
 ## Supported
 
-- [Subsonic](https://www.subsonic.org/pages/index.jsp)
+- [Subsonic](https://www.subsonic.org/pages/index.jsp) ⭐
 - [Jellyfin](https://jellyfin.org/)
 - [Euterpe](https://listen-to-euterpe.eu/)
 

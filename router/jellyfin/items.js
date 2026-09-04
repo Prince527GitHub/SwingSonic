@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { sanitizeCookie } = require("../../packages/cookie");
-const decode = require("../../packages/decode");
+const codecs = require("../../packages/codecs");
 const proxy = require("../../packages/proxy");
 
 const { username, password } = global.config.server.users[0];
@@ -10,7 +10,7 @@ const { username, password } = global.config.server.users[0];
 router.get("/:id/images/primary", async(req, res) => {
     const id = req.params.id;
 
-    const decoded = decode.decode(id);
+    const decoded = codecs.decode(id);
 
     // const artist = await fetch(`${global.config.music}/artist/${id}/albums?limit=1&all=false`);
 
@@ -39,7 +39,7 @@ router.use("/:id/download", getFile);
 async function getFile(req, res) {
     const id = req.params.id;
 
-    const decoded = decode.decode(id);
+    const decoded = codecs.decode(id);
     if (!decoded?.id || !decoded?.path) return res.sendStatus(404);
 
     const auth = await fetch(`${global.config.music}/auth/login`, {

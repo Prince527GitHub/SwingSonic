@@ -1,3 +1,5 @@
+const codecs = require("../../packages/codecs");
+
 module.exports = async(req, res, proxy, respond) => {
     const args = { headers: { "Cookie": req.user } };
 
@@ -6,9 +8,9 @@ module.exports = async(req, res, proxy, respond) => {
 
     const output = await Promise.all((artists?.items || []).map(async(item) => {
         const node = {
-            id: item?.artisthash,
+            id: item?.artisthash ? codecs.encode({ type: "artist", id: item.artisthash }) : undefined,
             name: item?.name,
-            coverArt: item?.image ? Buffer.from(JSON.stringify({ type: "artist", id: item.image })).toString("base64") : undefined,
+            coverArt: item?.image ? codecs.encode({ type: "artist", id: item.image }) : undefined,
             albumCount: item?.albumcount || 0
         };
 
@@ -27,10 +29,13 @@ module.exports = async(req, res, proxy, respond) => {
         return acc;
     }, {});
 
-    const organize = Object.keys(groupe).sort().map(letter => ({
-        name: letter,
-        artist: groupe[letter]
-    }));
+    const organize = Object
+        .keys(groupe)
+        .sort()
+        .map(letter => ({
+            name: letter,
+            artist: groupe[letter]
+        }));
 
     respond(res, req, {
         "subsonic-response": {
